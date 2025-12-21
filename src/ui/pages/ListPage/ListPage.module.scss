@@ -1,0 +1,293 @@
+@import '../../designSystem/tokens/index';
+
+.main {
+  // Matches header padding exactly for perfect edge alignment
+  padding: 20px $padding-mobile; // Mobile: 16px sides (matches navbar)
+
+  @include md {
+    padding: 20px $padding-desktop; // Tablet+: 48px sides (matches navbar)
+  }
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-family: $font-family-condensed; // Roboto Condensed (consistent typography)
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-normal; // 0% (consistent with search)
+  margin: 0 0 $spacing-6 0;
+  text-transform: uppercase;
+  color: #000000;
+  // No extra padding - aligns with header edges
+}
+
+.searchContainer {
+  margin-bottom: $spacing-4;
+  // No extra padding - aligns with header edges
+}
+
+.resultsCount {
+  font-size: 12px;
+  font-family: $font-family-condensed; // Roboto Condensed (matches search)
+  color: #AAAAAA;
+  letter-spacing: $letter-spacing-normal; // 0% (consistent with search)
+  margin: $spacing-4 0;
+  font-weight: $font-weight-medium;
+  text-transform: uppercase;
+  // No extra padding - aligns with header edges
+}
+
+.grid {
+  display: grid;
+  gap: 8px;
+  
+  // Mobile (<768px): 2 columns, 8px gap
+  // Cards FILL available width (1fr each)
+  grid-template-columns: repeat(2, 1fr);
+  
+  @include md {
+    // Tablet (768px-1023px): Auto-fit columns at 172.5px each
+    // Creates as many columns as can fit
+    grid-template-columns: repeat(auto-fit, 172.5px);
+    gap: 16px;
+  }
+
+  @include lg {
+    // Desktop (1024px+): Auto-fit columns at 188.571px each
+    // Creates as many columns as can fit
+    grid-template-columns: repeat(auto-fit, 188.571px);
+    gap: 19px;
+  }
+}
+
+.card {
+  background-color: #000000;
+  position: relative;
+  overflow: hidden;
+  
+  // Mobile: 172.5px width (FILL) × 189.97px height (HUG)
+  // Width fills grid cell (1fr), height is fixed
+  width: 100%;
+  height: 189.97px;
+  
+  @include md {
+    // Tablet: 172.5px width (HUG) × 245.97px height (FILL)
+    // Width and height are both fixed
+    width: 172.5px;
+    height: 245.97px;
+  }
+  
+  @include lg {
+    // Desktop: 188.571px width (HUG) × 245.97px height (FILL)
+    // Width and height are both fixed
+    width: 188.571px;
+    height: 245.97px;
+  }
+  
+  // Triangular clip on bottom-right corner (from mockup)
+  // Creates diagonal cut effect
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 12.857px),
+    calc(100% - 12.857px) 100%,
+    0 100%
+  );
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer; // Pointing hand cursor on hover
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.cardImage {
+  flex: 1; // Takes remaining space
+  overflow: hidden;
+  background-color: #1a1a1a;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    // Prevent image movement on hover
+    transform: none;
+    transition: none;
+  }
+}
+
+.cardFooter {
+  background-color: #000000;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  
+  // Footer takes remaining height (card - image)
+  height: auto;
+}
+
+// Red accent line ABOVE the name (not border-bottom)
+.cardAccent {
+  width: 100%;
+  height: 5.37857px; // Exact from SVG mockup (5.38px rounded)
+  background-color: #EC1D24; // Marvel red
+  flex-shrink: 0; // Don't shrink
+  @include safe-animation(all $duration-base $ease-out);
+}
+
+// Hover effect: red line expands downward to cover entire footer background
+.cardLink:hover .cardAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%; // Expands from 5.38px to full footer height
+  z-index: 0;
+}
+
+.cardContent {
+  padding: 12px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
+  z-index: 1; // Above expanding red background
+  flex: 1; // Takes remaining space
+  
+  @include mobile {
+    padding: 10px 8px;
+  }
+  
+  @include md {
+    padding: 14px 8px;
+  }
+}
+
+// When card is hovered and heart is filled (red), turn heart white
+// This creates better contrast against the expanded red background
+.cardLink:hover {
+  // Target any favorite button that is active (filled/favorited)
+  button[aria-pressed="true"] {
+    color: #FFFFFF !important; // Override red color with white
+  }
+}
+
+.cardTitle {
+  font-size: 12px;
+  font-family: $font-family-condensed; // Roboto Condensed
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal; // 0%
+  margin: 0;
+  flex: 1;
+  text-transform: uppercase;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: #FFFFFF; // White text
+
+  @include mobile {
+    font-size: 11px;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: $spacing-16 $spacing-4;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.emptyIcon {
+  color: #CCCCCC;
+  margin: 0 auto $spacing-4;
+}
+
+.emptyTitle {
+  color: #000000;
+  margin-bottom: $spacing-3;
+  font-size: 20px;
+  font-family: $font-family-condensed; // Roboto Condensed (matches search)
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-normal; // 0% (matches search)
+}
+
+.emptyMessage {
+  color: #666666;
+  font-size: 14px;
+  font-family: $font-family-condensed; // Roboto Condensed (matches search)
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal; // 0% (matches search)
+  line-height: $line-height-relaxed;
+  margin: 0;
+}
+
+.sentinel {
+  margin-top: $spacing-6;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorState {
+  text-align: center;
+  padding: $spacing-8 $spacing-4;
+  
+  p {
+    color: #666666;
+    margin-bottom: $spacing-4;
+  }
+}
+
+.retryButton {
+  background-color: $color-primary;
+  color: #FFFFFF;
+  border: none;
+  padding: $spacing-3 $spacing-6;
+  font-size: $font-size-base;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 4px;
+  @include safe-animation(background-color $duration-base $ease-out);
+
+  &:hover {
+    background-color: darken($color-primary, 10%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 4px;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
