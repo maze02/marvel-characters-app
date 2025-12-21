@@ -26,7 +26,8 @@ describe('LocalStorageFavoritesRepository', () => {
       remove: jest.fn(),
       clear: jest.fn(),
       has: jest.fn(),
-    } as jest.Mocked<StorageAdapter>;
+      keys: jest.fn(),
+    } as unknown as jest.Mocked<StorageAdapter>;
 
     // Create repository with mock storage
     repository = new LocalStorageFavoritesRepository(mockStorage);
@@ -106,8 +107,8 @@ describe('LocalStorageFavoritesRepository', () => {
       await repository.add(new CharacterId(1011334));
       const after = Date.now();
 
-      const savedData = mockStorage.set.mock.calls[0][1];
-      const lastModified = new Date(savedData.lastModified).getTime();
+      const savedData = mockStorage.set.mock.calls[0]?.[1] as any;
+      const lastModified = new Date(savedData?.lastModified).getTime();
 
       expect(lastModified).toBeGreaterThanOrEqual(before);
       expect(lastModified).toBeLessThanOrEqual(after);
@@ -164,8 +165,8 @@ describe('LocalStorageFavoritesRepository', () => {
       await repository.remove(new CharacterId(1011334));
       const after = Date.now();
 
-      const savedData = mockStorage.set.mock.calls[0][1];
-      const lastModified = new Date(savedData.lastModified).getTime();
+      const savedData = mockStorage.set.mock.calls[0]?.[1] as any;
+      const lastModified = new Date(savedData?.lastModified).getTime();
 
       expect(lastModified).toBeGreaterThanOrEqual(before);
       expect(lastModified).toBeLessThanOrEqual(after);
@@ -201,9 +202,9 @@ describe('LocalStorageFavoritesRepository', () => {
 
       expect(result).toHaveLength(3);
       expect(result[0]).toBeInstanceOf(CharacterId);
-      expect(result[0].value).toBe(1011334);
-      expect(result[1].value).toBe(1009610);
-      expect(result[2].value).toBe(1009368);
+      expect(result[0]?.value).toBe(1011334);
+      expect(result[1]?.value).toBe(1009610);
+      expect(result[2]?.value).toBe(1009368);
     });
 
     it('should return empty array when no favorites', async () => {
@@ -321,11 +322,11 @@ describe('LocalStorageFavoritesRepository', () => {
     it('should create default data structure when clearing', async () => {
       await repository.clear();
 
-      const savedData = mockStorage.set.mock.calls[0][1];
+      const savedData = mockStorage.set.mock.calls[0]?.[1] as any;
       expect(savedData).toHaveProperty('version');
       expect(savedData).toHaveProperty('favorites');
       expect(savedData).toHaveProperty('lastModified');
-      expect(savedData.favorites).toEqual([]);
+      expect(savedData?.favorites).toEqual([]);
     });
   });
 
@@ -496,8 +497,8 @@ describe('LocalStorageFavoritesRepository', () => {
       const result = await repository.findAll();
 
       expect(result).toHaveLength(1000);
-      expect(result[0].value).toBe(1);
-      expect(result[999].value).toBe(1000);
+      expect(result[0]?.value).toBe(1);
+      expect(result[999]?.value).toBe(1000);
     });
   });
 

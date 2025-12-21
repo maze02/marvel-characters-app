@@ -5,7 +5,7 @@
  * errors, helper text, icons, user interactions, and accessibility.
  */
 
-import React, { createRef } from 'react';
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Input } from './Input';
