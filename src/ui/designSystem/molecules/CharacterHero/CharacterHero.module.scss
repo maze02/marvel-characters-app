@@ -1,0 +1,326 @@
+@import '../../tokens/index';
+
+// Design tokens - DRY principle
+$image-height-mobile: 40vh;
+$image-height-desktop: 320px;
+
+$textbox-height-mobile: 20vh;
+$textbox-height-desktop: 100px;
+
+$tablet-box-size: 278px;
+
+$desktop-horizontal-padding: 273px;
+$desktop-padding-x: 277px;
+$desktop-content-gap: 46px; // Gap between image and content
+$desktop-content-left-padding: $desktop-padding-x + $image-height-desktop + $desktop-content-gap; // Calculated: 277px + 320px + 31px = 628px
+
+$triangle-size-mobile: 24px;
+$triangle-size-tablet: 24px;
+$triangle-size-desktop: 24px;
+
+// BEM: Block
+.hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  // Tablet: horizontal layout (image left, text right)
+  @include md {
+    flex-direction: row;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  // Desktop: relative positioning for absolute image overlay
+  @include lg {
+    position: relative;
+    flex-direction: column;
+  }
+}
+
+// BEM: Element - imageSection
+.imageSection {
+  width: 100%;
+  height: $image-height-mobile;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  // Tablet: fixed size, on the left
+  @include md {
+    width: $tablet-box-size;
+    height: $tablet-box-size;
+    order: 1;
+  }
+
+  // Desktop: absolute positioned, 277px from left
+  @include lg {
+    position: absolute;
+    left: $desktop-padding-x; // 277px from left
+    top: 0;
+    width: $image-height-desktop; // 320px square
+    height: $image-height-desktop;
+    z-index: 1;
+  }
+}
+
+// BEM: Element - heroImage
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+// BEM: Element - textBox
+.textBox {
+  width: 100%;
+  height: $textbox-height-mobile;
+  background-color: #000000;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  @include safe-animation(height 0.4s $ease-in-out);
+  
+  // Mobile: triangle clip on bottom-right
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - #{$triangle-size-mobile}),
+    calc(100% - #{$triangle-size-mobile}) 100%,
+    0 100%
+  );
+
+  // BEM: Modifier - expanded
+  &.expanded {
+    height: auto;
+    min-height: $textbox-height-mobile;
+    
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - #{$triangle-size-mobile}),
+      calc(100% - #{$triangle-size-mobile}) 100%,
+      0 100%
+    );
+  }
+
+  // Tablet: side-by-side layout
+  @include md {
+    width: calc(100% - #{$tablet-box-size});
+    height: $tablet-box-size;
+    padding: 0; // No padding - content will handle spacing
+    //margin-top: 188px; // Position 188px down from top
+    order: 2;
+    justify-content: flex-start;
+    
+    // Triangle on bottom-right corner (right-hand side at bottom)
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - #{$triangle-size-tablet}),
+      calc(100% - #{$triangle-size-tablet}) 100%,
+      0 100%
+    );
+
+    &.expanded {
+      height: auto;
+      min-height: $tablet-box-size;
+      
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - #{$triangle-size-tablet}),
+        calc(100% - #{$triangle-size-tablet}) 100%,
+        0 100%
+      );
+    }
+  }
+
+  // Desktop: full width black box spanning edge to edge
+  @include lg {
+    width: 100%; // Full width, edge to edge
+    height: $image-height-desktop; // 320px height
+    padding: 0; // No padding - content will handle spacing
+    background-color: #000000; // Ensure black background
+    position: relative;
+    z-index: 0; // Behind the image
+    
+    // Triangle on bottom-right corner
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - #{$triangle-size-desktop}),
+      calc(100% - #{$triangle-size-desktop}) 100%,
+      0 100%
+    );
+
+    &.expanded {
+      height: auto;
+      min-height: $image-height-desktop;
+      
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - #{$triangle-size-desktop}),
+        calc(100% - #{$triangle-size-desktop}) 100%,
+        0 100%
+      );
+    }
+  }
+}
+
+// BEM: Element - content
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+
+  // Tablet: 47px from left and right edges, specific gap
+  @include md {
+    padding: 47px; // 47px from left and right edges
+    gap: 35px;
+  }
+
+  // Desktop: Dynamic padding based on image size and position
+  @include lg {
+    padding: 103px $desktop-padding-x 51px $desktop-content-left-padding; // Calculated from image offset + width + gap
+    gap: 28px;
+  }
+}
+
+// BEM: Element - header
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-shrink: 0;
+
+  // Tablet: ensure heart icon is 24px
+  @include md {
+    // Target the favorite button's icon
+    button svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  // Desktop: restore default size
+  @include lg {
+    button svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// BEM: Element - characterName
+.characterName {
+  font-size: 24px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-normal;
+  color: #FFFFFF;
+  line-height: 1.2;
+  flex: 1;
+
+  // Tablet: 32px Bold
+  @include md {
+    font-size: 32px;
+    font-weight: $font-weight-bold;
+  }
+
+  // Desktop: larger size
+  @include lg {
+    font-size: 40px;
+  }
+}
+
+// BEM: Element - descriptionWrapper
+.descriptionWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+// BEM: Element - description
+.description {
+  font-size: 14px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal;
+  line-height: 1.5;
+  color: #FFFFFF;
+  margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  // Note: -webkit-line-clamp is now set dynamically via useAdaptiveLineClamp hook
+
+  // Tablet
+  @include md {
+    font-size: 14px;
+  }
+
+  // Desktop
+  @include lg {
+    font-size: 16px;
+  }
+
+  // BEM: Modifier - expanded
+  &.descriptionExpanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    max-height: none;
+  }
+}
+
+// BEM: Element - toggleButton
+.toggleButton {
+  background: none;
+  border: none;
+  color: $color-primary;
+  font-size: 12px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-normal;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  flex-shrink: 0;
+  @include safe-animation(opacity $duration-fast $ease-out);
+
+  // UX: Hover state
+  &:hover {
+    opacity: 0.8;
+  }
+
+  // Accessibility: Focus state
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  // UX: Active state
+  &:active {
+    opacity: 0.6;
+  }
+
+  // Tablet: same size
+  @include md {
+    font-size: 12px;
+  }
+
+  // Desktop: slightly larger
+  @include lg {
+    font-size: 14px;
+  }
+}
