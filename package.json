@@ -59,6 +59,7 @@
     "lint-staged": "^15.5.2",
     "prettier": "^3.2.5",
     "sass": "^1.70.0",
+    "sass-embedded": "^1.97.1",
     "terser": "^5.44.1",
     "ts-jest": "^29.1.2",
     "typescript": "^5.3.3",

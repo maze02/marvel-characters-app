@@ -38,7 +38,7 @@ describe('CharacterCard', () => {
    */
   const renderCard = (props = {}) => {
     return render(
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <CharacterCard {...defaultProps} {...props} />
       </BrowserRouter>
     );

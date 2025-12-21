@@ -104,8 +104,23 @@ export class ComicVineApiClient {
     // Response interceptor - check for Comic Vine errors
     this.axios.interceptors.response.use(
       (response) => {
+        // Log response for debugging (only in development)
+        if (import.meta.env.DEV) {
+          logger.debug('API Response', {
+            url: response.config.url,
+            status: response.status,
+            error: response.data?.error,
+            status_code: response.data?.status_code,
+          });
+        }
+
         // Comic Vine returns error:"OK" on success
         if (response.data?.error && response.data.error !== 'OK') {
+          logger.warn('Comic Vine API returned error in response body', {
+            error: response.data.error,
+            status_code: response.data.status_code,
+            url: response.config.url,
+          });
           throw new ApiError(
             `Comic Vine API Error: ${response.data.error}`,
             response.data.status_code
@@ -183,10 +198,11 @@ export class ComicVineApiClient {
       this.abortControllers.delete(cacheKey);
 
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       this.abortControllers.delete(cacheKey);
       
-      if (axios.isCancel(error)) {
+      // Handle both axios.isCancel and CanceledError
+      if (axios.isCancel(error) || error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') {
         logger.debug('Request cancelled', { endpoint });
         throw new ApiError('Request was cancelled');
       }
@@ -289,6 +305,16 @@ export class ComicVineApiClient {
       return error;
     }
 
+    // Check for cancellation errors first (don't log these as errors)
+    if (
+      (error as any)?.name === 'CanceledError' || 
+      (error as any)?.code === 'ERR_CANCELED' ||
+      (error as any)?.message?.includes('canceled')
+    ) {
+      logger.debug('Request was canceled (expected behavior)');
+      return new ApiError('Request was cancelled');
+    }
+
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
         return new ApiError('Request timeout - Comic Vine API is slow or unreachable', 408, error);
@@ -318,6 +344,12 @@ export class ComicVineApiClient {
         return new ApiError('No response from Comic Vine API. Please check your internet connection.', undefined, error);
       }
     }
+
+    // Log unexpected errors for debugging
+    logger.error('Unexpected error in API client', error, {
+      errorType: error?.constructor?.name,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
 
     return new ApiError('An unexpected error occurred', undefined, error);
   }
