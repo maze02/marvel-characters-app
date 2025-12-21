@@ -1,0 +1,262 @@
+// Design tokens - DRY principle
+// Note: Tokens are automatically imported globally via Vite config
+$comic-card-width-mobile: 100px;
+$comic-card-width-tablet: 140px;
+$comic-card-width-desktop: 180px;
+$comic-card-gap: 16px;
+
+// BEM: Block
+.comicsSection {
+  padding: 0 $padding-mobile $spacing-6;
+  background-color: $color-background;
+
+  @include md {
+    padding: $padding-desktop $padding-desktop $spacing-6;
+  }
+
+  // Desktop: 273px horizontal padding
+  @include lg {
+    padding: $spacing-6 273px;
+  }
+}
+
+// BEM: Element - Section Title
+.sectionTitle {
+  font-size: 18px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-4;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-normal;
+  color: $color-text-primary;
+  
+  @include md {
+    font-size: 20px;
+    margin-bottom: $spacing-5;
+  }
+  
+  @include lg {
+    font-size: 24px;
+    padding-top: $spacing-4;
+    margin-bottom: $spacing-6;
+  }
+}
+
+// BEM: Element - Scroll Wrapper (contains scroll container and custom indicator)
+.scrollWrapper {
+  position: relative;
+}
+
+// BEM: Element - Scroll Container (handles overflow)
+.scrollContainer {
+  position: relative;
+  overflow-x: auto; // Allow horizontal scrolling
+  overflow-y: hidden; // Prevent vertical scroll
+  -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
+  margin-bottom: $spacing-2;
+  cursor: grab; // Indicate draggable content (comics area)
+  user-select: none; // Prevent text selection while dragging
+  
+  &:active {
+    cursor: grabbing; // Show grabbing when dragging comics
+  }
+  
+  // Fade indicator on right edge (shows more content is scrollable)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 40px;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+    pointer-events: none; // Allow clicking through to content
+    z-index: 1;
+    
+    @include md {
+      width: 60px;
+    }
+    
+    @include lg {
+      width: 80px;
+    }
+  }
+  
+  // Hide default scrollbar on webkit browsers since we're using custom indicator
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  // Firefox - Hide default scrollbar
+  scrollbar-width: none;
+}
+
+// BEM: Element - Custom Scroll Indicator (always visible track)
+.scrollIndicator {
+  width: 100%;
+  height: 12px; // Thicker for better visibility and clickability
+  background: $color-scrollbar-track;
+  border-radius: 6px;
+  margin-bottom: $spacing-2;
+  overflow: visible; // Allow bar to grow slightly on hover
+  cursor: pointer; // Indicate track is clickable
+  position: relative;
+  user-select: none; // Prevent text selection while dragging
+  
+  @include md {
+    height: 10px;
+    border-radius: 5px;
+  }
+}
+
+// BEM: Element - Scroll Indicator Bar (Marvel red thumb)
+.scrollIndicatorBar {
+  height: 100%;
+  width: 30%; // Default width, will be updated via JS scroll event
+  background: $color-scrollbar-thumb;
+  border-radius: 6px;
+  transition: background 0.2s ease-out, scale 0.2s ease-out;
+  will-change: transform; // Optimize for JS-controlled transform animations
+  cursor: pointer; // Standard pointer cursor like native scrollbars
+  
+  @include md {
+    border-radius: 5px;
+  }
+  
+  // Hover state - brighter red and slightly taller
+  // Using 'scale' property instead of 'transform' to avoid conflicts with JS translateX
+  &:hover {
+    background: $color-scrollbar-thumb-hover;
+    scale: 1 1.1;
+  }
+  
+  // Active/dragging state - darkest red
+  &:active {
+    background: $color-scrollbar-thumb-active;
+    scale: 1 1.15;
+  }
+}
+
+// BEM: Element - Comics Track (horizontal layout)
+.comicsTrack {
+  display: flex;
+  gap: $comic-card-gap;
+  width: max-content; // Ensure track is wider than container for scroll
+  min-width: 100%; // Force at least container width
+  padding-bottom: 2px; // Prevent scrollbar from cutting off content
+  user-select: none; // Prevent text selection while dragging
+  -webkit-user-drag: none; // Prevent drag on webkit
+  
+  @include md {
+    gap: 20px;
+  }
+  
+  @include lg {
+    gap: 24px;
+  }
+}
+
+// BEM: Element - Comic Card
+.comicCard {
+  flex-shrink: 0; // Prevent cards from shrinking
+  width: $comic-card-width-mobile;
+  user-select: none; // Prevent text selection
+  -webkit-user-drag: none; // Prevent drag on webkit
+  @include safe-animation(transform $duration-fast $ease-out);
+  
+  @include md {
+    width: $comic-card-width-tablet;
+  }
+  
+  @include lg {
+    width: $comic-card-width-desktop;
+  }
+}
+
+// BEM: Element - Comic Image Wrapper
+.comicImageWrapper {
+  display: block;
+  width: 100%;
+  margin-bottom: $spacing-2;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  //@include safe-animation(box-shadow $duration-fast $ease-out);
+  
+  .comicCard:hover & {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// BEM: Element - Comic Image
+.comicImage {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+  user-select: none; // Prevent selection
+  -webkit-user-drag: none; // Prevent drag on webkit
+  pointer-events: none; // Prevent default image interactions
+}
+
+// BEM: Element - Comic Info Container
+.comicInfo {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-1;
+}
+
+// BEM: Element - Comic Title
+.comicTitle {
+  font-size: 12px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal;
+  line-height: 1.3;
+  color: $color-text-primary;
+  margin: 0;
+  
+  // Multi-line ellipsis
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  @include md {
+    font-size: 13px;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  
+  @include lg {
+    font-size: 14px;
+  }
+}
+
+// BEM: Element - Comic Date
+.comicDate {
+  font-size: 10px;
+  font-family: $font-family-condensed;
+  letter-spacing: $letter-spacing-normal;
+  color: $color-text-secondary;
+  margin: 0;
+  
+  @include md {
+    font-size: 11px;
+  }
+  
+  @include lg {
+    font-size: 12px;
+  }
+}
+
+// BEM: Element - Empty Message
+.emptyMessage {
+  font-size: 14px;
+  font-family: $font-family-condensed;
+  color: $color-gray-500;
+  margin: 0;
+  padding: $spacing-4 0;
+}
