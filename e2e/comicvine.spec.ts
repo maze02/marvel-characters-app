@@ -90,7 +90,7 @@ test.describe('Comic Vine API Integration - E2E', () => {
     await firstCardFavoriteBtn.click();
 
     // Favorites count should appear and be 1
-    const favoritesCount = page.locator('.favoritesCount');
+    const favoritesCount = page.locator('[data-testid="favorites-count"]');
     await expect(favoritesCount).toBeVisible();
     await expect(favoritesCount).toHaveText('1');
   });
@@ -109,7 +109,7 @@ test.describe('Comic Vine API Integration - E2E', () => {
     await firstCardFavoriteBtn.click();
 
     // Favorites count should be 0 or hidden
-    const favoritesCount = page.locator('.favoritesCount');
+    const favoritesCount = page.locator('[data-testid="favorites-count"]');
     const isVisible = await favoritesCount.isVisible().catch(() => false);
     expect(isVisible).toBe(false);
   });
@@ -183,7 +183,7 @@ test.describe('Comic Vine API Integration - E2E', () => {
     await page.waitForSelector('[data-testid="character-card"]', { timeout: 10000 });
 
     // Favorites count should still be 1
-    const favoritesCount = page.locator('.favoritesCount');
+    const favoritesCount = page.locator('[data-testid="favorites-count"]');
     await expect(favoritesCount).toBeVisible();
     await expect(favoritesCount).toHaveText('1');
   });

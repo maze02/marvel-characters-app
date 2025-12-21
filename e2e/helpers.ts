@@ -28,7 +28,7 @@ export const SELECTORS = {
   // Navigation
   logo: '[data-testid="logo"]',
   favoritesButton: 'header button[aria-label*="favorites"]',
-  favoritesCount: '.favoritesCount',
+  favoritesCount: '[data-testid="favorites-count"]',
   backButton: 'a[href="/"]',
   
   // Page elements
