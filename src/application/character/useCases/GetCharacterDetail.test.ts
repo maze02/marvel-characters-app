@@ -32,6 +32,8 @@ describe('GetCharacterDetail', () => {
       findById: jest.fn(),
       searchByName: jest.fn(),
       list: jest.fn(),
+      findMany: jest.fn(),
+      getComics: jest.fn(),
     } as jest.Mocked<CharacterRepository>;
 
     useCase = new GetCharacterDetail(mockRepository);
@@ -53,8 +55,8 @@ describe('GetCharacterDetail', () => {
         await useCase.execute(1009610);
 
         expect(mockRepository.findById).toHaveBeenCalledWith(expect.any(CharacterId));
-        const receivedId = mockRepository.findById.mock.calls[0][0];
-        expect(receivedId.value).toBe(1009610);
+        const receivedId = mockRepository.findById.mock.calls[0]?.[0];
+        expect(receivedId?.value).toBe(1009610);
       });
 
       it('should handle different character IDs', async () => {
@@ -200,13 +202,13 @@ describe('GetCharacterDetail', () => {
         await useCase.execute(1009610);
 
         expect(mockRepository.findById).toHaveBeenCalledTimes(2);
-        const call1 = mockRepository.findById.mock.calls[0][0];
-        const call2 = mockRepository.findById.mock.calls[1][0];
+        const call1 = mockRepository.findById.mock.calls[0]?.[0];
+        const call2 = mockRepository.findById.mock.calls[1]?.[0];
         
         // Different instances
         expect(call1).not.toBe(call2);
         // But same value
-        expect(call1.value).toBe(call2.value);
+        expect(call1?.value).toBe(call2?.value);
       });
     });
 

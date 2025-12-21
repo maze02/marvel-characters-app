@@ -109,7 +109,6 @@ describe('StorageAdapter', () => {
     });
 
     it('should include original error in StorageError', () => {
-      const originalError = new Error('Parse error');
       (mockStorage.getItem as jest.Mock).mockReturnValue('invalid{json}');
 
       try {

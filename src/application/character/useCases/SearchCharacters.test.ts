@@ -48,6 +48,8 @@ describe('SearchCharacters', () => {
       searchByName: jest.fn(),
       findById: jest.fn(),
       list: jest.fn(),
+      findMany: jest.fn(),
+      getComics: jest.fn(),
     } as jest.Mocked<CharacterRepository>;
 
     useCase = new SearchCharacters(mockRepository);
@@ -134,9 +136,9 @@ describe('SearchCharacters', () => {
         const result = await useCase.execute('Spider');
 
         expect(result.characters).toHaveLength(3);
-        expect(result.characters[0].name.value).toBe('Spider-Man');
-        expect(result.characters[1].name.value).toBe('Spider-Woman');
-        expect(result.characters[2].name.value).toBe('Spider-Girl');
+        expect(result.characters[0]?.name.value).toBe('Spider-Man');
+        expect(result.characters[1]?.name.value).toBe('Spider-Woman');
+        expect(result.characters[2]?.name.value).toBe('Spider-Girl');
       });
 
       it('should return correct count', async () => {
@@ -191,7 +193,7 @@ describe('SearchCharacters', () => {
         const result = await useCase.execute('Spider', { useContainsFilter: true });
 
         expect(result.characters).toHaveLength(1);
-        expect(result.characters[0].name.value).toBe('Spider-Man');
+        expect(result.characters[0]?.name.value).toBe('Spider-Man');
         expect(character1.matchesSearch).toHaveBeenCalledWith('Spider');
         expect(character2.matchesSearch).toHaveBeenCalledWith('Spider');
       });
