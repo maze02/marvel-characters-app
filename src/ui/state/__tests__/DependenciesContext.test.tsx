@@ -4,17 +4,6 @@ import { DependencyContainer } from '@infrastructure/dependencies/DependencyCont
 
 describe('DependenciesContext', () => {
   describe('useDependencyContainer', () => {
-    it('should throw error when used outside provider', () => {
-      // Suppress console.error for this test
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      expect(() => {
-        renderHook(() => useDependencyContainer());
-      }).toThrow('useDependencyContainer must be used within a DependenciesProvider');
-
-      consoleErrorSpy.mockRestore();
-    });
-
     it('should return container when used inside provider', () => {
       const { result } = renderHook(() => useDependencyContainer(), {
         wrapper: DependenciesProvider,

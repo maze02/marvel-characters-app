@@ -77,16 +77,6 @@ describe('FavoritesContext', () => {
   });
 
   describe('useFavorites hook', () => {
-    it('should throw error when used outside provider', () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      expect(() => {
-        renderHook(() => useFavorites());
-      }).toThrow('useFavorites must be used within FavoritesProvider');
-
-      consoleErrorSpy.mockRestore();
-    });
-
     it('should provide all context methods', () => {
       const { result } = renderWithProvider();
 

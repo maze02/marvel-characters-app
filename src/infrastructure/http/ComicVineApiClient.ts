@@ -4,6 +4,26 @@ import { API } from '@config/constants';
 import { logger } from '@infrastructure/logging/Logger';
 
 /**
+ * Check if running in development mode
+ * Works in both Vite (import.meta) and Jest (process.env)
+ */
+const isDevelopment = (): boolean => {
+  // Check if we're in a test environment first (Jest)
+  if (process.env.NODE_ENV === 'test') {
+    return false; // Don't log in tests
+  }
+  
+  // Check for Vite dev mode (use eval to avoid Jest parsing import.meta)
+  try {
+    // eslint-disable-next-line no-eval
+    return eval('typeof import.meta !== "undefined" && import.meta.env?.DEV') === true;
+  } catch {
+    // Fallback to Node environment check
+    return process.env.NODE_ENV === 'development';
+  }
+};
+
+/**
  * Cached response with timestamp
  */
 interface CachedResponse<T> {
@@ -105,7 +125,7 @@ export class ComicVineApiClient {
     this.axios.interceptors.response.use(
       (response) => {
         // Log response for debugging (only in development)
-        if (import.meta.env.DEV) {
+        if (isDevelopment()) {
           logger.debug('API Response', {
             url: response.config.url,
             status: response.status,
