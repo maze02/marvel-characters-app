@@ -1,0 +1,74 @@
+@import '../../designSystem/tokens/index';
+
+.banner {
+  background-color: #FFF3CD;
+  color: #856404;
+  border-bottom: 1px solid #FFE69C;
+  z-index: 999;
+}
+
+.content {
+  padding: $spacing-2 $padding-mobile;
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+
+  @include mobile {
+    flex-wrap: wrap;
+  }
+
+  @include md {
+    padding: $spacing-2 $padding-desktop;
+  }
+}
+
+.icon {
+  font-size: $font-size-base;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.message {
+  flex: 1;
+  margin: 0;
+  font-size: $font-size-sm;
+  font-family: $font-family-condensed; // Roboto Condensed (consistent typography)
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal; // 0% (consistent)
+
+  a {
+    color: #856404;
+    text-decoration: underline;
+    font-weight: $font-weight-semibold;
+
+    &:hover {
+      color: #533f03;
+    }
+  }
+
+  @include mobile {
+    font-size: 12px;
+  }
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #856404;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: $spacing-1;
+  flex-shrink: 0;
+  @include safe-animation(opacity $duration-fast $ease-out);
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #856404;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}

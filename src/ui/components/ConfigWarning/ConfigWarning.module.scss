@@ -1,0 +1,80 @@
+@import '../../designSystem/tokens/index';
+
+.warning {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $color-background;
+  padding: $spacing-6;
+}
+
+.content {
+  max-width: 600px;
+  background-color: $color-surface;
+  padding: $spacing-8;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-xl;
+  color: $color-text-primary;
+
+  h1 {
+    font-size: $font-size-2xl;
+    margin-bottom: $spacing-4;
+    color: $color-warning;
+  }
+
+  p {
+    margin-bottom: $spacing-4;
+    line-height: $line-height-relaxed;
+  }
+
+  a {
+    color: $color-primary;
+    text-decoration: underline;
+
+    &:hover {
+      color: $color-primary-light;
+    }
+  }
+
+  code {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: $border-radius-sm;
+    font-family: $font-family-mono;
+    font-size: $font-size-sm;
+    color: $color-primary-light;
+  }
+}
+
+.steps {
+  margin: $spacing-4 0;
+  padding-left: $spacing-6;
+
+  li {
+    margin-bottom: $spacing-2;
+    line-height: $line-height-relaxed;
+  }
+}
+
+.example {
+  margin-top: $spacing-6;
+  padding: $spacing-4;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: $border-radius-base;
+  border-left: 4px solid $color-primary;
+
+  p {
+    margin-bottom: $spacing-2;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-sm;
+  }
+
+  pre {
+    font-family: $font-family-mono;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    margin: 0;
+    overflow-x: auto;
+  }
+}
