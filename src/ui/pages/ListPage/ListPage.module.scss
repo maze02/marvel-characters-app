@@ -1,4 +1,4 @@
-@import '../../designSystem/tokens/index';
+@use "sass:color";
 
 .main {
   // Matches header padding exactly for perfect edge alignment
@@ -270,7 +270,7 @@
   @include safe-animation(background-color $duration-base $ease-out);
 
   &:hover {
-    background-color: darken($color-primary, 10%);
+    background-color: color.adjust($color-primary, $lightness: -10%);
   }
 
   &:focus-visible {

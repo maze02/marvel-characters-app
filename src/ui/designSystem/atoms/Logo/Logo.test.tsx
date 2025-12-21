@@ -14,7 +14,7 @@ describe('Logo', () => {
    */
   const renderLogo = (props = {}) => {
     return render(
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Logo {...props} />
       </BrowserRouter>
     );
