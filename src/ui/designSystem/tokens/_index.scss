@@ -1,48 +1,15 @@
 /**
  * Design Tokens Index
  * 
- * Central import file for all design tokens.
- * Import this file in components to access all tokens.
+ * Central export file for all design tokens.
+ * Use this file in components to access all tokens.
  */
 
-@import './colors';
-@import './typography';
-@import './spacing';
-@import './breakpoints';
-@import './shadows';
-@import './animations';
-
-/**
- * Global border radius tokens
- */
-$border-radius-sm: 4px;
-$border-radius-base: 8px;
-$border-radius-md: 12px;
-$border-radius-lg: 16px;
-$border-radius-full: 9999px;
-
-:root {
-  --border-radius-sm: #{$border-radius-sm};
-  --border-radius-base: #{$border-radius-base};
-  --border-radius-md: #{$border-radius-md};
-  --border-radius-lg: #{$border-radius-lg};
-  --border-radius-full: #{$border-radius-full};
-}
-
-/**
- * Z-index scale
- */
-$z-index-dropdown: 1000;
-$z-index-sticky: 1020;
-$z-index-fixed: 1030;
-$z-index-modal-backdrop: 1040;
-$z-index-modal: 1050;
-$z-index-popover: 1060;
-$z-index-tooltip: 1070;
-
-:root {
-  --z-index-dropdown: #{$z-index-dropdown};
-  --z-index-sticky: #{$z-index-sticky};
-  --z-index-fixed: #{$z-index-fixed};
-  --z-index-modal: #{$z-index-modal};
-}
+@forward './colors';
+@forward './typography';
+@forward './spacing';
+@forward './breakpoints';
+@forward './shadows';
+@forward './animations';
+@forward './borders';
+@forward './zindex';

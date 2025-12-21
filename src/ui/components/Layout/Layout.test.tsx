@@ -34,7 +34,7 @@ describe('Layout', () => {
    */
   const renderLayout = (props = {}) => {
     return render(
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Layout {...props}>
           <div data-testid="test-content">Test Content</div>
         </Layout>

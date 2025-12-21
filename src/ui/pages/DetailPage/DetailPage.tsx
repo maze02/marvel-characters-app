@@ -85,7 +85,7 @@ export const DetailPage: React.FC = () => {
         }
         
         // Ignore cancellation errors - don't show error state
-        if (error?.message?.includes('cancelled') || error?.name === 'CancelledError') {
+        if (error?.message?.includes('cancelled') || error?.name === 'CanceledError' || error?.message?.includes('canceled')) {
           logger.debug('Request was cancelled, ignoring error', { characterId: id });
           return;
         }

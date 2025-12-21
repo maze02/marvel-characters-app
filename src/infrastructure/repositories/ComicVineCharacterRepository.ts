@@ -113,7 +113,7 @@ export class ComicVineCharacterRepository implements CharacterRepository {
       }
       
       // Don't log cancellation errors as they're expected during navigation/cleanup
-      if (error?.message?.includes('cancelled')) {
+      if (error?.message?.includes('cancelled') || error?.message?.includes('canceled') || error?.name === 'CanceledError') {
         logger.debug('Request cancelled (expected during navigation)', { characterId: id.value });
         throw error; // Still throw so the caller can handle it
       }
