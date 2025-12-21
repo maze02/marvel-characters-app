@@ -28,6 +28,7 @@ export const DetailPage: React.FC = () => {
   const [character, setCharacter] = useState<Character | null>(null);
   const [comics, setComics] = useState<Comic[]>([]);
   const [loadingState, setLoadingState] = useState<LoadingState>('loading');
+  const [comicsLoading, setComicsLoading] = useState(true);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { startLoading, stopLoading } = useLoading();
 
@@ -64,14 +65,17 @@ export const DetailPage: React.FC = () => {
         
         // Load comics separately (optional - don't fail page if this errors)
         try {
+          setComicsLoading(true);
           const comicsData = await listCharacterComics.execute(Number(id), COMICS.DEFAULT_DETAIL_PAGE_LIMIT);
           if (!isCancelled) {
             setComics(comicsData);
+            setComicsLoading(false);
           }
         } catch (comicsError) {
           logger.warn('Failed to load comics, continuing anyway', { characterId: id, error: comicsError });
           if (!isCancelled) {
             setComics([]); // Empty array if comics fail
+            setComicsLoading(false);
           }
         }
       } catch (error: any) {
@@ -148,7 +152,7 @@ export const DetailPage: React.FC = () => {
           {...(character.hasDescription() && { description: character.description })}
         />
 
-        <ComicsHorizontalScroll comics={comics} showEmptyState />
+        <ComicsHorizontalScroll comics={comics} showEmptyState loading={comicsLoading} />
       </div>
     </Layout>
   );

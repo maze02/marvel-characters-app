@@ -6,6 +6,7 @@ interface ComicsHorizontalScrollProps {
   comics: Comic[];
   title?: string;
   showEmptyState?: boolean;
+  loading?: boolean;
 }
 
 /**
@@ -21,7 +22,8 @@ interface ComicsHorizontalScrollProps {
 export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({ 
   comics, 
   title = 'COMICS',
-  showEmptyState = false
+  showEmptyState = false,
+  loading = false
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const indicatorBarRef = useRef<HTMLDivElement>(null);
@@ -260,6 +262,16 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
       scrollContainer.removeEventListener('mouseleave', handleContentMouseUp);
     };
   }, [comics]);
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <section className={styles.comicsSection}>
+        <h2 className={styles.sectionTitle}>{title}</h2>
+        <p className={styles.emptyMessage}>Loading comics...</p>
+      </section>
+    );
+  }
 
   // Handle empty state
   if (!comics || comics.length === 0) {
