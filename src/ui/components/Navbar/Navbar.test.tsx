@@ -38,7 +38,7 @@ describe('Navbar', () => {
    */
   const renderNavbar = (props = {}) => {
     return render(
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar {...props} />
       </BrowserRouter>
     );

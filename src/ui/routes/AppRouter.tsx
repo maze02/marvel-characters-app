@@ -69,10 +69,16 @@ const RouterContent: React.FC = () => {
  * Application Router
  * 
  * Defines all application routes and page components with loading state management.
+ * Opts into React Router v7 future flags for forward compatibility.
  */
 export const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <LoadingProvider>
         <RouterContent />
       </LoadingProvider>

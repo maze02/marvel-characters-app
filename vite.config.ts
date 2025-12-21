@@ -25,7 +25,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "./src/ui/designSystem/tokens/_index.scss";`,
+        additionalData: `@use "@ui/designSystem/tokens/index" as *;`,
+        api: 'modern-compiler', // Use modern Sass API (sass-embedded)
       },
     },
   },
