@@ -1,0 +1,223 @@
+@import '../../designSystem/tokens/index';
+
+.main {
+  padding: 20px $padding-mobile;
+
+  @include md {
+    padding: 20px $padding-desktop;
+  }
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-normal;
+  margin: 0 0 $spacing-6 0;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.searchContainer {
+  margin-bottom: $spacing-4;
+}
+
+.resultsCount {
+  font-size: 12px;
+  font-family: $font-family-condensed;
+  color: #AAAAAA;
+  letter-spacing: $letter-spacing-normal;
+  margin: $spacing-4 0;
+  font-weight: $font-weight-medium;
+  text-transform: uppercase;
+}
+
+.grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+  
+  @include md {
+    grid-template-columns: repeat(auto-fit, 172.5px);
+    gap: 16px;
+  }
+
+  @include lg {
+    grid-template-columns: repeat(auto-fit, 188.571px);
+    gap: 19px;
+  }
+}
+
+.card {
+  background-color: #000000;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 189.97px;
+  
+  @include md {
+    width: 172.5px;
+    height: 245.97px;
+  }
+  
+  @include lg {
+    width: 188.571px;
+    height: 245.97px;
+  }
+  
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 12.857px),
+    calc(100% - 12.857px) 100%,
+    0 100%
+  );
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.cardImage {
+  flex: 1;
+  overflow: hidden;
+  background-color: #1a1a1a;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: none;
+    transition: none;
+  }
+}
+
+.cardFooter {
+  background-color: #000000;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+.cardAccent {
+  width: 100%;
+  height: 5.37857px;
+  background-color: #EC1D24;
+  flex-shrink: 0;
+  @include safe-animation(all $duration-base $ease-out);
+}
+
+.cardLink:hover .cardAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  z-index: 0;
+}
+
+.cardContent {
+  padding: 12px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  
+  @include mobile {
+    padding: 10px 8px;
+  }
+  
+  @include md {
+    padding: 14px 8px;
+  }
+}
+
+.cardLink:hover {
+  button[aria-pressed="true"] {
+    color: #FFFFFF !important;
+  }
+}
+
+.cardTitle {
+  font-size: 12px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal;
+  margin: 0;
+  flex: 1;
+  text-transform: uppercase;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: #FFFFFF;
+
+  @include mobile {
+    font-size: 11px;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: $spacing-16 $spacing-4;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.emptyIcon {
+  color: #CCCCCC;
+  margin: 0 auto $spacing-4;
+}
+
+.emptyTitle {
+  color: #000000;
+  margin-bottom: $spacing-3;
+  font-size: 20px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-normal;
+}
+
+.emptyMessage {
+  color: #666666;
+  font-size: 14px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal;
+  line-height: $line-height-relaxed;
+  margin: 0;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
