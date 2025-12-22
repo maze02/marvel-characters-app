@@ -1,65 +1,8 @@
 /**
- * Vercel Serverless Function - Comic Vine API Proxy
- * 
- * This proxy solves CORS issues by making API requests server-side
- * where CORS restrictions don't apply.
+ * Compatibility wrapper for Vercel routing.
+ *
+ * Some deployments end up routing `/api/proxy` to `api/proxy.js` instead of
+ * `api/proxy/index.js`. Export the same handler so both are guaranteed to work.
  */
+module.exports = require("./proxy/index");
 
-module.exports = async (req, res) => {
-  // Enable CORS for your frontend
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // Only allow GET requests
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  try {
-    // Get the target URL from query params
-    const { url } = req.query;
-
-    if (!url) {
-      return res.status(400).json({ error: 'Missing url parameter' });
-    }
-
-    // Decode the URL
-    const targetUrl = decodeURIComponent(url);
-
-    // Validate it's a Comic Vine URL (security)
-    if (!targetUrl.startsWith('https://comicvine.gamespot.com/api/')) {
-      return res.status(403).json({ error: 'Invalid API endpoint' });
-    }
-
-    // Make the request server-side (no CORS!)
-    const response = await fetch(targetUrl, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Marvel-Characters-App/1.0',
-      },
-    });
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        error: `Comic Vine API error: ${response.statusText}`,
-      });
-    }
-
-    const data = await response.json();
-
-    // Return the data
-    return res.status(200).json(data);
-  } catch (error) {
-    console.error('Proxy error:', error);
-    return res.status(500).json({
-      error: 'Failed to fetch from Comic Vine API',
-      message: error.message,
-    });
-  }
-};
