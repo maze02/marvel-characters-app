@@ -1,8 +1,11 @@
 /**
  * Vercel Serverless Function - Comic Vine API Proxy
  *
- * This proxy solves CORS issues by making API requests server-side
- * where browser CORS restrictions don't apply.
+ * IMPORTANT:
+ * - This repo uses `"type": "module"`, so Vercel functions should be ESM.
+ * - Use `export default` (not `module.exports`) to avoid runtime crashes.
+ *
+ * This proxy solves CORS issues by making API requests server-side.
  */
 function decodeRepeatedly(value) {
   // Axios (and some clients) may double-encode query params.
@@ -24,7 +27,7 @@ function getSingle(value) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // Enable CORS for your frontend (not strictly needed for same-origin calls,
   // but helpful for debugging and future reuse).
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -64,7 +67,11 @@ module.exports = async (req, res) => {
           .json({ error: "Missing endpoint parameter (or legacy url parameter)" });
       }
 
-      const apiKey = process.env.COMICVINE_API_KEY;
+      // Recommended: COMICVINE_API_KEY (server-only)
+      // Temporary fallback: VITE_COMICVINE_API_KEY (already configured in your project,
+      // but it is NOT secure to expose to the browser bundle).
+      const apiKey =
+        process.env.COMICVINE_API_KEY || process.env.VITE_COMICVINE_API_KEY;
       if (!apiKey) {
         return res.status(500).json({
           error:
@@ -114,4 +121,4 @@ module.exports = async (req, res) => {
       message: error?.message ?? String(error),
     });
   }
-};
+}
