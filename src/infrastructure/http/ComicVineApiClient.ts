@@ -126,7 +126,8 @@ export class ComicVineApiClient {
         const fullUrl = `https://comicvine.gamespot.com/api${requestConfig.url}?${params.toString()}`;
         // Replace the entire URL with just the proxy endpoint
         requestConfig.url = "/api/proxy";
-        requestConfig.params = { url: encodeURIComponent(fullUrl) };
+        // Let Axios encode query params ONCE (avoids double-encoding).
+        requestConfig.params = { url: fullUrl };
       } else {
         // In development, add params directly
         requestConfig.params = {
