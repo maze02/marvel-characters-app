@@ -11,15 +11,15 @@ A modern, production-ready React application for browsing Marvel characters usin
 
 ## ✨ Features
 
-- 🦸 **Browse Characters**: Infinite scroll through Marvel's extensive character catalog
-- 🔍 **Real-time Search**: Debounced search with instant results
+- 🦸 **Browse Characters**: Load 50 characters initially with infinite scroll
+- 🔍 **Real-time Search**: Debounced search (300ms) with API filtering
 - ❤️ **Favorites System**: Save favorite characters with localStorage persistence
-- 📚 **Character Details**: View character information and associated comics
+- 📚 **Character Details**: View character information and first 20 comics
 - 📱 **Fully Responsive**: Optimized for mobile, tablet, and desktop
 - ♿ **Accessibility First**: WCAG compliant with ARIA labels and semantic HTML
-- 🎨 **Design System**: Atomic design pattern with reusable components
+- 🎨 **Design System**: Atomic design pattern with reusable components and design tokens
 - 🏗️ **Clean Architecture**: Separation of concerns with DDD principles
-- ✅ **Comprehensive Testing**: Unit, integration, and E2E tests
+- ✅ **Comprehensive Testing**: Unit, integration, and E2E tests with Jest + Testing Library + Playwright
 - 🔄 **UX Optimizations**: Proper loading states, error handling, and smooth transitions
 
 ## 🚀 Getting Started
@@ -45,14 +45,17 @@ VITE_COMICVINE_API_KEY=your_api_key_here
 ### Running the App
 
 ```bash
-# Development mode
+# Development mode (assets not minimized, can be concatenated)
 npm run dev
 
-# Production build
+# Production build (assets concatenated and minimized)
 npm run build
 
-# Preview production build
+# Preview production build locally
 npm run preview
+
+# Development build (for testing production-like environment)
+npm run build:dev
 ```
 
 ### Testing
@@ -64,8 +67,17 @@ npm test
 # Run tests in watch mode
 npm run test:watch
 
-# Run E2E tests
+# Run tests with coverage
+npm run test:coverage
+
+# Run E2E tests (Playwright)
 npm run test:e2e
+
+# Run E2E tests with UI (interactive mode)
+npm run test:e2e:ui
+
+# Run E2E tests in headed browser (see what's happening)
+npm run test:e2e:headed
 
 # Type checking
 npm run typecheck
@@ -102,15 +114,25 @@ Built with **Atomic Design** methodology:
 
 ### Design Tokens
 
-Centralized design tokens for consistency:
-- Colors, Typography, Spacing, Shadows, Breakpoints
+Centralized design tokens for consistency and maintainability:
+- **Colors**: Semantic color tokens (primary, text, background, etc.)
+- **Typography**: Font families, sizes, weights, line heights
+- **Spacing**: Consistent spacing scale
+- **Shadows**: Elevation system
+- **Breakpoints**: Responsive breakpoints for mobile, tablet, desktop
+- **Dimensions**: Reusable dimension values
+- **Utility Mixins**: Common patterns (flex-center, focus-outline, triangle-clip, etc.)
 
 ## 🧪 Testing Strategy
 
 - **Unit Tests**: Jest + Testing Library for components and business logic
 - **Integration Tests**: Full feature testing with mocked dependencies
-- **E2E Tests**: Playwright for critical user flows
-- **Test Coverage**: 29/31 test suites passing
+- **E2E Tests**: Playwright with 13 comprehensive tests covering:
+  - Character listing and search functionality
+  - Favorites management (add, remove, persist)
+  - Character detail page and comics display
+  - Navigation and user flows
+- **Test Coverage**: Comprehensive coverage for domain, application, and UI layers
 
 ## 🔄 UX Improvements
 
@@ -126,12 +148,13 @@ Recent UX enhancements for better user experience:
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Routing**: React Router v6
-- **Styling**: SCSS Modules, Custom Design System
-- **State Management**: React Context API
-- **Testing**: Jest, Testing Library, Playwright
+- **Styling**: SCSS Modules with BEM methodology, Custom Design System with CSS variables
+- **State Management**: React Context API (FavoritesContext, DependenciesContext, LoadingContext)
+- **Testing**: Jest, Testing Library, Playwright (E2E tests fully implemented)
 - **Code Quality**: ESLint, Prettier, Husky, lint-staged
-- **API**: Comic Vine API integration
+- **API**: Comic Vine API integration with server-side proxy for production
 - **Storage**: localStorage for favorites persistence
+- **Build**: Vite with separate development and production modes
 
 ## 📝 Code Quality
 
@@ -149,36 +172,55 @@ git commit --no-verify
 
 ## 🌐 API Configuration
 
-This app uses the [Comic Vine API](https://comicvine.gamespot.com/api/):
+This app uses the [Comic Vine API](https://comicvine.gamespot.com/api/) for Marvel character data:
 
-1. Create an account at Comic Vine
-2. Generate an API key
-3. Add to `.env`: `VITE_COMICVINE_API_KEY=your_key`
+1. Create an account at [Comic Vine](https://comicvine.gamespot.com/api/)
+2. Generate an API key (minimum 40 characters)
+3. Add to `.env` file:
+   ```bash
+   VITE_COMICVINE_API_KEY=your_api_key_here
+   ```
+
+**Production Note**: For production deployments (e.g., Vercel), use server-side environment variable `COMICVINE_API_KEY` instead of `VITE_COMICVINE_API_KEY` to keep the API key secure and out of the browser bundle.
 
 ## 📦 Project Structure
 
 ```
 ├── src/
 │   ├── domain/             # Domain entities and business rules
-│   ├── application/        # Use cases and DTOs
-│   ├── infrastructure/     # API clients, repositories, DI
-│   ├── ui/                 # React components and pages
-│   ├── config/             # App configuration
-│   └── tests/              # Test utilities and mocks
-├── e2e/                    # Playwright E2E tests
-├── public/                 # Static assets
-└── .storybook/             # Storybook configuration
+│   ├── application/       # Use cases and DTOs
+│   ├── infrastructure/      # API clients, repositories, DI
+│   ├── ui/                  # React components and pages
+│   ├── config/              # App configuration
+│   └── tests/               # Test utilities and mocks
+├── e2e/                     # End-to-end tests (Playwright)
+│   ├── helpers.ts           # E2E test utilities and helpers
+│   └── *.spec.ts            # E2E test suites
+├── api/                     # Vercel serverless functions (API proxy)
+├── public/                  # Static assets
+└── .storybook/              # Storybook configuration
 ```
 
 ## 🚢 Deployment
+
+The app is configured for deployment on Vercel with serverless API proxy:
 
 ```bash
 # Build for production
 npm run build
 
-# Output in dist/ folder ready for deployment
-# Compatible with Vercel, Netlify, GitHub Pages, etc.
+# Deploy to Vercel production
+npm run deploy
+
+# Deploy to Vercel preview
+npm run deploy:preview
 ```
+
+**Output**: The `dist/` folder contains optimized, minified assets ready for deployment.
+
+**Compatible with**: Vercel (recommended), Netlify, GitHub Pages, Cloudflare Pages, etc.
+
+**Note**: For production, ensure `COMICVINE_API_KEY` is set as a server-side environment variable in your hosting platform.
 
 ## 👨‍💻 Development
 
