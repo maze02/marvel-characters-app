@@ -24,12 +24,16 @@ export class ComicVineCharacterMapper {
    * @returns Character domain entity
    */
   static toDomain(response: ComicVineCharacterResponse): Character {
+    // Extract issue IDs from issue_credits (if available)
+    const issueIds = response.issue_credits?.map(credit => credit.id) || [];
+
     return new Character({
       id: new CharacterId(response.id),
       name: new CharacterName(response.name),
       description: this.cleanHtmlDescription(response.description || response.deck),
       thumbnail: this.createImageUrl(response.image),
       modifiedDate: new Date(response.date_last_updated),
+      issueIds, // Include issue IDs for efficient comic fetching
     });
   }
 
@@ -86,11 +90,17 @@ export class ComicVineCharacterMapper {
     }
 
     // Comic Vine returns complete URLs: https://comicvine.gamespot.com/a/uploads/scale_medium/11/11111/123456-file.jpg
-    // We need to store the complete URL minus the extension, since ImageUrl adds it back
+    // Some URLs don't have extensions (e.g., ending with -latest), so we handle that
     const lastDotIndex = url.lastIndexOf('.');
-    const extension = url.substring(lastDotIndex + 1) || 'jpg';
-    const pathWithoutExtension = url.substring(0, lastDotIndex);
-
-    return new ImageUrl(pathWithoutExtension, extension);
+    
+    // Check if there's a valid extension (after last dot, should be 3-4 chars)
+    if (lastDotIndex > 0 && url.length - lastDotIndex <= 5) {
+      const extension = url.substring(lastDotIndex + 1);
+      const pathWithoutExtension = url.substring(0, lastDotIndex);
+      return new ImageUrl(pathWithoutExtension, extension);
+    }
+    
+    // No extension found, use URL as-is and default to jpg
+    return new ImageUrl(url, 'jpg');
   }
 }

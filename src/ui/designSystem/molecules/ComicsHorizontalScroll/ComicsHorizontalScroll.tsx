@@ -7,6 +7,18 @@ interface ComicsHorizontalScrollProps {
   title?: string;
   showEmptyState?: boolean;
   loading?: boolean;
+  /**
+   * Whether there are more comics available to load
+   */
+  hasMore?: boolean;
+  /**
+   * Whether currently loading more comics
+   */
+  loadingMore?: boolean;
+  /**
+   * Callback to load more comics when scrolling to the end
+   */
+  onLoadMore?: () => void;
 }
 
 /**
@@ -23,11 +35,35 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
   comics, 
   title = 'COMICS',
   showEmptyState = false,
-  loading = false
+  loading = false,
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const indicatorBarRef = useRef<HTMLDivElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
+
+  // Infinite scroll detection
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || !hasMore || !onLoadMore) return;
+
+    const handleScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
+      const scrollPercentage = (scrollLeft + clientWidth) / scrollWidth;
+      
+      // Trigger load more when scrolled to 80% (configurable threshold)
+      const LOAD_MORE_THRESHOLD = 0.8;
+      
+      if (scrollPercentage >= LOAD_MORE_THRESHOLD && !loadingMore) {
+        onLoadMore();
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loadingMore, onLoadMore]);
 
   // Consolidated scrollbar and drag logic
   useEffect(() => {
@@ -330,6 +366,13 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
                 </div>
               </article>
             ))}
+            
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <div className={styles.loadingMore} data-testid="loading-more">
+                <div className={styles.loadingSpinner} aria-label="Loading more comics" />
+              </div>
+            )}
           </div>
         </div>
         {/* Custom scroll indicator - always visible and clickable */}

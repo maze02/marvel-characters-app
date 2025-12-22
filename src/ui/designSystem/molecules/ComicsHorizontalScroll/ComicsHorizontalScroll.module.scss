@@ -260,3 +260,39 @@ $comic-card-gap: 16px;
   margin: 0;
   padding: $spacing-4 0;
 }
+
+// BEM: Element - Loading More Indicator
+.loadingMore {
+  flex-shrink: 0;
+  width: $comic-card-width-mobile;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  @include md {
+    width: $comic-card-width-tablet;
+    height: 220px;
+  }
+  
+  @include lg {
+    width: $comic-card-width-desktop;
+    height: 280px;
+  }
+}
+
+// BEM: Element - Loading Spinner
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid $color-gray-200;
+  border-top-color: $color-primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
