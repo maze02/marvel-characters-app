@@ -41,13 +41,13 @@
   justify-content: space-between;
   gap: 8px;
   border-bottom: 4px solid $color-primary;
-  min-height: 54px;
+  min-height: 56px;
 
   @include mobile {
     padding: 8px;
     min-height: 48px;
   }
-  
+
   // Prevent FavoriteButton scale from causing layout shifts
   > :last-child {
     flex-shrink: 0;
@@ -55,7 +55,7 @@
 }
 
 .name {
-  font-size: 12px;
+  font-size: 14px;
   font-family: $font-family-condensed; // Roboto Condensed (consistent typography)
   font-weight: $font-weight-regular;
   letter-spacing: $letter-spacing-normal; // 0% (consistent with search)
@@ -68,7 +68,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  color: #FFFFFF; // White text on black footer
+  color: #ffffff; // White text on black footer
 
   @include mobile {
     font-size: 11px;

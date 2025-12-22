@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
-import { Comic } from '@domain/character/entities/Comic';
-import styles from './ComicsHorizontalScroll.module.scss';
+import React, { useRef, useEffect } from "react";
+import { Comic } from "@domain/character/entities/Comic";
+import styles from "./ComicsHorizontalScroll.module.scss";
 
 interface ComicsHorizontalScrollProps {
   comics: Comic[];
@@ -23,26 +23,46 @@ interface ComicsHorizontalScrollProps {
 
 /**
  * Comics Horizontal Scroll Component
- * 
+ *
  * Displays comics in a horizontally scrollable layout with
  * responsive thumbnail sizes optimized for each breakpoint.
  * Includes a custom scroll indicator that's always visible.
- * 
+ *
  * @param comics - Array of Comic entities to display
  * @param title - Optional section title (defaults to "COMICS")
  */
-export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({ 
-  comics, 
-  title = 'COMICS',
+export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
+  comics,
+  title = "COMICS",
   showEmptyState = false,
   loading = false,
   hasMore = false,
   loadingMore = false,
-  onLoadMore
+  onLoadMore,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const indicatorBarRef = useRef<HTMLDivElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
+  const [isScrollable, setIsScrollable] = React.useState(false);
+
+  // Check if content is scrollable
+  useEffect(() => {
+    const checkScrollable = () => {
+      const scrollContainer = scrollContainerRef.current;
+      if (!scrollContainer) return;
+
+      const needsScroll =
+        scrollContainer.scrollWidth > scrollContainer.clientWidth;
+      setIsScrollable(needsScroll);
+    };
+
+    // Check on mount and when comics change
+    checkScrollable();
+
+    // Recheck on window resize
+    window.addEventListener("resize", checkScrollable);
+    return () => window.removeEventListener("resize", checkScrollable);
+  }, [comics]);
 
   // Infinite scroll detection
   useEffect(() => {
@@ -52,17 +72,17 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     const handleScroll = () => {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
       const scrollPercentage = (scrollLeft + clientWidth) / scrollWidth;
-      
+
       // Trigger load more when scrolled to 80% (configurable threshold)
       const LOAD_MORE_THRESHOLD = 0.8;
-      
+
       if (scrollPercentage >= LOAD_MORE_THRESHOLD && !loadingMore) {
         onLoadMore();
       }
     };
 
-    scrollContainer.addEventListener('scroll', handleScroll);
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    scrollContainer.addEventListener("scroll", handleScroll);
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, [hasMore, loadingMore, onLoadMore]);
 
   // Consolidated scrollbar and drag logic
@@ -70,8 +90,10 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     const scrollContainer = scrollContainerRef.current;
     const indicatorBar = indicatorBarRef.current;
     const scrollIndicator = scrollIndicatorRef.current;
-    
-    if (!scrollContainer || !indicatorBar || !scrollIndicator) return;
+
+    // Only set up scrollbar if content is scrollable
+    if (!scrollContainer || !indicatorBar || !scrollIndicator || !isScrollable)
+      return;
 
     // ============================================================================
     // STATE: All state variables for the scrollbar and drag functionality
@@ -85,7 +107,7 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     let cachedThumbWidth = 0;
     let cachedMaxScroll = 0;
     let cachedAvailableSpace = 0;
-    
+
     let contentDragStartX = 0;
     let contentDragStartScroll = 0;
     let rafId: number | null = null;
@@ -96,24 +118,24 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     const updateThumbPosition = () => {
       // Skip if user is dragging the thumb (we update it directly)
       if (isThumbDragging) return;
-      
+
       const scrollLeft = scrollContainer.scrollLeft;
       const scrollWidth = scrollContainer.scrollWidth;
       const clientWidth = scrollContainer.clientWidth;
-      
+
       // Calculate visible percentage (thumb width)
       const visiblePercentage = (clientWidth / scrollWidth) * 100;
-      
+
       // Calculate scroll position percentage
       const maxScroll = scrollWidth - clientWidth;
-      const scrollPercentage = maxScroll > 0 ? (scrollLeft / maxScroll) : 0;
-      
+      const scrollPercentage = maxScroll > 0 ? scrollLeft / maxScroll : 0;
+
       // Calculate thumb position in pixels
       const trackWidth = scrollIndicator.offsetWidth;
       const thumbWidth = (visiblePercentage / 100) * trackWidth;
       const availableSpace = trackWidth - thumbWidth;
       const position = scrollPercentage * availableSpace;
-      
+
       // Update thumb visual position
       indicatorBar.style.width = `${visiblePercentage}%`;
       indicatorBar.style.transform = `translateX(${position}px)`;
@@ -126,7 +148,7 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
       isThumbDragging = true;
       thumbDragStartX = e.clientX;
       thumbDragStartScroll = scrollContainer.scrollLeft;
-      
+
       // Cache dimensions at drag start for consistent calculations
       const scrollWidth = scrollContainer.scrollWidth;
       const clientWidth = scrollContainer.clientWidth;
@@ -134,11 +156,12 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
       cachedTrackWidth = scrollIndicator.offsetWidth;
       cachedThumbWidth = indicatorBar.offsetWidth;
       cachedAvailableSpace = cachedTrackWidth - cachedThumbWidth;
-      
+
       // Calculate current thumb position in pixels
-      const scrollPercentage = cachedMaxScroll > 0 ? thumbDragStartScroll / cachedMaxScroll : 0;
+      const scrollPercentage =
+        cachedMaxScroll > 0 ? thumbDragStartScroll / cachedMaxScroll : 0;
       thumbDragStartPosition = scrollPercentage * cachedAvailableSpace;
-      
+
       e.preventDefault();
       e.stopPropagation();
     };
@@ -149,28 +172,34 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     const handleThumbMouseMove = (e: MouseEvent) => {
       if (!isThumbDragging) return;
       e.preventDefault();
-      
+
       // Cancel any pending animation frame
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
-      
+
       // Schedule update on next frame for smooth 60fps updates
       rafId = requestAnimationFrame(() => {
         // Calculate mouse movement
         const deltaX = e.clientX - thumbDragStartX;
-        
+
         // Move thumb 1:1 with mouse
         const newThumbPosition = thumbDragStartPosition + deltaX;
-        const clampedThumbPosition = Math.max(0, Math.min(cachedAvailableSpace, newThumbPosition));
-        
+        const clampedThumbPosition = Math.max(
+          0,
+          Math.min(cachedAvailableSpace, newThumbPosition),
+        );
+
         // Update thumb visual position directly (instant feedback)
         indicatorBar.style.transform = `translateX(${clampedThumbPosition}px)`;
-        
+
         // Calculate corresponding scroll position
-        const thumbPercentage = cachedAvailableSpace > 0 ? clampedThumbPosition / cachedAvailableSpace : 0;
+        const thumbPercentage =
+          cachedAvailableSpace > 0
+            ? clampedThumbPosition / cachedAvailableSpace
+            : 0;
         const newScrollLeft = thumbPercentage * cachedMaxScroll;
-        
+
         // Update scroll (but skip updateThumbPosition since we already updated it)
         scrollContainer.scrollLeft = newScrollLeft;
       });
@@ -194,14 +223,14 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
       const rect = scrollIndicator.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const clickPercentage = Math.max(0, Math.min(1, clickX / rect.width));
-      
+
       const scrollWidth = scrollContainer.scrollWidth;
       const clientWidth = scrollContainer.clientWidth;
       const maxScroll = scrollWidth - clientWidth;
-      
+
       scrollContainer.scrollTo({
         left: maxScroll * clickPercentage,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     };
 
@@ -212,7 +241,7 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
       isContentDragging = true;
       contentDragStartX = e.pageX - scrollContainer.offsetLeft;
       contentDragStartScroll = scrollContainer.scrollLeft;
-      scrollContainer.style.scrollBehavior = 'auto';
+      scrollContainer.style.scrollBehavior = "auto";
     };
 
     // ============================================================================
@@ -221,7 +250,7 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     const handleContentMouseMove = (e: MouseEvent) => {
       if (!isContentDragging) return;
       e.preventDefault();
-      
+
       const x = e.pageX - scrollContainer.offsetLeft;
       const walk = (x - contentDragStartX) * 2;
       scrollContainer.scrollLeft = contentDragStartScroll - walk;
@@ -232,7 +261,7 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     // ============================================================================
     const handleContentMouseUp = () => {
       isContentDragging = false;
-      scrollContainer.style.scrollBehavior = 'smooth';
+      scrollContainer.style.scrollBehavior = "smooth";
     };
 
     // ============================================================================
@@ -246,28 +275,28 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     // ============================================================================
     // SETUP: Attach all event listeners
     // ============================================================================
-    
+
     // Initial thumb position update
     updateThumbPosition();
-    
+
     // Scroll events
-    scrollContainer.addEventListener('scroll', updateThumbPosition);
-    window.addEventListener('resize', updateThumbPosition);
-    
+    scrollContainer.addEventListener("scroll", updateThumbPosition);
+    window.addEventListener("resize", updateThumbPosition);
+
     // Thumb drag events
-    indicatorBar.addEventListener('mousedown', handleThumbMouseDown);
-    document.addEventListener('mousemove', handleThumbMouseMove);
-    document.addEventListener('mouseup', handleThumbMouseUp);
-    
+    indicatorBar.addEventListener("mousedown", handleThumbMouseDown);
+    document.addEventListener("mousemove", handleThumbMouseMove);
+    document.addEventListener("mouseup", handleThumbMouseUp);
+
     // Track click event
-    scrollIndicator.addEventListener('click', handleTrackClick);
-    
+    scrollIndicator.addEventListener("click", handleTrackClick);
+
     // Content drag events
-    scrollContainer.addEventListener('dragstart', handleDragStart);
-    scrollContainer.addEventListener('mousedown', handleContentMouseDown);
-    scrollContainer.addEventListener('mousemove', handleContentMouseMove);
-    scrollContainer.addEventListener('mouseup', handleContentMouseUp);
-    scrollContainer.addEventListener('mouseleave', handleContentMouseUp);
+    scrollContainer.addEventListener("dragstart", handleDragStart);
+    scrollContainer.addEventListener("mousedown", handleContentMouseDown);
+    scrollContainer.addEventListener("mousemove", handleContentMouseMove);
+    scrollContainer.addEventListener("mouseup", handleContentMouseUp);
+    scrollContainer.addEventListener("mouseleave", handleContentMouseUp);
 
     // ============================================================================
     // CLEANUP: Remove all event listeners
@@ -277,27 +306,27 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
-      
+
       // Remove scroll events
-      scrollContainer.removeEventListener('scroll', updateThumbPosition);
-      window.removeEventListener('resize', updateThumbPosition);
-      
+      scrollContainer.removeEventListener("scroll", updateThumbPosition);
+      window.removeEventListener("resize", updateThumbPosition);
+
       // Remove thumb drag events
-      indicatorBar.removeEventListener('mousedown', handleThumbMouseDown);
-      document.removeEventListener('mousemove', handleThumbMouseMove);
-      document.removeEventListener('mouseup', handleThumbMouseUp);
-      
+      indicatorBar.removeEventListener("mousedown", handleThumbMouseDown);
+      document.removeEventListener("mousemove", handleThumbMouseMove);
+      document.removeEventListener("mouseup", handleThumbMouseUp);
+
       // Remove track click event
-      scrollIndicator.removeEventListener('click', handleTrackClick);
-      
+      scrollIndicator.removeEventListener("click", handleTrackClick);
+
       // Remove content drag events
-      scrollContainer.removeEventListener('dragstart', handleDragStart);
-      scrollContainer.removeEventListener('mousedown', handleContentMouseDown);
-      scrollContainer.removeEventListener('mousemove', handleContentMouseMove);
-      scrollContainer.removeEventListener('mouseup', handleContentMouseUp);
-      scrollContainer.removeEventListener('mouseleave', handleContentMouseUp);
+      scrollContainer.removeEventListener("dragstart", handleDragStart);
+      scrollContainer.removeEventListener("mousedown", handleContentMouseDown);
+      scrollContainer.removeEventListener("mousemove", handleContentMouseMove);
+      scrollContainer.removeEventListener("mouseup", handleContentMouseUp);
+      scrollContainer.removeEventListener("mouseleave", handleContentMouseUp);
     };
-  }, [comics]);
+  }, [comics, isScrollable]);
 
   // Handle loading state
   if (loading) {
@@ -314,11 +343,13 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     if (!showEmptyState) {
       return null;
     }
-    
+
     return (
       <section className={styles.comicsSection}>
         <h2 className={styles.sectionTitle}>{title}</h2>
-        <p className={styles.emptyMessage}>No comics available for this character.</p>
+        <p className={styles.emptyMessage}>
+          No comics available for this character.
+        </p>
       </section>
     );
   }
@@ -327,11 +358,14 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
     <section className={styles.comicsSection}>
       <h2 className={styles.sectionTitle}>{title}</h2>
       <div className={styles.scrollWrapper}>
-        <div className={styles.scrollContainer} ref={scrollContainerRef}>
+        <div
+          className={`${styles.scrollContainer} ${isScrollable ? styles.scrollable : ""}`}
+          ref={scrollContainerRef}
+        >
           <div className={styles.comicsTrack}>
             {comics.map((comic) => (
-              <article 
-                key={comic.id} 
+              <article
+                key={comic.id}
                 className={styles.comicCard}
                 data-testid="comic-item"
               >
@@ -339,23 +373,23 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
                   {/* Desktop: Use portrait_xlarge for high-quality display */}
                   <source
                     media="(min-width: 1024px)"
-                    srcSet={comic.getThumbnailUrl('portrait_xlarge')}
+                    srcSet={comic.getThumbnailUrl("portrait_xlarge")}
                   />
                   {/* Tablet: Use portrait_xlarge */}
                   <source
                     media="(min-width: 768px)"
-                    srcSet={comic.getThumbnailUrl('portrait_xlarge')}
+                    srcSet={comic.getThumbnailUrl("portrait_xlarge")}
                   />
-                {/* Mobile: Use portrait_xlarge (optimized for smaller screens) */}
-                <img
-                  src={comic.getThumbnailUrl('portrait_xlarge')}
-                  alt={comic.title}
-                  loading="lazy"
-                  className={styles.comicImage}
-                  draggable="false"
-                />
+                  {/* Mobile: Use portrait_xlarge (optimized for smaller screens) */}
+                  <img
+                    src={comic.getThumbnailUrl("portrait_xlarge")}
+                    alt={comic.title}
+                    loading="lazy"
+                    className={styles.comicImage}
+                    draggable="false"
+                  />
                 </picture>
-                
+
                 <div className={styles.comicInfo}>
                   <h3 className={styles.comicTitle}>{comic.title}</h3>
                   {comic.hasReleaseDate() && (
@@ -366,28 +400,28 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
                 </div>
               </article>
             ))}
-            
+
             {/* Loading more indicator */}
             {loadingMore && (
               <div className={styles.loadingMore} data-testid="loading-more">
-                <div className={styles.loadingSpinner} aria-label="Loading more comics" />
+                <div
+                  className={styles.loadingSpinner}
+                  aria-label="Loading more comics"
+                />
               </div>
             )}
           </div>
         </div>
-        {/* Custom scroll indicator - always visible and clickable */}
-        <div 
-          className={styles.scrollIndicator} 
-          ref={scrollIndicatorRef}
-          aria-hidden="true"
-          role="scrollbar"
-          aria-label="Scroll through comics"
-        >
-          <div 
-            className={styles.scrollIndicatorBar} 
-            ref={indicatorBarRef}
-          />
-        </div>
+        {/* Custom scroll indicator - only visible when scrollable */}
+        {isScrollable && (
+          <div
+            className={styles.scrollIndicator}
+            ref={scrollIndicatorRef}
+            aria-hidden="true"
+          >
+            <div className={styles.scrollIndicatorBar} ref={indicatorBarRef} />
+          </div>
+        )}
       </div>
     </section>
   );
