@@ -56,11 +56,17 @@ export default defineConfig(({ mode }) => {
     server: {
       open: true, // Auto-open browser in dev mode
       proxy: {
+        // Proxy /api/* to Comic Vine API to avoid CORS
         "/api": {
           target: "https://comicvine.gamespot.com",
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, "/api"),
+          rewrite: (path) => path, // Keep the /api prefix as-is
           secure: false,
+          configure: (proxy, options) => {
+            proxy.on("proxyReq", (proxyReq, req, res) => {
+              console.log("[Vite Proxy]", req.method, req.url);
+            });
+          },
         },
       },
     },

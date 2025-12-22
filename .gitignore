@@ -71,3 +71,4 @@ TEST_*.md
 WHY_*.md
 QUICK_*.md
 .vercel
+.env.development
