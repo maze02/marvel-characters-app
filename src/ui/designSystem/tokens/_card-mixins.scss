@@ -1,0 +1,138 @@
+// =============================================================================
+// CARD MIXINS
+// Shared card patterns used across ListPage and FavoritesPage
+// Following BEM methodology with reusable mixins to eliminate duplication
+// =============================================================================
+
+// Import required design tokens
+@use "./colors" as *;
+@use "./typography" as *;
+@use "./spacing" as *;
+@use "./breakpoints" as *;
+@use "./animations" as *;
+
+// Card container with clipped corner
+@mixin card-base {
+  background-color: #000000;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 12.857px),
+    calc(100% - 12.857px) 100%,
+    0 100%
+  );
+}
+
+// Card link wrapper (full height, flex layout)
+@mixin card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+// Card image container (takes remaining space, shows top of image)
+@mixin card-image {
+  flex: 1;
+  overflow: hidden;
+  background-color: #1a1a1a;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top; // Show top of image (face) instead of center
+    display: block;
+    transform: none;
+    transition: none;
+  }
+}
+
+// Card footer (black background, relative positioning for accent line)
+@mixin card-footer {
+  background-color: #000000;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+// Red accent line (absolutely positioned at top, expands on hover)
+@mixin card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 5.37857px; // Exact from SVG mockup (5.38px rounded)
+  background-color: #ec1d24; // Marvel red
+  z-index: 0;
+  @include safe-animation(height $duration-base $ease-out);
+}
+
+// Card content area (with padding for accent line, flex layout)
+@mixin card-content {
+  // Add top padding to account for absolutely positioned accent line (5.38px)
+  padding: 17.37857px 8px 12px 8px; // top includes accent height + original padding
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
+  z-index: 1; // Above expanding red background
+  flex: 1;
+
+  @include mobile {
+    padding: 15.37857px 8px 10px 8px;
+  }
+
+  @include md {
+    padding: 10px 14px 14px 14px;
+    height: 62px;
+    flex: 0 0 auto; // Override flex: 1 to maintain fixed height
+  }
+}
+
+// Card title (white text, uppercase, 2-line clamp)
+@mixin card-title {
+  font-size: 14px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal;
+  margin: 0;
+  flex: 1;
+  text-transform: uppercase;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: #ffffff;
+
+  @include mobile {
+    font-size: 11px;
+  }
+}
+
+// Hover effect: red accent expands to fill footer
+@mixin card-hover-accent {
+  height: 100%; // Expands from 5.38px to full footer height
+}
+
+// Hover effect: filled heart turns white for better contrast
+@mixin card-hover-heart {
+  button[aria-pressed="true"] {
+    color: #ffffff !important; // Override red color with white
+  }
+}
