@@ -20,6 +20,10 @@ function decodeRepeatedly(value) {
   return current;
 }
 
+function getSingle(value) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 module.exports = async (req, res) => {
   // Enable CORS for your frontend (not strictly needed for same-origin calls,
   // but helpful for debugging and future reuse).
@@ -38,17 +42,54 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { url } = req.query || {};
+    const query = req.query || {};
+    const url = getSingle(query.url);
+    const endpoint = getSingle(query.endpoint);
 
-    if (!url) {
-      return res.status(400).json({ error: "Missing url parameter" });
-    }
+    let targetUrl;
 
-    const targetUrl = decodeRepeatedly(Array.isArray(url) ? url[0] : url);
+    // Backwards-compatible mode (older builds): /api/proxy?url=https%3A%2F%2Fcomicvine...
+    if (url) {
+      targetUrl = decodeRepeatedly(url);
 
-    // Validate it's a Comic Vine URL (security)
-    if (!targetUrl.startsWith("https://comicvine.gamespot.com/api/")) {
-      return res.status(403).json({ error: "Invalid API endpoint" });
+      // Validate it's a Comic Vine URL (security)
+      if (!targetUrl.startsWith("https://comicvine.gamespot.com/api/")) {
+        return res.status(403).json({ error: "Invalid API endpoint" });
+      }
+    } else {
+      // Secure mode (recommended): /api/proxy?endpoint=/characters/&filter=...&limit=...
+      if (!endpoint) {
+        return res
+          .status(400)
+          .json({ error: "Missing endpoint parameter (or legacy url parameter)" });
+      }
+
+      const apiKey = process.env.COMICVINE_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({
+          error:
+            "Server not configured: missing COMICVINE_API_KEY. Add it in Vercel project env vars (Preview + Production).",
+        });
+      }
+
+      const normalizedEndpoint = endpoint.startsWith("/")
+        ? endpoint
+        : `/${endpoint}`;
+
+      const u = new URL(`https://comicvine.gamespot.com/api${normalizedEndpoint}`);
+
+      // Copy all query params except our internal ones.
+      for (const [key, value] of Object.entries(query)) {
+        if (key === "endpoint" || key === "url") continue;
+        const v = getSingle(value);
+        if (v === undefined) continue;
+        u.searchParams.set(key, String(v));
+      }
+
+      // Force required params server-side
+      u.searchParams.set("api_key", apiKey);
+      u.searchParams.set("format", "json");
+      targetUrl = u.toString();
     }
 
     const response = await fetch(targetUrl, {
