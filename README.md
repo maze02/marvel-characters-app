@@ -2,6 +2,13 @@
 
 A modern, production-ready React application for browsing Marvel characters using Clean Architecture principles and Domain-Driven Design.
 
+## 📚 Documentation
+
+- **[Build & Development Guide](./BUILD.md)** - Development and production modes, build instructions
+- **[Deployment Guide](./DEPLOYMENT.md)** - Free hosting options (GitHub Pages, Netlify, Vercel, Cloudflare)
+- **[Vercel Setup Guide](./VERCEL_SETUP.md)** - Step-by-step Vercel CLI deployment with environment variables
+- **[Project Structure](./src/README.txt)** - Code organization and architecture
+
 ## ✨ Features
 
 - 🦸 **Browse Characters**: Infinite scroll through Marvel's extensive character catalog

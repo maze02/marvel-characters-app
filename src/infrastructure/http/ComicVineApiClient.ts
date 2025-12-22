@@ -1,7 +1,7 @@
-import axios, { AxiosInstance } from 'axios';
-import { config } from '../config/env';
-import { API } from '@config/constants';
-import { logger } from '@infrastructure/logging/Logger';
+import axios, { AxiosInstance } from "axios";
+import { config } from "../config/env";
+import { API } from "@config/constants";
+import { logger } from "@infrastructure/logging/Logger";
 
 /**
  * Check if running in development mode
@@ -9,13 +9,13 @@ import { logger } from '@infrastructure/logging/Logger';
  */
 const isDevelopment = (): boolean => {
   // Check if we're in a test environment first (Jest)
-  if (process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === "test") {
     return false; // Don't log in tests
   }
-  
+
   // Use process.env which works in both Vite and Node
   // Vite sets NODE_ENV to 'development' in dev mode
-  return process.env.NODE_ENV === 'development';
+  return process.env.NODE_ENV === "development";
 };
 
 /**
@@ -33,10 +33,10 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public readonly statusCode?: number,
-    public readonly originalError?: unknown
+    public readonly originalError?: unknown,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
@@ -52,7 +52,9 @@ class RateLimiter {
   canMakeRequest(): boolean {
     const now = Date.now();
     // Remove old requests outside time window
-    this.requests = this.requests.filter(time => now - time < this.timeWindow);
+    this.requests = this.requests.filter(
+      (time) => now - time < this.timeWindow,
+    );
     return this.requests.length < this.maxRequests;
   }
 
@@ -62,24 +64,26 @@ class RateLimiter {
 
   getRemainingRequests(): number {
     const now = Date.now();
-    this.requests = this.requests.filter(time => now - time < this.timeWindow);
+    this.requests = this.requests.filter(
+      (time) => now - time < this.timeWindow,
+    );
     return this.maxRequests - this.requests.length;
   }
 }
 
 /**
  * Comic Vine API Client
- * 
+ *
  * HTTP client for Comic Vine API with authentication, caching, rate limiting, and error handling.
  * Implements request cancellation via AbortController.
- * 
+ *
  * Features:
  * - Simple API key authentication
  * - Response caching with TTL
  * - Rate limiting (200 req/hour per resource)
  * - Request cancellation
  * - Comprehensive error handling
- * 
+ *
  * @example
  * ```typescript
  * const client = new ComicVineApiClient();
@@ -94,11 +98,18 @@ export class ComicVineApiClient {
   private abortControllers: Map<string, AbortController>;
 
   constructor() {
+    // In production (deployed), use proxy to avoid CORS issues
+    // In development (localhost), call API directly
+    const isProduction =
+      typeof window !== "undefined" &&
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1";
+
     this.axios = axios.create({
-      baseURL: config.apiBaseUrl,
+      baseURL: isProduction ? "/api/proxy" : config.apiBaseUrl,
       timeout: API.REQUEST_TIMEOUT,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -108,11 +119,23 @@ export class ComicVineApiClient {
 
     // Request interceptor - add API key and format
     this.axios.interceptors.request.use((requestConfig) => {
-      requestConfig.params = {
-        ...requestConfig.params,
-        api_key: config.comicVineApiKey,
-        format: 'json',
-      };
+      if (isProduction) {
+        // In production, send full URL to proxy
+        const params = new URLSearchParams({
+          ...requestConfig.params,
+          api_key: config.comicVineApiKey,
+          format: "json",
+        });
+        const fullUrl = `${config.apiBaseUrl}${requestConfig.url}?${params.toString()}`;
+        requestConfig.params = { url: encodeURIComponent(fullUrl) };
+      } else {
+        // In development, add params directly
+        requestConfig.params = {
+          ...requestConfig.params,
+          api_key: config.comicVineApiKey,
+          format: "json",
+        };
+      }
       return requestConfig;
     });
 
@@ -121,7 +144,7 @@ export class ComicVineApiClient {
       (response) => {
         // Log response for debugging (only in development)
         if (isDevelopment()) {
-          logger.debug('API Response', {
+          logger.debug("API Response", {
             url: response.config.url,
             status: response.status,
             error: response.data?.error,
@@ -130,28 +153,28 @@ export class ComicVineApiClient {
         }
 
         // Comic Vine returns error:"OK" on success
-        if (response.data?.error && response.data.error !== 'OK') {
-          logger.warn('Comic Vine API returned error in response body', {
+        if (response.data?.error && response.data.error !== "OK") {
+          logger.warn("Comic Vine API returned error in response body", {
             error: response.data.error,
             status_code: response.data.status_code,
             url: response.config.url,
           });
           throw new ApiError(
             `Comic Vine API Error: ${response.data.error}`,
-            response.data.status_code
+            response.data.status_code,
           );
         }
         return response;
       },
       (error) => {
         return Promise.reject(this.handleError(error));
-      }
+      },
     );
   }
 
   /**
    * Perform GET request with caching and rate limiting
-   * 
+   *
    * @param endpoint - API endpoint (e.g., '/characters/')
    * @param params - Query parameters
    * @param options - Request options (caching, cancellation)
@@ -164,15 +187,15 @@ export class ComicVineApiClient {
     options?: {
       useCache?: boolean;
       signal?: AbortSignal;
-    }
+    },
   ): Promise<T> {
     const cacheKey = this.getCacheKey(endpoint, params);
-    
+
     // Check cache first
     if (options?.useCache !== false) {
       const cached = this.getFromCache<T>(cacheKey);
       if (cached) {
-        logger.debug('Cache hit', { endpoint });
+        logger.debug("Cache hit", { endpoint });
         return cached;
       }
     }
@@ -182,7 +205,7 @@ export class ComicVineApiClient {
       const remaining = this.rateLimiter.getRemainingRequests();
       throw new ApiError(
         `Rate limit exceeded. ${remaining} requests remaining this hour.`,
-        429
+        429,
       );
     }
 
@@ -195,11 +218,13 @@ export class ComicVineApiClient {
 
     try {
       // Build full URL for debugging
-      const queryString = new URLSearchParams(params as Record<string, string>).toString();
+      const queryString = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
       const fullUrl = `${endpoint}?${queryString}`;
-      
-      logger.debug('API request', { endpoint, params, fullUrl });
-      
+
+      logger.debug("API request", { endpoint, params, fullUrl });
+
       const response = await this.axios.get<T>(endpoint, {
         params,
         signal: options?.signal || controller.signal,
@@ -219,13 +244,17 @@ export class ComicVineApiClient {
       return response.data;
     } catch (error: any) {
       this.abortControllers.delete(cacheKey);
-      
+
       // Handle both axios.isCancel and CanceledError
-      if (axios.isCancel(error) || error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') {
-        logger.debug('Request cancelled', { endpoint });
-        throw new ApiError('Request was cancelled');
+      if (
+        axios.isCancel(error) ||
+        error?.name === "CanceledError" ||
+        error?.code === "ERR_CANCELED"
+      ) {
+        logger.debug("Request cancelled", { endpoint });
+        throw new ApiError("Request was cancelled");
       }
-      
+
       throw this.handleError(error);
     }
   }
@@ -268,12 +297,12 @@ export class ComicVineApiClient {
    * Generate cache key from endpoint and params
    */
   private getCacheKey(endpoint: string, params?: Record<string, any>): string {
-    const sortedParams = params 
+    const sortedParams = params
       ? Object.keys(params)
           .sort()
-          .map(key => `${key}=${params[key]}`)
-          .join('&')
-      : '';
+          .map((key) => `${key}=${params[key]}`)
+          .join("&")
+      : "";
     return `${endpoint}?${sortedParams}`;
   }
 
@@ -282,7 +311,7 @@ export class ComicVineApiClient {
    */
   private getFromCache<T>(key: string): T | null {
     const cached = this.cache.get(key) as CachedResponse<T> | undefined;
-    
+
     if (!cached) {
       return null;
     }
@@ -326,17 +355,21 @@ export class ComicVineApiClient {
 
     // Check for cancellation errors first (don't log these as errors)
     if (
-      (error as any)?.name === 'CanceledError' || 
-      (error as any)?.code === 'ERR_CANCELED' ||
-      (error as any)?.message?.includes('canceled')
+      (error as any)?.name === "CanceledError" ||
+      (error as any)?.code === "ERR_CANCELED" ||
+      (error as any)?.message?.includes("canceled")
     ) {
-      logger.debug('Request was canceled (expected behavior)');
-      return new ApiError('Request was cancelled');
+      logger.debug("Request was canceled (expected behavior)");
+      return new ApiError("Request was cancelled");
     }
 
     if (axios.isAxiosError(error)) {
-      if (error.code === 'ECONNABORTED') {
-        return new ApiError('Request timeout - Comic Vine API is slow or unreachable', 408, error);
+      if (error.code === "ECONNABORTED") {
+        return new ApiError(
+          "Request timeout - Comic Vine API is slow or unreachable",
+          408,
+          error,
+        );
       }
 
       if (error.response) {
@@ -345,31 +378,47 @@ export class ComicVineApiClient {
 
         switch (status) {
           case 401:
-            return new ApiError('Invalid API key. Please check your Comic Vine API key.', 401, error);
+            return new ApiError(
+              "Invalid API key. Please check your Comic Vine API key.",
+              401,
+              error,
+            );
           case 404:
-            return new ApiError('Resource not found', 404, error);
+            return new ApiError("Resource not found", 404, error);
           case 429:
-            return new ApiError('Rate limit exceeded. Please wait before making more requests.', 429, error);
+            return new ApiError(
+              "Rate limit exceeded. Please wait before making more requests.",
+              429,
+              error,
+            );
           case 500:
           case 502:
           case 503:
-            return new ApiError('Comic Vine API is currently unavailable. Please try again later.', status, error);
+            return new ApiError(
+              "Comic Vine API is currently unavailable. Please try again later.",
+              status,
+              error,
+            );
           default:
             return new ApiError(`API Error: ${message}`, status, error);
         }
       }
 
       if (error.request) {
-        return new ApiError('No response from Comic Vine API. Please check your internet connection.', undefined, error);
+        return new ApiError(
+          "No response from Comic Vine API. Please check your internet connection.",
+          undefined,
+          error,
+        );
       }
     }
 
     // Log unexpected errors for debugging
-    logger.error('Unexpected error in API client', error, {
+    logger.error("Unexpected error in API client", error, {
       errorType: error?.constructor?.name,
       errorMessage: error instanceof Error ? error.message : String(error),
     });
 
-    return new ApiError('An unexpected error occurred', undefined, error);
+    return new ApiError("An unexpected error occurred", undefined, error);
   }
 }
