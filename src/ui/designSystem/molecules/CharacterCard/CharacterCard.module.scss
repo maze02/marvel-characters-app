@@ -1,76 +1,41 @@
+// CharacterCard uses shared card mixins for consistency
+// This component is flexible and adapts to grid layout
+
 .card {
-  background-color: #000000;
+  @include card-base;
   position: relative;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  // No fixed dimensions - inherits from grid
 }
 
 .cardLink {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-
-  &:hover {
-    // No transform to prevent layout shift
-  }
-
-  &:focus-visible {
-    outline: 2px solid $color-primary;
-    //outline-offset: 2px;
-  }
+  @include card-link;
 }
 
-.imageContainer {
-  aspect-ratio: 1;
-  overflow: hidden;
-  background-color: #1a1a1a;
+.cardImage {
+  @include card-image;
 }
 
-.image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top; // Show top of image (face) instead of center
-  display: block;
+.cardFooter {
+  @include card-footer;
 }
 
-.footer {
-  background-color: #000000;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border-bottom: 4px solid $color-primary;
-  min-height: 54px;
-
-  @include mobile {
-    padding: 8px;
-    min-height: 48px;
-  }
-  
-  // Prevent FavoriteButton scale from causing layout shifts
-  > :last-child {
-    flex-shrink: 0;
-  }
+.cardAccent {
+  @include card-accent;
 }
 
-.name {
-  font-size: 12px;
-  font-family: $font-family-condensed; // Roboto Condensed (consistent typography)
-  font-weight: $font-weight-regular;
-  letter-spacing: $letter-spacing-normal; // 0% (consistent with search)
-  margin: 0;
-  flex: 1;
-  text-transform: uppercase;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  color: #FFFFFF; // White text on black footer
+.cardLink:hover .cardAccent {
+  @include card-hover-accent;
+}
 
-  @include mobile {
-    font-size: 11px;
-  }
+.cardContent {
+  @include card-content;
+}
+
+.cardLink:hover {
+  @include card-hover-heart;
+}
+
+.cardTitle {
+  @include card-title;
 }

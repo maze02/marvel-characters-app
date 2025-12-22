@@ -29,12 +29,12 @@ $comic-card-gap: 16px;
   text-transform: uppercase;
   letter-spacing: $letter-spacing-normal;
   color: $color-text-primary;
-  
+
   @include md {
     font-size: 20px;
     margin-bottom: $spacing-5;
   }
-  
+
   @include lg {
     font-size: 24px;
     padding-top: $spacing-4;
@@ -54,41 +54,49 @@ $comic-card-gap: 16px;
   overflow-y: hidden; // Prevent vertical scroll
   -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
   margin-bottom: $spacing-2;
+
+  // Hide default scrollbar on webkit browsers since we're using custom indicator
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  // Firefox - Hide default scrollbar
+  scrollbar-width: none;
+}
+
+// BEM: Modifier - Scrollable (only apply drag cursor and fade when content is scrollable)
+.scrollContainer.scrollable {
   cursor: grab; // Indicate draggable content (comics area)
   user-select: none; // Prevent text selection while dragging
-  
+
   &:active {
     cursor: grabbing; // Show grabbing when dragging comics
   }
-  
+
   // Fade indicator on right edge (shows more content is scrollable)
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     width: 40px;
-    background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+    background: linear-gradient(
+      to left,
+      rgba(255, 255, 255, 0.95),
+      transparent
+    );
     pointer-events: none; // Allow clicking through to content
     z-index: 1;
-    
+
     @include md {
       width: 60px;
     }
-    
+
     @include lg {
       width: 80px;
     }
   }
-  
-  // Hide default scrollbar on webkit browsers since we're using custom indicator
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  
-  // Firefox - Hide default scrollbar
-  scrollbar-width: none;
 }
 
 // BEM: Element - Custom Scroll Indicator (always visible track)
@@ -102,7 +110,7 @@ $comic-card-gap: 16px;
   cursor: pointer; // Indicate track is clickable
   position: relative;
   user-select: none; // Prevent text selection while dragging
-  
+
   @include md {
     height: 10px;
     border-radius: 5px;
@@ -115,21 +123,23 @@ $comic-card-gap: 16px;
   width: 30%; // Default width, will be updated via JS scroll event
   background: $color-scrollbar-thumb;
   border-radius: 6px;
-  transition: background 0.2s ease-out, scale 0.2s ease-out;
+  transition:
+    background 0.2s ease-out,
+    scale 0.2s ease-out;
   will-change: transform; // Optimize for JS-controlled transform animations
   cursor: pointer; // Standard pointer cursor like native scrollbars
-  
+
   @include md {
     border-radius: 5px;
   }
-  
+
   // Hover state - brighter red and slightly taller
   // Using 'scale' property instead of 'transform' to avoid conflicts with JS translateX
   &:hover {
     background: $color-scrollbar-thumb-hover;
     scale: 1 1.1;
   }
-  
+
   // Active/dragging state - darkest red
   &:active {
     background: $color-scrollbar-thumb-active;
@@ -146,11 +156,11 @@ $comic-card-gap: 16px;
   padding-bottom: 2px; // Prevent scrollbar from cutting off content
   user-select: none; // Prevent text selection while dragging
   -webkit-user-drag: none; // Prevent drag on webkit
-  
+
   @include md {
     gap: 20px;
   }
-  
+
   @include lg {
     gap: 24px;
   }
@@ -163,11 +173,11 @@ $comic-card-gap: 16px;
   user-select: none; // Prevent text selection
   -webkit-user-drag: none; // Prevent drag on webkit
   @include safe-animation(transform $duration-fast $ease-out);
-  
+
   @include md {
     width: $comic-card-width-tablet;
   }
-  
+
   @include lg {
     width: $comic-card-width-desktop;
   }
@@ -182,7 +192,7 @@ $comic-card-gap: 16px;
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   //@include safe-animation(box-shadow $duration-fast $ease-out);
-  
+
   .comicCard:hover & {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
@@ -215,7 +225,7 @@ $comic-card-gap: 16px;
   line-height: 1.3;
   color: $color-text-primary;
   margin: 0;
-  
+
   // Multi-line ellipsis
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -223,13 +233,13 @@ $comic-card-gap: 16px;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  
+
   @include md {
     font-size: 13px;
     -webkit-line-clamp: 3;
     line-clamp: 3;
   }
-  
+
   @include lg {
     font-size: 14px;
   }
@@ -242,11 +252,11 @@ $comic-card-gap: 16px;
   letter-spacing: $letter-spacing-normal;
   color: $color-text-secondary;
   margin: 0;
-  
+
   @include md {
     font-size: 11px;
   }
-  
+
   @include lg {
     font-size: 12px;
   }
@@ -269,12 +279,12 @@ $comic-card-gap: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   @include md {
     width: $comic-card-width-tablet;
     height: 220px;
   }
-  
+
   @include lg {
     width: $comic-card-width-desktop;
     height: 280px;
@@ -289,7 +299,7 @@ $comic-card-gap: 16px;
   border-top-color: $color-primary;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  
+
   @keyframes spin {
     to {
       transform: rotate(360deg);
