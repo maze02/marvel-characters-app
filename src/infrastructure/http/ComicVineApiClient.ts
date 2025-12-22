@@ -106,7 +106,7 @@ export class ComicVineApiClient {
       window.location.hostname !== "127.0.0.1";
 
     this.axios = axios.create({
-      baseURL: isProduction ? "/api/proxy" : config.apiBaseUrl,
+      baseURL: isProduction ? "" : config.apiBaseUrl,
       timeout: API.REQUEST_TIMEOUT,
       headers: {
         "Content-Type": "application/json",
@@ -127,8 +127,9 @@ export class ComicVineApiClient {
           format: "json",
         });
         const fullUrl = `https://comicvine.gamespot.com/api${requestConfig.url}?${params.toString()}`;
+        // Replace the entire URL with just the proxy endpoint
+        requestConfig.url = "/api/proxy";
         requestConfig.params = { url: encodeURIComponent(fullUrl) };
-        requestConfig.url = ""; // Clear URL since we're using ?url= param
       } else {
         // In development, add params directly
         requestConfig.params = {
