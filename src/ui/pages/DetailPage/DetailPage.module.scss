@@ -20,17 +20,14 @@
   padding: $spacing-16;
   font-family: $font-family-condensed; // Roboto Condensed (consistent typography)
   letter-spacing: $letter-spacing-normal; // 0% (consistent)
-  color: #666666;
-  background-color: #ffffff;
+  color: $color-gray-500;
+  background-color: $color-white;
   min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  @include flex-column-center;
 }
 
 .emptyTitle {
-  color: #000000;
+  color: $color-text-primary;
   margin-bottom: $spacing-3;
   font-size: 20px;
   font-family: $font-family-condensed; // Roboto Condensed (matches other pages)
@@ -40,7 +37,7 @@
 }
 
 .emptyMessage {
-  color: #666666;
+  color: $color-gray-500;
   font-size: 14px;
   font-family: $font-family-condensed; // Roboto Condensed (matches other pages)
   font-weight: $font-weight-regular;
@@ -55,7 +52,7 @@
   align-items: center;
   padding: $spacing-3 $spacing-5;
   background-color: $color-primary;
-  color: #ffffff;
+  color: $color-white;
   text-decoration: none;
   font-family: $font-family-condensed;
   font-weight: $font-weight-bold;
@@ -64,6 +61,7 @@
   text-transform: uppercase;
   border-radius: 2px;
   @include safe-animation(all $duration-fast $ease-out);
+  @include focus-outline($color-primary, 4px);
 
   &:hover {
     background-color: $color-primary-dark;
@@ -72,10 +70,5 @@
 
   &:active {
     transform: translateY(0);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $color-primary;
-    outline-offset: 4px;
   }
 }

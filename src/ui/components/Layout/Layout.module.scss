@@ -1,6 +1,6 @@
 .layout {
   min-height: 100vh;
-  background-color: #FFFFFF;
+  background-color: $color-background;
   display: flex;
   flex-direction: column;
 }
@@ -9,4 +9,3 @@
   flex: 1;
   width: 100%;
 }
-

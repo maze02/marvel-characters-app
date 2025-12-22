@@ -10,17 +10,12 @@
 @use "./spacing" as *;
 @use "./breakpoints" as *;
 @use "./animations" as *;
+@use "./utility-mixins" as *;
 
 // Card container with clipped corner
 @mixin card-base {
-  background-color: #000000;
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    100% calc(100% - 12.857px),
-    calc(100% - 12.857px) 100%,
-    0 100%
-  );
+  background-color: $color-black;
+  @include triangle-clip(12.857px);
 }
 
 // Card link wrapper (full height, flex layout)
@@ -31,18 +26,14 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid $color-primary;
-    outline-offset: 2px;
-  }
+  @include focus-outline($color-primary, 2px);
 }
 
 // Card image container (takes remaining space, shows top of image)
 @mixin card-image {
   flex: 1;
   overflow: hidden;
-  background-color: #1a1a1a;
+  background-color: $color-gray-900;
   position: relative;
 
   img {
@@ -58,7 +49,7 @@
 
 // Card footer (black background, relative positioning for accent line)
 @mixin card-footer {
-  background-color: #000000;
+  background-color: $color-black;
   padding: 0;
   position: relative;
   overflow: hidden;
@@ -75,7 +66,7 @@
   right: 0;
   width: 100%;
   height: 5.37857px; // Exact from SVG mockup (5.38px rounded)
-  background-color: #ec1d24; // Marvel red
+  background-color: $color-primary; // Marvel red
   z-index: 0;
   @include safe-animation(height $duration-base $ease-out);
 }
@@ -93,7 +84,9 @@
   flex: 1;
 
   @include mobile {
-    padding: 15.37857px 8px 10px 8px;
+    padding: 10px 14px 14px 14px;
+    height: 62px;
+    flex: 0 0 auto; // Override flex: 1 to maintain fixed height
   }
 
   @include md {
@@ -113,12 +106,8 @@
   flex: 1;
   text-transform: uppercase;
   line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  color: #ffffff;
+  @include line-clamp(2);
+  color: $color-white;
 
   @include mobile {
     font-size: 11px;
@@ -133,6 +122,6 @@
 // Hover effect: filled heart turns white for better contrast
 @mixin card-hover-heart {
   button[aria-pressed="true"] {
-    color: #ffffff !important; // Override red color with white
+    color: $color-white !important; // Override red color with white
   }
 }

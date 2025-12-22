@@ -1,12 +1,11 @@
 .navbar {
-  background-color: #000000;
+  background-color: $color-black;
   padding: $spacing-4 $padding-mobile; // 16px vertical, 16px horizontal on mobile
   position: sticky;
   top: 0;
   z-index: $z-index-sticky;
   height: 84px;
-  display: flex;
-  align-items: center;
+  @include flex-center-vertical;
 
   @include md {
     padding: $spacing-4 $padding-desktop; // 16px vertical, 48px horizontal on tablet+
@@ -22,32 +21,19 @@
 }
 
 .favoritesButton {
-  background: none;
-  border: none;
+  @include button-reset;
   color: $color-primary;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
+  @include flex-center-vertical;
   position: relative;
   flex-shrink: 0;
-  @include safe-animation(transform $duration-fast $ease-out);
-
-  &:hover {
-    transform: scale(1.05);
-  }
-
-  &:focus-visible {
-    outline: 2px solid #FFFFFF;
-    outline-offset: 4px;
-    border-radius: 2px;
-  }
+  @include hover-scale(1.05);
+  @include focus-outline($color-white, 4px);
 }
 
 .favoritesCount {
   font-size: 18px;
   font-weight: $font-weight-bold;
-  color: #FFFFFF;
+  color: $color-white;
   min-width: 20px;
   text-align: left;
   margin-left: $spacing-1;

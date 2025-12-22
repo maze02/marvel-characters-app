@@ -1,21 +1,5 @@
-// Design tokens - DRY principle
-$image-height-mobile: 40vh;
-$image-height-desktop: 320px;
-
-$textbox-height-mobile: 20vh;
-$textbox-height-desktop: 100px;
-
-$tablet-box-size: 278px;
-
-$desktop-horizontal-padding: 273px;
-$desktop-padding-x: 277px;
-$desktop-content-gap: 46px; // Gap between image and content
-$desktop-content-left-padding: $desktop-padding-x + $image-height-desktop +
-  $desktop-content-gap; // Calculated: 277px + 320px + 31px = 628px
-
-$triangle-size-mobile: 24px;
-$triangle-size-tablet: 24px;
-$triangle-size-desktop: 24px;
+// Import dimension tokens
+@use "../../tokens/dimensions" as *;
 
 // BEM: Block
 .hero {
@@ -40,24 +24,24 @@ $triangle-size-desktop: 24px;
 // BEM: Element - imageSection
 .imageSection {
   width: 100%;
-  height: $image-height-mobile;
+  height: $hero-image-height-mobile;
   overflow: hidden;
   flex-shrink: 0;
 
   // Tablet: fixed size, on the left
   @include md {
-    width: $tablet-box-size;
-    height: $tablet-box-size;
+    width: $hero-tablet-box-size;
+    height: $hero-tablet-box-size;
     order: 1;
   }
 
   // Desktop: absolute positioned, 277px from left
   @include lg {
     position: absolute;
-    left: $desktop-padding-x; // 277px from left
+    left: $hero-desktop-padding-x; // 277px from left
     top: 0;
-    width: $image-height-desktop; // 320px square
-    height: $image-height-desktop;
+    width: $hero-image-height-desktop; // 320px square
+    height: $hero-image-height-desktop;
     z-index: 1;
   }
 }
@@ -74,97 +58,53 @@ $triangle-size-desktop: 24px;
 // BEM: Element - textBox
 .textBox {
   width: 100%;
-  height: $textbox-height-mobile;
-  background-color: #000000;
+  height: $hero-textbox-height-mobile;
+  background-color: $color-black;
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
   @include safe-animation(height 0.4s $ease-in-out);
 
   // Mobile: triangle clip on bottom-right
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    100% calc(100% - #{$triangle-size-mobile}),
-    calc(100% - #{$triangle-size-mobile}) 100%,
-    0 100%
-  );
+  @include triangle-clip($triangle-clip-mobile);
 
   // BEM: Modifier - expanded
   &.expanded {
     height: auto;
-    min-height: $textbox-height-mobile;
-
-    clip-path: polygon(
-      0 0,
-      100% 0,
-      100% calc(100% - #{$triangle-size-mobile}),
-      calc(100% - #{$triangle-size-mobile}) 100%,
-      0 100%
-    );
+    min-height: $hero-textbox-height-mobile;
+    @include triangle-clip($triangle-clip-mobile);
   }
 
   // Tablet: side-by-side layout
   @include md {
-    width: calc(100% - #{$tablet-box-size});
-    height: $tablet-box-size;
+    width: calc(100% - #{$hero-tablet-box-size});
+    height: $hero-tablet-box-size;
     padding: 0; // No padding - content will handle spacing
-    //margin-top: 188px; // Position 188px down from top
     order: 2;
     justify-content: flex-start;
-
-    // Triangle on bottom-right corner (right-hand side at bottom)
-    clip-path: polygon(
-      0 0,
-      100% 0,
-      100% calc(100% - #{$triangle-size-tablet}),
-      calc(100% - #{$triangle-size-tablet}) 100%,
-      0 100%
-    );
+    @include triangle-clip($triangle-clip-tablet);
 
     &.expanded {
       height: auto;
-      min-height: $tablet-box-size;
-
-      clip-path: polygon(
-        0 0,
-        100% 0,
-        100% calc(100% - #{$triangle-size-tablet}),
-        calc(100% - #{$triangle-size-tablet}) 100%,
-        0 100%
-      );
+      min-height: $hero-tablet-box-size;
+      @include triangle-clip($triangle-clip-tablet);
     }
   }
 
   // Desktop: full width black box spanning edge to edge
   @include lg {
     width: 100%; // Full width, edge to edge
-    height: $image-height-desktop; // 320px height
+    height: $hero-image-height-desktop; // 320px height
     padding: 0; // No padding - content will handle spacing
-    background-color: #000000; // Ensure black background
+    background-color: $color-black; // Ensure black background
     position: relative;
     z-index: 0; // Behind the image
-
-    // Triangle on bottom-right corner
-    clip-path: polygon(
-      0 0,
-      100% 0,
-      100% calc(100% - #{$triangle-size-desktop}),
-      calc(100% - #{$triangle-size-desktop}) 100%,
-      0 100%
-    );
+    @include triangle-clip($triangle-clip-desktop);
 
     &.expanded {
       height: auto;
-      min-height: $image-height-desktop;
-
-      clip-path: polygon(
-        0 0,
-        100% 0,
-        100% calc(100% - #{$triangle-size-desktop}),
-        calc(100% - #{$triangle-size-desktop}) 100%,
-        0 100%
-      );
+      min-height: $hero-image-height-desktop;
+      @include triangle-clip($triangle-clip-desktop);
     }
   }
 }
@@ -184,7 +124,8 @@ $triangle-size-desktop: 24px;
 
   // Desktop: Dynamic padding based on image size and position
   @include lg {
-    padding: 103px $desktop-padding-x 51px $desktop-content-left-padding; // Calculated from image offset + width + gap
+    padding: 103px $hero-desktop-padding-x 51px
+      $hero-desktop-content-left-padding; // Calculated from image offset + width + gap
     gap: 28px;
   }
 }
@@ -223,7 +164,7 @@ $triangle-size-desktop: 24px;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: $letter-spacing-normal;
-  color: #ffffff;
+  color: $color-white;
   line-height: 1.2;
   flex: 1;
 
@@ -254,7 +195,7 @@ $triangle-size-desktop: 24px;
   font-weight: $font-weight-regular;
   letter-spacing: $letter-spacing-normal;
   line-height: 1.5;
-  color: #ffffff;
+  color: $color-white;
   margin: 0;
   overflow: hidden;
   display: -webkit-box;
@@ -281,38 +222,17 @@ $triangle-size-desktop: 24px;
 
 // BEM: Element - toggleButton
 .toggleButton {
-  background: none;
-  border: none;
+  @include button-interactive($color-primary);
   color: $color-primary;
   font-size: 12px;
   font-family: $font-family-condensed;
   font-weight: $font-weight-bold;
   letter-spacing: $letter-spacing-normal;
   text-transform: uppercase;
-  cursor: pointer;
-  padding: 0;
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
   flex-shrink: 0;
-  @include safe-animation(opacity $duration-fast $ease-out);
-
-  // UX: Hover state
-  &:hover {
-    opacity: 0.8;
-  }
-
-  // Accessibility: Focus state
-  &:focus-visible {
-    outline: 2px solid $color-primary;
-    outline-offset: 4px;
-    border-radius: 2px;
-  }
-
-  // UX: Active state
-  &:active {
-    opacity: 0.6;
-  }
 
   // Tablet: same size
   @include md {

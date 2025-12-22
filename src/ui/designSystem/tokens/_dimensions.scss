@@ -1,0 +1,47 @@
+// =============================================================================
+// DIMENSION TOKENS
+// Reusable dimension values for consistent sizing across components
+// =============================================================================
+
+// =============================================================================
+// Layout Dimensions
+// =============================================================================
+
+// Desktop horizontal padding (used across multiple components)
+$desktop-horizontal-padding: 273px;
+
+// =============================================================================
+// Card Dimensions
+// =============================================================================
+
+// Triangle clip sizes (bottom-right corner cut)
+$triangle-clip-card: 12.857px; // Character cards
+$triangle-clip-mobile: 24px; // Mobile hero
+$triangle-clip-tablet: 24px; // Tablet hero
+$triangle-clip-desktop: 24px; // Desktop hero
+
+// Card accent line height
+$card-accent-height: 5.37857px; // Exact from SVG mockup (5.38px rounded)
+
+// =============================================================================
+// Hero Component Dimensions
+// =============================================================================
+
+// Image heights
+$hero-image-height-mobile: 40vh;
+$hero-image-height-desktop: 320px;
+
+// Text box heights
+$hero-textbox-height-mobile: 20vh;
+$hero-textbox-height-desktop: 100px;
+
+// Tablet box size (square)
+$hero-tablet-box-size: 278px;
+
+// Desktop layout calculations
+$hero-desktop-padding-x: 277px;
+$hero-desktop-content-gap: 46px; // Gap between image and content
+$hero-desktop-content-left-padding: calc(
+  #{$hero-desktop-padding-x} + #{$hero-image-height-desktop} +
+    #{$hero-desktop-content-gap}
+); // Calculated: 277px + 320px + 46px = 643px

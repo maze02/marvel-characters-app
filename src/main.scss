@@ -13,15 +13,15 @@
 
 html {
   height: 100%;
-  background-color: #FFFFFF;
+  background-color: $color-background;
 }
 
 body {
   min-height: 100%;
   text-rendering: optimizeSpeed;
   line-height: 1.5;
-  background-color: #FFFFFF;
-  color: #000000;
+  background-color: $color-background;
+  color: $color-text-primary;
 }
 
 img,
@@ -41,6 +41,6 @@ select {
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 30px #FFFFFF inset;
-  -webkit-text-fill-color: #000000;
+  -webkit-box-shadow: 0 0 0 30px $color-background inset;
+  -webkit-text-fill-color: $color-text-primary;
 }

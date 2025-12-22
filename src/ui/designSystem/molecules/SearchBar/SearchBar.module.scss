@@ -1,15 +1,14 @@
 .searchBar {
   position: relative;
   width: 100%;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #000000;
+  @include flex-center-vertical;
+  border-bottom: 1px solid $color-text-primary;
   padding: 12px 0;
   gap: 12px;
 }
 
 .searchIcon {
-  color: #000000;
+  color: $color-text-primary;
   width: 16px;
   height: 16px;
   flex-shrink: 0;
@@ -19,7 +18,7 @@
   flex: 1;
   background: none;
   border: none;
-  color: #000000;
+  color: $color-text-primary;
   font-size: $font-size-base; // 16px (mockup spec)
   font-family: $font-family-condensed; // Roboto Condensed
   font-weight: $font-weight-regular; // 400 (Regular)
@@ -29,7 +28,7 @@
   padding: 0;
 
   &::placeholder {
-    color: #aaaaaa;
+    color: $color-text-secondary;
     text-transform: uppercase;
     font-size: $font-size-base; // 16px (mockup spec)
     font-family: $font-family-condensed; // Roboto Condensed
