@@ -1,0 +1,62 @@
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Logo } from '@ui/designSystem/atoms/Logo/Logo';
+import { Icon } from '@ui/designSystem/atoms/Icon/Icon';
+import { useFavorites } from '@ui/state/FavoritesContext';
+import { routes } from '@ui/routes/routes';
+import styles from './Navbar.module.scss';
+
+export interface NavbarProps {
+  /** Optional callback when logo is clicked */
+  onLogoClick?: () => void;
+  /** Optional callback when favorites button is clicked */
+  onFavoritesClick?: () => void;
+}
+
+/**
+ * Navbar Component
+ * 
+ * Reusable navigation bar with Marvel logo and favorites button.
+ * Displays favorites count badge when user has favorites.
+ * Consistent across all pages.
+ */
+export const Navbar: React.FC<NavbarProps> = ({ 
+  onLogoClick, 
+  onFavoritesClick
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { favoritesCount } = useFavorites();
+
+  const isFavoritesActive = location.pathname === routes.favorites;
+
+  const handleFavoritesClick = () => {
+    if (onFavoritesClick) {
+      onFavoritesClick();
+    } else {
+      // Default behavior: navigate to favorites
+      navigate(routes.favorites);
+    }
+  };
+
+  return (
+    <header className={styles.navbar}>
+      <div className={styles.content}>
+        {onLogoClick ? <Logo onClick={onLogoClick} /> : <Logo />}
+        <button
+          type="button"
+          onClick={handleFavoritesClick}
+          className={styles.favoritesButton}
+          aria-label={isFavoritesActive ? 'Viewing favorites' : 'View favorites'}
+        >
+          <Icon name="heart-filled" size={24} />
+          {favoritesCount > 0 && (
+            <span className={styles.favoritesCount} data-testid="favorites-count">
+              {favoritesCount}
+            </span>
+          )}
+        </button>
+      </div>
+    </header>
+  );
+};

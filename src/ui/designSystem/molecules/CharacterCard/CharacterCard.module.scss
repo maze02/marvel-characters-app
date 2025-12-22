@@ -1,0 +1,41 @@
+// CharacterCard uses shared card mixins for consistency
+// This component is flexible and adapts to grid layout
+
+.card {
+  @include card-base;
+  position: relative;
+  overflow: hidden;
+  // No fixed dimensions - inherits from grid
+}
+
+.cardLink {
+  @include card-link;
+}
+
+.cardImage {
+  @include card-image;
+}
+
+.cardFooter {
+  @include card-footer;
+}
+
+.cardAccent {
+  @include card-accent;
+}
+
+.cardLink:hover .cardAccent {
+  @include card-hover-accent;
+}
+
+.cardContent {
+  @include card-content;
+}
+
+.cardLink:hover {
+  @include card-hover-heart;
+}
+
+.cardTitle {
+  @include card-title;
+}

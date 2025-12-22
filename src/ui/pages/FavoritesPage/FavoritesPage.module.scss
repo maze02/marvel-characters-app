@@ -1,0 +1,44 @@
+// FavoritesPage uses shared page layout mixins for consistency
+// Following BEM methodology and DRY principles
+
+.main {
+  @include page-main;
+}
+
+.pageTitle {
+  @include page-title;
+}
+
+.searchContainer {
+  @include page-search-container;
+}
+
+.resultsCount {
+  @include page-results-count;
+}
+
+.grid {
+  @include page-character-grid(19px);
+}
+
+// CharacterCard component handles all card styling
+// Grid controls card dimensions through direct children
+.grid > article {
+  @include page-character-card-dimensions;
+}
+
+.emptyState {
+  @include page-empty-state;
+}
+
+.emptyTitle {
+  @include page-empty-title;
+}
+
+.emptyMessage {
+  @include page-empty-message;
+}
+
+.srOnly {
+  @include sr-only;
+}

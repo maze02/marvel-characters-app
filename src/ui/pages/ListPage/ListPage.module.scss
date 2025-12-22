@@ -1,0 +1,92 @@
+@use "sass:color";
+
+// ListPage uses shared page layout mixins for consistency
+// Following BEM methodology and DRY principles
+// Unique styles: sentinel, errorState, retryButton (infinite scroll feature)
+
+.main {
+  @include page-main;
+}
+
+.pageTitle {
+  @include page-title;
+}
+
+.searchContainer {
+  @include page-search-container;
+}
+
+.resultsCount {
+  @include page-results-count;
+}
+
+.grid {
+  @include page-character-grid(15px);
+}
+
+// CharacterCard component handles all card styling
+// Grid controls card dimensions through direct children
+.grid > article {
+  @include page-character-card-dimensions;
+}
+
+.emptyState {
+  @include page-empty-state;
+}
+
+.emptyTitle {
+  @include page-empty-title;
+}
+
+.emptyMessage {
+  @include page-empty-message;
+}
+
+// =============================================================================
+// Unique ListPage styles (infinite scroll feature)
+// =============================================================================
+
+.sentinel {
+  margin-top: $spacing-6;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorState {
+  text-align: center;
+  padding: $spacing-8 $spacing-4;
+
+  p {
+    color: #666666;
+    margin-bottom: $spacing-4;
+  }
+}
+
+.retryButton {
+  background-color: $color-primary;
+  color: #ffffff;
+  border: none;
+  padding: $spacing-3 $spacing-6;
+  font-size: $font-size-base;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 4px;
+  @include safe-animation(background-color $duration-base $ease-out);
+
+  &:hover {
+    background-color: color.adjust($color-primary, $lightness: -10%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 4px;
+  }
+}
+
+.srOnly {
+  @include sr-only;
+}

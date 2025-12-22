@@ -1,0 +1,61 @@
+/**
+ * Animation Tokens
+ * 
+ * Animation durations, easing functions, and prefers-reduced-motion support.
+ */
+
+// Animation Durations
+$duration-fast: 150ms;
+$duration-base: 300ms;
+$duration-slow: 500ms;
+
+// Easing Functions
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+/**
+ * Reduced Motion Mixin
+ * Respects user's motion preferences for accessibility
+ */
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+/**
+ * Safe Animation Mixin
+ * Applies animation only if user hasn't requested reduced motion
+ */
+@mixin safe-animation($properties...) {
+  transition: $properties;
+  
+  @include reduced-motion {
+    transition: none;
+  }
+}
+
+// Export as CSS custom properties
+:root {
+  --duration-fast: #{$duration-fast};
+  --duration-base: #{$duration-base};
+  --duration-slow: #{$duration-slow};
+  
+  --ease-in: #{$ease-in};
+  --ease-out: #{$ease-out};
+  --ease-in-out: #{$ease-in-out};
+}
+
+// Global reduced motion styles
+@include reduced-motion {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

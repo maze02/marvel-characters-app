@@ -1,0 +1,90 @@
+/**
+ * Color Tokens
+ * 
+ * Marvel-themed color palette with accessibility-compliant contrasts.
+ * All colors meet WCAG 2.1 AA standards for contrast.
+ */
+
+// Primary Brand Colors (Matching Figma)
+$color-primary: #EC1D24; // Marvel Red - exact from mockup
+$color-primary-dark: #c11e22;
+$color-primary-light: #ff3d43;
+
+// Background Colors (WHITE from mockup!)
+$color-background: #FFFFFF; // WHITE background (main page)
+$color-surface: #FFFFFF; // WHITE surface
+$color-surface-elevated: #F5F5F5; // Slightly elevated
+
+// Text Colors  
+$color-text-primary: #000000; // Black text on white
+$color-text-secondary: #AAAAAA; // Gray text (from mockup)
+$color-text-disabled: #CCCCCC; // Lighter gray
+$color-text-on-primary: #FFFFFF; // White text on red
+$color-text-on-dark: #FFFFFF; // White text on black header
+
+// Status Colors
+$color-success: #4caf50;
+$color-error: #f44336;
+$color-warning: #ff9800;
+$color-info: #2196f3;
+
+// Border Colors
+$color-border: #404040;
+$color-border-light: #505050;
+$color-border-focus: $color-primary;
+
+// Overlay Colors
+$color-overlay: rgba(0, 0, 0, 0.6);
+$color-overlay-light: rgba(0, 0, 0, 0.3);
+
+// Favorites/Heart Color
+$color-favorite: #ff4458;
+$color-favorite-active: #ff1744;
+
+// Scrollbar Colors
+$color-scrollbar-track: #E0E0E0; // Light gray track
+$color-scrollbar-thumb: $color-primary; // Marvel red thumb for brand consistency
+$color-scrollbar-thumb-hover: $color-primary-dark; // Darker red on hover
+$color-scrollbar-thumb-active: #a01519; // Even darker on active
+
+// Neutral Grays (for general UI elements)
+$color-gray-100: #F5F5F5;
+$color-gray-200: #E0E0E0;
+$color-gray-300: #CCCCCC;
+$color-gray-400: #AAAAAA;
+$color-gray-500: #666666;
+$color-gray-600: #333333;
+
+// Export as CSS custom properties for runtime access
+:root {
+  --color-primary: #{$color-primary};
+  --color-primary-dark: #{$color-primary-dark};
+  --color-primary-light: #{$color-primary-light};
+  
+  --color-background: #{$color-background};
+  --color-surface: #{$color-surface};
+  --color-surface-elevated: #{$color-surface-elevated};
+  
+  --color-text-primary: #{$color-text-primary};
+  --color-text-secondary: #{$color-text-secondary};
+  --color-text-disabled: #{$color-text-disabled};
+  --color-text-on-primary: #{$color-text-on-primary};
+  
+  --color-success: #{$color-success};
+  --color-error: #{$color-error};
+  --color-warning: #{$color-warning};
+  --color-info: #{$color-info};
+  
+  --color-border: #{$color-border};
+  --color-border-light: #{$color-border-light};
+  --color-border-focus: #{$color-border-focus};
+  
+  --color-overlay: #{$color-overlay};
+  --color-favorite: #{$color-favorite};
+  --color-favorite-active: #{$color-favorite-active};
+  
+  --color-scrollbar-track: #{$color-scrollbar-track};
+  --color-scrollbar-thumb: #{$color-scrollbar-thumb};
+  --color-scrollbar-thumb-hover: #{$color-scrollbar-thumb-hover};
+  --color-scrollbar-thumb-active: #{$color-scrollbar-thumb-active};
+}

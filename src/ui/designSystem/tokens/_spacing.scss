@@ -1,0 +1,40 @@
+/**
+ * Spacing Tokens
+ * 
+ * Consistent spacing scale based on 8px grid system.
+ */
+
+$spacing-unit: 8px;
+
+$spacing-0: 0;
+$spacing-1: calc($spacing-unit * 0.5); // 4px
+$spacing-2: $spacing-unit; // 8px
+$spacing-3: calc($spacing-unit * 1.5); // 12px
+$spacing-4: calc($spacing-unit * 2); // 16px
+$spacing-5: calc($spacing-unit * 2.5); // 20px
+$spacing-6: calc($spacing-unit * 3); // 24px
+$spacing-8: calc($spacing-unit * 4); // 32px
+$spacing-10: calc($spacing-unit * 5); // 40px
+$spacing-12: calc($spacing-unit * 6); // 48px
+$spacing-16: calc($spacing-unit * 8); // 64px
+$spacing-20: calc($spacing-unit * 10); // 80px
+
+// Layout padding tokens (from mockup specifications)
+$padding-mobile: 16px;   // Mobile horizontal padding
+$padding-desktop: 48px;  // Tablet & Desktop horizontal padding
+
+// Export as CSS custom properties
+:root {
+  --spacing-0: #{$spacing-0};
+  --spacing-1: #{$spacing-1};
+  --spacing-2: #{$spacing-2};
+  --spacing-3: #{$spacing-3};
+  --spacing-4: #{$spacing-4};
+  --spacing-5: #{$spacing-5};
+  --spacing-6: #{$spacing-6};
+  --spacing-8: #{$spacing-8};
+  --spacing-10: #{$spacing-10};
+  --spacing-12: #{$spacing-12};
+  --spacing-16: #{$spacing-16};
+  --spacing-20: #{$spacing-20};
+}

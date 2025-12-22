@@ -1,0 +1,54 @@
+.navbar {
+  background-color: #000000;
+  padding: $spacing-4 $padding-mobile; // 16px vertical, 16px horizontal on mobile
+  position: sticky;
+  top: 0;
+  z-index: $z-index-sticky;
+  height: 84px;
+  display: flex;
+  align-items: center;
+
+  @include md {
+    padding: $spacing-4 $padding-desktop; // 16px vertical, 48px horizontal on tablet+
+  }
+}
+
+.content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.favoritesButton {
+  background: none;
+  border: none;
+  color: $color-primary;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  @include safe-animation(transform $duration-fast $ease-out);
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #FFFFFF;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+}
+
+.favoritesCount {
+  font-size: 18px;
+  font-weight: $font-weight-bold;
+  color: #FFFFFF;
+  min-width: 20px;
+  text-align: left;
+  margin-left: $spacing-1;
+}
