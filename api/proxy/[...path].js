@@ -3,4 +3,4 @@
  *   /api/proxy/characters/?url=...
  * still resolve to the proxy handler.
  */
-export { default } from "./index.js";
+module.exports = require("./index");

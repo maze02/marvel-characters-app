@@ -2,8 +2,8 @@
  * Vercel Serverless Function - Comic Vine API Proxy
  *
  * IMPORTANT:
- * - This repo uses `"type": "module"`, so Vercel functions should be ESM.
- * - Use `export default` (not `module.exports`) to avoid runtime crashes.
+ * - `api/package.json` sets `"type": "commonjs"` so this function runs reliably
+ *   even though the root project uses `"type": "module"`.
  *
  * This proxy solves CORS issues by making API requests server-side.
  */
@@ -27,7 +27,7 @@ function getSingle(value) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // Enable CORS for your frontend (not strictly needed for same-origin calls,
   // but helpful for debugging and future reuse).
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -121,4 +121,4 @@ export default async function handler(req, res) {
       message: error?.message ?? String(error),
     });
   }
-}
+};
