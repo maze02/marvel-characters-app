@@ -98,15 +98,16 @@ export class ComicVineApiClient {
   private abortControllers: Map<string, AbortController>;
 
   constructor() {
-    // In production (deployed), use proxy to avoid CORS issues
-    // In development (localhost), call API directly
-    const isProduction =
-      typeof window !== "undefined" &&
-      window.location.hostname !== "localhost" &&
-      window.location.hostname !== "127.0.0.1";
+    // Never call ComicVine directly from a deployed browser (CORS + key exposure).
+    // - On localhost dev, we use Vite proxy (/api -> comicvine) and a dev key.
+    // - On any non-localhost host, we call our Vercel function (/api/proxy).
+    const hostname =
+      typeof window !== "undefined" ? window.location.hostname : "";
+    const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
+    const useServerProxy = !isLocalhost;
 
     this.axios = axios.create({
-      baseURL: isProduction ? "/api/proxy" : config.apiBaseUrl,
+      baseURL: useServerProxy ? "" : config.apiBaseUrl,
       timeout: API.REQUEST_TIMEOUT,
       headers: {
         "Content-Type": "application/json",
@@ -119,17 +120,16 @@ export class ComicVineApiClient {
 
     // Request interceptor - add API key and format
     this.axios.interceptors.request.use((requestConfig) => {
-      if (isProduction) {
-        // In production, send full Comic Vine URL to proxy
-        const params = new URLSearchParams({
+      if (useServerProxy) {
+        // Deployed: call our Vercel proxy and let the server add the API key.
+        const endpoint = requestConfig.url ?? "";
+        requestConfig.url = "/api/proxy";
+        requestConfig.params = {
+          endpoint,
           ...requestConfig.params,
-          api_key: config.comicVineApiKey,
-          format: "json",
-        });
-        const fullUrl = `https://comicvine.gamespot.com/api${requestConfig.url}?${params.toString()}`;
-        requestConfig.params = { url: encodeURIComponent(fullUrl) };
+        };
       } else {
-        // In development, add params directly
+        // Local dev: go through Vite proxy (/api/* -> comicvine) and add dev key client-side.
         requestConfig.params = {
           ...requestConfig.params,
           api_key: config.comicVineApiKey,
