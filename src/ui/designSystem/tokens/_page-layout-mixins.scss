@@ -1,0 +1,123 @@
+// =============================================================================
+// PAGE LAYOUT MIXINS
+// Shared layout patterns for ListPage and FavoritesPage
+// Following BEM methodology with reusable mixins to eliminate duplication
+// =============================================================================
+
+// Import required design tokens
+@use "./spacing" as *;
+@use "./typography" as *;
+@use "./breakpoints" as *;
+
+// Main page container with consistent padding
+@mixin page-main {
+  padding: 20px $padding-mobile;
+
+  @include md {
+    padding: 20px $padding-desktop;
+  }
+}
+
+// Page title (uppercase, bold)
+@mixin page-title {
+  font-size: 24px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  letter-spacing: $letter-spacing-normal;
+  margin: 0 0 $spacing-6 0;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+// Search container spacing
+@mixin page-search-container {
+  margin-bottom: $spacing-4;
+}
+
+// Results count text (small, uppercase)
+@mixin page-results-count {
+  font-size: 12px;
+  font-family: $font-family-condensed;
+  color: #000000;
+  letter-spacing: $letter-spacing-normal;
+  margin: $spacing-4 0;
+  font-weight: $font-weight-medium;
+  text-transform: uppercase;
+}
+
+// Character grid with responsive columns
+// $gap-lg: optional gap for large breakpoint (default: 19px)
+@mixin page-character-grid($gap-lg: 19px) {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+
+  @include md {
+    grid-template-columns: repeat(auto-fit, 172.5px);
+    gap: 16px;
+  }
+
+  @include lg {
+    grid-template-columns: repeat(auto-fit, 188.571px);
+    gap: $gap-lg;
+  }
+}
+
+// Character card dimensions (applied to grid > article)
+@mixin page-character-card-dimensions {
+  width: 100%;
+  height: 189.97px;
+
+  @include md {
+    width: 172.5px;
+    height: 245.97px;
+  }
+
+  @include lg {
+    width: 188.571px;
+    height: 245.97px;
+  }
+}
+
+// Empty state container (centered)
+@mixin page-empty-state {
+  text-align: center;
+  padding: $spacing-16 $spacing-4;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+// Empty state title
+@mixin page-empty-title {
+  color: #000000;
+  margin-bottom: $spacing-3;
+  font-size: 20px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-normal;
+}
+
+// Empty state message
+@mixin page-empty-message {
+  color: #666666;
+  font-size: 14px;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal;
+  line-height: $line-height-relaxed;
+  margin: 0;
+}
+
+// Screen reader only utility (visually hidden)
+@mixin sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
