@@ -100,10 +100,7 @@ export class ComicVineApiClient {
   constructor() {
     // In production (deployed), use proxy to avoid CORS issues
     // In development (localhost), call API directly
-    const isProduction =
-      typeof window !== "undefined" &&
-      window.location.hostname !== "localhost" &&
-      window.location.hostname !== "127.0.0.1";
+    const isProduction = config.isProduction;
 
     this.axios = axios.create({
       baseURL: isProduction ? "" : config.apiBaseUrl,
