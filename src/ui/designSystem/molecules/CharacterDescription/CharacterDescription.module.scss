@@ -1,6 +1,6 @@
 .container {
   padding: $spacing-6 $padding-mobile;
-  background-color: #FFFFFF;
+  background-color: $color-background;
 
   @include md {
     padding: $spacing-6 $padding-desktop;
@@ -17,11 +17,11 @@
   font-weight: $font-weight-regular;
   letter-spacing: $letter-spacing-normal;
   line-height: $line-height-relaxed;
-  color: #666666;
+  color: $color-gray-500;
   margin: 0 0 $spacing-4;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
-  
+
   // Mobile: show ~6 lines before truncation
   &.collapsed {
     display: -webkit-box;
@@ -49,31 +49,13 @@
 }
 
 .toggleButton {
-  background: none;
-  border: none;
+  @include button-interactive($color-primary);
   color: $color-primary;
   font-size: 14px;
   font-family: $font-family-condensed;
   font-weight: $font-weight-bold;
   letter-spacing: $letter-spacing-normal;
   text-transform: uppercase;
-  cursor: pointer;
-  padding: 0;
   display: inline-flex;
   align-items: center;
-  @include safe-animation(opacity $duration-fast $ease-out);
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $color-primary;
-    outline-offset: 4px;
-    border-radius: 2px;
-  }
-
-  &:active {
-    opacity: 0.6;
-  }
 }

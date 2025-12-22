@@ -1,0 +1,145 @@
+// =============================================================================
+// UTILITY MIXINS
+// Common reusable patterns following BEM and DRY principles
+// =============================================================================
+
+@use "./colors" as *;
+@use "./spacing" as *;
+@use "./animations" as *;
+
+// =============================================================================
+// Layout Utilities
+// =============================================================================
+
+// Flex center (both axes)
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flex center column
+@mixin flex-column-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flex center horizontal only
+@mixin flex-center-horizontal {
+  display: flex;
+  justify-content: center;
+}
+
+// Flex center vertical only
+@mixin flex-center-vertical {
+  display: flex;
+  align-items: center;
+}
+
+// =============================================================================
+// Shape Utilities
+// =============================================================================
+
+// Triangle clip (bottom-right corner cut)
+@mixin triangle-clip($size: 24px) {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - #{$size}),
+    calc(100% - #{$size}) 100%,
+    0 100%
+  );
+}
+
+// =============================================================================
+// Interactive States
+// =============================================================================
+
+// Focus outline (accessible)
+@mixin focus-outline($color: $color-primary, $offset: 2px) {
+  &:focus-visible {
+    outline: 2px solid $color;
+    outline-offset: $offset;
+    border-radius: 2px;
+  }
+}
+
+// Hover scale effect
+@mixin hover-scale($scale: 1.05) {
+  @include safe-animation(transform $duration-fast $ease-out);
+
+  &:hover {
+    transform: scale($scale);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Hover opacity effect
+@mixin hover-opacity($opacity: 0.8) {
+  @include safe-animation(opacity $duration-fast $ease-out);
+
+  &:hover {
+    opacity: $opacity;
+  }
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+// =============================================================================
+// Button Base Patterns
+// =============================================================================
+
+// Base button reset
+@mixin button-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+// Interactive button (clickable with states)
+@mixin button-interactive($color: $color-primary) {
+  @include button-reset;
+  @include focus-outline($color);
+  @include safe-animation(opacity $duration-fast $ease-out);
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:active {
+    opacity: 0.6;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+// =============================================================================
+// Typography Utilities
+// =============================================================================
+
+// Text truncation (single line)
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Line clamp (multi-line truncation)
+@mixin line-clamp($lines: 2) {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+}

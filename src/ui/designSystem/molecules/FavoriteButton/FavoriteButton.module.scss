@@ -1,12 +1,9 @@
 .favoriteButton {
-  background: none;
-  border: none;
+  @include button-reset;
+  @include flex-center;
+  @include focus-outline($color-primary, 2px);
   padding: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #FFFFFF;
+  color: $color-white;
   line-height: 0;
   will-change: transform; // Optimize transform animations
   @include safe-animation(
@@ -16,12 +13,6 @@
 
   &:hover {
     transform: scale(1.15);
-  }
-
-  &:focus-visible {
-    outline: 2px solid $color-primary;
-    outline-offset: 2px;
-    border-radius: 2px;
   }
 
   &:active {
@@ -39,7 +30,7 @@
   &--active {
     color: $color-primary; // Red heart when favorited
   }
-  
+
   // Icon always inherits color from button (currentColor in SVG)
   svg {
     // Ensure fill and stroke use currentColor properly
