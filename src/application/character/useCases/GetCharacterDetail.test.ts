@@ -33,7 +33,7 @@ describe('GetCharacterDetail', () => {
       searchByName: jest.fn(),
       list: jest.fn(),
       findMany: jest.fn(),
-      getComics: jest.fn(),
+      getComicsByIds: jest.fn(),
     } as jest.Mocked<CharacterRepository>;
 
     useCase = new GetCharacterDetail(mockRepository);

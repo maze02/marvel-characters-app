@@ -26,6 +26,7 @@ export class Character {
   private readonly _description: string;
   private readonly _thumbnail: ImageUrl;
   private readonly _modifiedDate: Date;
+  private readonly _issueIds: readonly number[]; // IDs of issues this character appears in
 
   constructor(props: {
     id: CharacterId;
@@ -33,12 +34,14 @@ export class Character {
     description: string;
     thumbnail: ImageUrl;
     modifiedDate: Date;
+    issueIds?: number[]; // Optional - not all contexts need issue data
   }) {
     this._id = props.id;
     this._name = props.name;
     this._description = props.description.trim();
     this._thumbnail = props.thumbnail;
     this._modifiedDate = props.modifiedDate;
+    this._issueIds = Object.freeze(props.issueIds || []); // Immutable array
   }
 
   get id(): CharacterId {
@@ -59,6 +62,28 @@ export class Character {
 
   get modifiedDate(): Date {
     return new Date(this._modifiedDate);
+  }
+
+  /**
+   * Get list of issue IDs this character appears in
+   * Returns a readonly array to maintain immutability
+   */
+  get issueIds(): readonly number[] {
+    return this._issueIds;
+  }
+
+  /**
+   * Check if character has associated issues
+   */
+  hasIssues(): boolean {
+    return this._issueIds.length > 0;
+  }
+
+  /**
+   * Get count of issues this character appears in
+   */
+  getIssueCount(): number {
+    return this._issueIds.length;
   }
 
   /**

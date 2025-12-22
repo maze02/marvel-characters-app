@@ -43,8 +43,12 @@ export class ImageUrl {
    * @returns Complete image URL
    */
   getUrl(variant?: string): string {
-    // If path already contains Comic Vine domain, it's a complete URL - just add extension
-    if (this._path.includes('comicvine.gamespot.com')) {
+    // If path already contains Comic Vine domain, it's a complete URL
+    if (this._path.includes('comicvine.gamespot.com') || this._path.includes('/uploads/')) {
+      // Check if URL already has an extension
+      if (this._path.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        return this._path; // Already has extension
+      }
       return `${this._path}.${this._extension}`;
     }
     

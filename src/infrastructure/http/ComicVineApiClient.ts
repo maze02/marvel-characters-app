@@ -5,7 +5,7 @@ import { logger } from '@infrastructure/logging/Logger';
 
 /**
  * Check if running in development mode
- * Works in both Vite (import.meta) and Jest (process.env)
+ * Works in both Vite and Jest environments
  */
 const isDevelopment = (): boolean => {
   // Check if we're in a test environment first (Jest)
@@ -13,14 +13,9 @@ const isDevelopment = (): boolean => {
     return false; // Don't log in tests
   }
   
-  // Check for Vite dev mode (use eval to avoid Jest parsing import.meta)
-  try {
-    // eslint-disable-next-line no-eval
-    return eval('typeof import.meta !== "undefined" && import.meta.env?.DEV') === true;
-  } catch {
-    // Fallback to Node environment check
-    return process.env.NODE_ENV === 'development';
-  }
+  // Use process.env which works in both Vite and Node
+  // Vite sets NODE_ENV to 'development' in dev mode
+  return process.env.NODE_ENV === 'development';
 };
 
 /**
@@ -199,7 +194,11 @@ export class ComicVineApiClient {
     this.abortControllers.set(cacheKey, controller);
 
     try {
-      logger.debug('API request', { endpoint, params });
+      // Build full URL for debugging
+      const queryString = new URLSearchParams(params as Record<string, string>).toString();
+      const fullUrl = `${endpoint}?${queryString}`;
+      
+      logger.debug('API request', { endpoint, params, fullUrl });
       
       const response = await this.axios.get<T>(endpoint, {
         params,

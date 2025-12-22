@@ -31,6 +31,8 @@ import styles from './ListPage.module.scss';
 export const ListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Character[]>([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const debouncedQuery = useDebouncedValue(searchQuery, UI.SEARCH_DEBOUNCE_MS);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { startLoading, stopLoading } = useLoading();
@@ -60,35 +62,70 @@ export const ListPage: React.FC = () => {
     }
   }, [isInfiniteScrollLoading, searchQuery]);
 
-  // Handle search
+  // Handle search - only runs when debouncedQuery changes (not on every keystroke!)
   useEffect(() => {
     const performSearch = async () => {
       if (!debouncedQuery) {
         setSearchResults([]);
+        setIsSearchLoading(false);
+        setSearchError(null);
         stopLoading();
         return;
       }
 
+      logger.info('Performing search', { debouncedQuery });
+      setIsSearchLoading(true);
+      setSearchError(null);
       startLoading();
       try {
         const result = await searchCharacters.execute(debouncedQuery);
+        logger.info('Search results received', { 
+          query: debouncedQuery, 
+          count: result.count,
+          charactersLength: result.characters.length 
+        });
         setSearchResults(result.characters);
-      } catch (error) {
-        logger.error('Search failed', error, { query: debouncedQuery });
+        setSearchError(null);
+      } catch (error: any) {
+        // Don't log cancelled requests as errors (expected behavior from debouncing)
+        if (error?.message?.includes('cancel') || error?.code === 'ERR_CANCELED') {
+          logger.debug('Search request cancelled (debouncing)', { query: debouncedQuery });
+          setSearchError(null);
+        } else {
+          logger.error('Search failed', error, { query: debouncedQuery });
+          // Set user-friendly error message
+          if (error?.message?.includes('timeout')) {
+            setSearchError('The search is taking too long. The Comic Vine API might be slow right now. Please try again.');
+          } else if (error?.message?.includes('rate limit')) {
+            setSearchError('Too many requests. Please wait a moment and try again.');
+          } else {
+            setSearchError('Search failed. Please check your connection and try again.');
+          }
+        }
         setSearchResults([]);
       } finally {
+        setIsSearchLoading(false);
         stopLoading();
       }
     };
 
     void performSearch();
-  }, [debouncedQuery, searchCharacters, startLoading, stopLoading]);
+  }, [debouncedQuery, searchCharacters, startLoading, stopLoading]); // ✅ Removed searchQuery - only trigger on debouncedQuery!
+
+  // Retry search handler
+  const retrySearch = () => {
+    setSearchError(null);
+    setSearchQuery(''); // Clear search
+    setTimeout(() => setSearchQuery(debouncedQuery), 0); // Retrigger with same query
+  };
 
   // Determine which characters to display
   const displayedCharacters = searchQuery ? searchResults : infiniteScrollCharacters;
   
   // Determine if we're currently loading
-  const isLoading = searchQuery ? false : isInfiniteScrollLoading && infiniteScrollCharacters.length === 0;
+  const isLoading = searchQuery 
+    ? isSearchLoading && searchResults.length === 0  // Show loading for search
+    : isInfiniteScrollLoading && infiniteScrollCharacters.length === 0; // Show loading for initial list
 
   return (
     <Layout>
@@ -97,7 +134,7 @@ export const ListPage: React.FC = () => {
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="SEARCH A CHARACTER..."
+            placeholder="SEARCH A MARVEL CHARACTER..."
           />
         </div>
 
@@ -147,6 +184,18 @@ export const ListPage: React.FC = () => {
           <div ref={sentinelRef} className={styles.sentinel} data-testid="sentinel" />
         )}
 
+        {/* Search error state */}
+        {!isLoading && searchError && searchQuery && (
+          <div className={styles.errorState}>
+            <Icon name="heart" size={48} className={styles.emptyIcon} />
+            <h2 className={styles.emptyTitle}>Search Failed</h2>
+            <p className={styles.emptyMessage}>{searchError}</p>
+            <button onClick={retrySearch} className={styles.retryButton}>
+              Retry Search
+            </button>
+          </div>
+        )}
+
         {/* Error state - only show after loading completes */}
         {!isLoading && infiniteScrollError && !searchQuery && infiniteScrollCharacters.length === 0 && (
           <div className={styles.errorState}>
@@ -157,28 +206,31 @@ export const ListPage: React.FC = () => {
           </div>
         )}
 
-        {/* Empty state - only show after loading completes */}
-        {!isLoading && displayedCharacters.length === 0 && (
-          <div className={styles.emptyState}>
-            <Icon name="heart" size={48} className={styles.emptyIcon} />
-            <h2 className={styles.emptyTitle}>
-              {searchQuery ? 'No Characters Found' : 'No Data Available'}
-            </h2>
-            {searchQuery ? (
-              <p className={styles.emptyMessage}>
-                Try searching for different character names like "Spider", "Iron", or "Captain"
-              </p>
-            ) : (
-              <>
+        {/* Empty state - only show after loading completes and search has actually executed */}
+        {!isLoading && !searchError && displayedCharacters.length === 0 && (
+          // If user is typing but debounce hasn't triggered yet, don't show empty state
+          searchQuery && !debouncedQuery ? null : (
+            <div className={styles.emptyState}>
+              <Icon name="heart" size={48} className={styles.emptyIcon} />
+              <h2 className={styles.emptyTitle}>
+                {searchQuery ? 'No Characters Found' : 'No Data Available'}
+              </h2>
+              {searchQuery ? (
                 <p className={styles.emptyMessage}>
-                  Configure Comic Vine API key in .env to load character data
+                  Try searching for different character names like "Spider", "Iron", or "Captain"
                 </p>
-                <p className={styles.emptyMessage}>
-                  Get your API key at <a href="https://comicvine.gamespot.com/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#EC1D24', textDecoration: 'underline' }}>comicvine.gamespot.com/api</a>
-                </p>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  <p className={styles.emptyMessage}>
+                    Configure Comic Vine API key in .env to load character data
+                  </p>
+                  <p className={styles.emptyMessage}>
+                    Get your API key at <a href="https://comicvine.gamespot.com/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#EC1D24', textDecoration: 'underline' }}>comicvine.gamespot.com/api</a>
+                  </p>
+                </>
+              )}
+            </div>
+          )
         )}
       </div>
     </Layout>
