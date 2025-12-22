@@ -5,7 +5,7 @@
  * where CORS restrictions don't apply.
  */
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   // Enable CORS for your frontend
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -62,4 +62,4 @@ export default async function handler(req, res) {
       message: error.message,
     });
   }
-}
+};
