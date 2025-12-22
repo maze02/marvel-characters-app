@@ -2,25 +2,47 @@
 /**
  * ListCharacterComics Tests
  * 
- * Tests for fetching comics for a character, covering limits,
- * sorting, validation, and error handling.
+ * Tests for the new two-step approach:
+ * 1. Get character with issue_credits
+ * 2. Batch fetch comics by IDs
  */
 
 import { ListCharacterComics } from './ListCharacterComics';
 import { CharacterRepository } from '@domain/character/ports/CharacterRepository';
+import { Character } from '@domain/character/entities/Character';
 import { Comic } from '@domain/character/entities/Comic';
 import { CharacterId } from '@domain/character/valueObjects/CharacterId';
+import { CharacterName } from '@domain/character/valueObjects/CharacterName';
 import { ImageUrl } from '@domain/character/valueObjects/ImageUrl';
 import { ReleaseDate } from '@domain/character/valueObjects/ReleaseDate';
-import { PAGINATION, COMICS } from '@config/constants';
+
+// Helper to create a character with issue IDs
+const createCharacterWithIssues = (issueIds: number[]) => new Character({
+  id: new CharacterId(1234),
+  name: new CharacterName('Spider-Man'),
+  description: 'Friendly neighborhood Spider-Man',
+  image: new ImageUrl('https://example.com/image.jpg'),
+  issueIds,
+});
 
 describe('ListCharacterComics', () => {
   let useCase: ListCharacterComics;
   let mockRepository: jest.Mocked<CharacterRepository>;
+  let mockCharacter: Character;
   let mockComics: Comic[];
 
   beforeEach(() => {
-    // Create mock comics with different release dates
+    // Create mock character with issue IDs
+    mockCharacter = new Character({
+      id: new CharacterId(1234),
+      name: new CharacterName('Spider-Man'),
+      description: 'Friendly neighborhood Spider-Man',
+      thumbnail: new ImageUrl('http://example.com/character', 'jpg'),
+      modifiedDate: new Date(),
+      issueIds: [1, 2, 3], // Character appears in 3 issues
+    });
+
+    // Create mock comics
     mockComics = [
       new Comic({
         id: 1,
@@ -28,7 +50,7 @@ describe('ListCharacterComics', () => {
         description: 'First issue',
         thumbnail: new ImageUrl('http://example.com/comic1', 'jpg'),
         onSaleDate: new ReleaseDate('2024-01-15'),
-        characterId: new CharacterId(1009610),
+        characterId: new CharacterId(1234),
       }),
       new Comic({
         id: 2,
@@ -36,7 +58,7 @@ describe('ListCharacterComics', () => {
         description: 'Second issue',
         thumbnail: new ImageUrl('http://example.com/comic2', 'jpg'),
         onSaleDate: new ReleaseDate('2024-02-15'),
-        characterId: new CharacterId(1009610),
+        characterId: new CharacterId(1234),
       }),
       new Comic({
         id: 3,
@@ -44,370 +66,242 @@ describe('ListCharacterComics', () => {
         description: 'Third issue',
         thumbnail: new ImageUrl('http://example.com/comic3', 'jpg'),
         onSaleDate: new ReleaseDate('2024-03-15'),
-        characterId: new CharacterId(1009610),
+        characterId: new CharacterId(1234),
       }),
     ];
 
     // Create mock repository
     mockRepository = {
-      getComics: jest.fn(),
       findById: jest.fn(),
-      searchByName: jest.fn(),
-      list: jest.fn(),
       findMany: jest.fn(),
+      searchByName: jest.fn(),
+      getComicsByIds: jest.fn(),
     } as jest.Mocked<CharacterRepository>;
 
     useCase = new ListCharacterComics(mockRepository);
   });
 
   describe('execute', () => {
-    describe('Basic retrieval', () => {
-      it('should return comics for character', async () => {
-        mockRepository.getComics.mockResolvedValue(mockComics);
+    describe('Two-step approach', () => {
+      it('should fetch character first, then fetch comics by IDs', async () => {
+        mockRepository.findById.mockResolvedValue(mockCharacter);
+        mockRepository.getComicsByIds.mockResolvedValue(mockComics);
 
-        const result = await useCase.execute(1009610);
+        const result = await useCase.execute(1234);
+
+        // Step 1: Get character
+        expect(mockRepository.findById).toHaveBeenCalledWith(expect.any(CharacterId));
+        const receivedId = mockRepository.findById.mock.calls[0]?.[0];
+        expect(receivedId?.value).toBe(1234);
+
+        // Step 2: Get comics by IDs
+        expect(mockRepository.getComicsByIds).toHaveBeenCalledWith(
+          [1, 2, 3], // Issue IDs from character
+          expect.any(CharacterId)
+        );
 
         expect(result).toEqual(mockComics);
       });
 
-      it('should call repository with correct CharacterId', async () => {
-        mockRepository.getComics.mockResolvedValue(mockComics);
+      it('should call repository methods in correct order', async () => {
+        const callOrder: string[] = [];
+        
+        mockRepository.findById.mockImplementation(async () => {
+          callOrder.push('findById');
+          return mockCharacter;
+        });
+        
+        mockRepository.getComicsByIds.mockImplementation(async () => {
+          callOrder.push('getComicsByIds');
+          return mockComics;
+        });
 
-        await useCase.execute(1009610);
+        await useCase.execute(1234);
 
-        expect(mockRepository.getComics).toHaveBeenCalledWith(
-          expect.any(CharacterId),
-          COMICS.DEFAULT_DETAIL_PAGE_LIMIT
-        );
-        const receivedId = mockRepository.getComics.mock.calls[0]?.[0];
-        expect(receivedId?.value).toBe(1009610);
+        expect(callOrder).toEqual(['findById', 'getComicsByIds']);
       });
+    });
 
-      it('should use default limit when not specified', async () => {
-        mockRepository.getComics.mockResolvedValue(mockComics);
+    describe('Character with no issues', () => {
+      it('should return empty array if character has no issues', async () => {
+        const characterWithNoIssues = new Character({
+          id: new CharacterId(1234),
+          name: new CharacterName('Obscure Character'),
+          description: 'No comics',
+          thumbnail: new ImageUrl('http://example.com/character', 'jpg'),
+          modifiedDate: new Date(),
+          issueIds: [], // No issues
+        });
 
-        await useCase.execute(1009610);
+        mockRepository.findById.mockResolvedValue(characterWithNoIssues);
 
-        expect(mockRepository.getComics).toHaveBeenCalledWith(
-          expect.any(CharacterId),
-          20 // DEFAULT_DETAIL_PAGE_LIMIT
-        );
-      });
-
-      it('should handle empty results', async () => {
-        mockRepository.getComics.mockResolvedValue([]);
-
-        const result = await useCase.execute(1009610);
+        const result = await useCase.execute(1234);
 
         expect(result).toEqual([]);
+        // Should NOT call getComicsByIds since character has no issues
+        expect(mockRepository.getComicsByIds).not.toHaveBeenCalled();
       });
 
-      it('should handle single comic', async () => {
-        // @ts-expect-error - Test code, mockComics[0] is guaranteed to exist
-        mockRepository.getComics.mockResolvedValue([mockComics[0]]);
+      it('should return empty array if character has undefined issueIds', async () => {
+        const characterNoIssueIds = new Character({
+          id: new CharacterId(1234),
+          name: new CharacterName('Test'),
+          description: 'Test',
+          thumbnail: new ImageUrl('http://example.com/character', 'jpg'),
+          modifiedDate: new Date(),
+          // issueIds not provided (defaults to empty array)
+        });
 
-        const result = await useCase.execute(1009610);
+        mockRepository.findById.mockResolvedValue(characterNoIssueIds);
 
-        expect(result).toHaveLength(1);
-        expect(result[0]).toBe(mockComics[0]);
-      });
-    });
+        const result = await useCase.execute(1234);
 
-    describe('Custom limits', () => {
-      it('should use custom limit when specified', async () => {
-        mockRepository.getComics.mockResolvedValue(mockComics);
-
-        await useCase.execute(1009610, 10);
-
-        expect(mockRepository.getComics).toHaveBeenCalledWith(
-          expect.any(CharacterId),
-          10
-        );
-      });
-
-      it('should accept limit of 1', async () => {
-        if (mockComics[0]) {
-          mockRepository.getComics.mockResolvedValue([mockComics[0]]);
-        }
-
-        await useCase.execute(1009610, 1);
-
-        expect(mockRepository.getComics).toHaveBeenCalledWith(
-          expect.any(CharacterId),
-          1
-        );
-      });
-
-      it('should accept limit of MAX_LIMIT', async () => {
-        mockRepository.getComics.mockResolvedValue(mockComics);
-
-        await useCase.execute(1009610, PAGINATION.MAX_LIMIT);
-
-        expect(mockRepository.getComics).toHaveBeenCalledWith(
-          expect.any(CharacterId),
-          100
-        );
-      });
-
-      it('should handle different limit values', async () => {
-        mockRepository.getComics.mockResolvedValue(mockComics);
-
-        await useCase.execute(1009610, 50);
-
-        expect(mockRepository.getComics).toHaveBeenCalledWith(
-          expect.any(CharacterId),
-          50
-        );
+        expect(result).toEqual([]);
+        expect(mockRepository.getComicsByIds).not.toHaveBeenCalled();
       });
     });
 
-    describe('Limit validation', () => {
-      it('should throw error when limit is 0', async () => {
-        await expect(useCase.execute(1009610, 0)).rejects.toThrow(
-          'Limit must be between 1 and 100'
+    describe('Character not found', () => {
+      it('should throw error if character not found', async () => {
+        mockRepository.findById.mockResolvedValue(null);
+
+        await expect(useCase.execute(1234)).rejects.toThrow(
+          'Character with ID 1234 not found'
         );
       });
 
-      it('should throw error when limit is negative', async () => {
-        await expect(useCase.execute(1009610, -1)).rejects.toThrow(
-          'Limit must be between 1 and 100'
-        );
-      });
+      it('should not call getComicsByIds if character not found', async () => {
+        mockRepository.findById.mockResolvedValue(null);
 
-      it('should throw error when limit exceeds MAX_LIMIT', async () => {
-        await expect(useCase.execute(1009610, 101)).rejects.toThrow(
-          'Limit must be between 1 and 100'
-        );
-      });
-
-      it('should throw error when limit is very large', async () => {
-        await expect(useCase.execute(1009610, 1000)).rejects.toThrow(
-          'Limit must be between 1 and 100'
-        );
-      });
-
-      it('should not call repository when limit is invalid', async () => {
         try {
-          await useCase.execute(1009610, 0);
+          await useCase.execute(1234);
         } catch (error) {
           // Expected
         }
 
-        expect(mockRepository.getComics).not.toHaveBeenCalled();
+        expect(mockRepository.getComicsByIds).not.toHaveBeenCalled();
       });
     });
 
-    describe('Sorting', () => {
-      it('should sort comics by release date', async () => {
-        // Return comics in wrong order
-        const unsortedComics = [mockComics[2], mockComics[0], mockComics[1]];
-        mockRepository.getComics.mockResolvedValue(unsortedComics);
-
-        const result = await useCase.execute(1009610);
-
-        // Should be sorted by date (earliest first)
-        expect(result[0].title).toBe('Amazing Spider-Man #1');
-        expect(result[1].title).toBe('Amazing Spider-Man #2');
-        expect(result[2].title).toBe('Amazing Spider-Man #3');
-      });
-
-      it('should handle comics without dates', async () => {
-        const comicNoDate = new Comic({
-          id: 4,
-          title: 'No Date Comic',
-          description: 'Test',
-          thumbnail: new ImageUrl('http://example.com/comic4', 'jpg'),
-          onSaleDate: null,
-          characterId: new CharacterId(1009610),
+    describe('Character with many issues', () => {
+      it('should handle character with 100+ issues', async () => {
+        const issueIds = Array.from({ length: 150 }, (_, i) => i + 1);
+        const characterManyIssues = new Character({
+          id: new CharacterId(1234),
+          name: new CharacterName('Spider-Man'),
+          description: 'Many comics',
+          thumbnail: new ImageUrl('http://example.com/character', 'jpg'),
+          modifiedDate: new Date(),
+          issueIds,
         });
 
-        mockRepository.getComics.mockResolvedValue([comicNoDate, mockComics[0]!]);
-
-        const result = await useCase.execute(1009610);
-
-        // Comic with date should come first
-        expect(result[0]?.title).toBe('Amazing Spider-Man #1');
-        expect(result[1]?.title).toBe('No Date Comic');
-      });
-
-      it('should handle all comics without dates', async () => {
-        const comic1NoDate = new Comic({
-          id: 1,
-          title: 'Comic A',
+        const manyComics = issueIds.map(id => new Comic({
+          id,
+          title: `Comic #${id}`,
           description: 'Test',
-          thumbnail: new ImageUrl('http://example.com/a', 'jpg'),
-          onSaleDate: null,
-          characterId: new CharacterId(1009610),
-        });
-
-        const comic2NoDate = new Comic({
-          id: 2,
-          title: 'Comic B',
-          description: 'Test',
-          thumbnail: new ImageUrl('http://example.com/b', 'jpg'),
-          onSaleDate: null,
-          characterId: new CharacterId(1009610),
-        });
-
-        mockRepository.getComics.mockResolvedValue([comic1NoDate, comic2NoDate]);
-
-        const result = await useCase.execute(1009610);
-
-        expect(result).toHaveLength(2);
-      });
-
-      it('should maintain sort stability for same dates', async () => {
-        const comic1 = new Comic({
-          id: 1,
-          title: 'Comic 1',
-          description: 'Test',
-          thumbnail: new ImageUrl('http://example.com/1', 'jpg'),
+          thumbnail: new ImageUrl(`http://example.com/comic${id}`, 'jpg'),
           onSaleDate: new ReleaseDate('2024-01-01'),
-          characterId: new CharacterId(1009610),
-        });
+          characterId: new CharacterId(1234),
+        }));
 
-        const comic2 = new Comic({
-          id: 2,
-          title: 'Comic 2',
-          description: 'Test',
-          thumbnail: new ImageUrl('http://example.com/2', 'jpg'),
-          onSaleDate: new ReleaseDate('2024-01-01'),
-          characterId: new CharacterId(1009610),
-        });
+        mockRepository.findById.mockResolvedValue(characterManyIssues);
+        mockRepository.getComicsByIds.mockResolvedValue(manyComics);
 
-        mockRepository.getComics.mockResolvedValue([comic2, comic1]);
+        const result = await useCase.execute(1234);
 
-        const result = await useCase.execute(1009610);
-
-        expect(result).toHaveLength(2);
+        expect(result).toHaveLength(150);
+        expect(mockRepository.getComicsByIds).toHaveBeenCalledWith(
+          issueIds,
+          expect.any(CharacterId)
+        );
       });
     });
 
     describe('Error handling', () => {
-      it('should propagate repository errors', async () => {
-        mockRepository.getComics.mockRejectedValue(new Error('API Error'));
+      it('should propagate errors from findById', async () => {
+        mockRepository.findById.mockRejectedValue(new Error('API Error'));
 
-        await expect(useCase.execute(1009610)).rejects.toThrow('API Error');
+        await expect(useCase.execute(1234)).rejects.toThrow('API Error');
       });
 
-      it('should propagate network errors', async () => {
-        mockRepository.getComics.mockRejectedValue(new Error('Network error'));
+      it('should propagate errors from getComicsByIds', async () => {
+        mockRepository.findById.mockResolvedValue(mockCharacter);
+        mockRepository.getComicsByIds.mockRejectedValue(new Error('Comics API Error'));
 
-        await expect(useCase.execute(1009610)).rejects.toThrow('Network error');
+        await expect(useCase.execute(1234)).rejects.toThrow('Comics API Error');
       });
 
-      it('should handle timeout errors', async () => {
-        mockRepository.getComics.mockRejectedValue(new Error('Request timeout'));
+      it('should handle network errors', async () => {
+        mockRepository.findById.mockRejectedValue(new Error('Network error'));
 
-        await expect(useCase.execute(1009610)).rejects.toThrow('Request timeout');
+        await expect(useCase.execute(1234)).rejects.toThrow('Network error');
       });
 
-      it('should handle invalid character IDs', async () => {
+      it('should handle invalid character ID validation', async () => {
         await expect(useCase.execute(0)).rejects.toThrow('Invalid character ID');
       });
 
-      it('should handle negative character IDs', async () => {
+      it('should handle negative character ID', async () => {
         await expect(useCase.execute(-1)).rejects.toThrow('Invalid character ID');
       });
     });
 
-    describe('Edge cases', () => {
-      it('should handle very old release dates', async () => {
-        const oldComic = new Comic({
-          id: 1,
-          title: 'Old Comic',
-          description: 'Test',
-          thumbnail: new ImageUrl('http://example.com/old', 'jpg'),
-          onSaleDate: new ReleaseDate('1963-03-01'),
-          characterId: new CharacterId(1009610),
-        });
+    describe('Results', () => {
+      it('should return comics in order returned by repository', async () => {
+        // Repository returns comics sorted by cover_date:desc
+        mockRepository.findById.mockResolvedValue(mockCharacter);
+        mockRepository.getComicsByIds.mockResolvedValue(mockComics);
 
-        // @ts-expect-error - Test code, mockComics[0] is guaranteed to exist
-        mockRepository.getComics.mockResolvedValue([mockComics[0], oldComic]);
+        const result = await useCase.execute(1234);
 
-        const result = await useCase.execute(1009610);
-
-        // Old comic should come first
-        expect(result[0]!.title).toBe('Old Comic');
-      });
-
-      it('should handle future release dates', async () => {
-        const futureComic = new Comic({
-          id: 1,
-          title: 'Future Comic',
-          description: 'Test',
-          thumbnail: new ImageUrl('http://example.com/future', 'jpg'),
-          onSaleDate: new ReleaseDate('2099-01-01'),
-          characterId: new CharacterId(1009610),
-        });
-
-        mockRepository.getComics.mockResolvedValue([futureComic, mockComics[0]!]);
-
-        const result = await useCase.execute(1009610);
-
-        // Current comic should come first
+        // Should maintain repository order (already sorted)
         expect(result[0]?.title).toBe('Amazing Spider-Man #1');
-        expect(result[1]?.title).toBe('Future Comic');
+        expect(result[1]?.title).toBe('Amazing Spider-Man #2');
+        expect(result[2]?.title).toBe('Amazing Spider-Man #3');
       });
 
-      it('should handle repository returning null', async () => {
-        mockRepository.getComics.mockResolvedValue(null as any);
+      it('should handle partial results from repository', async () => {
+        // Character has 3 issue IDs, but repository only returns 2 comics
+        mockRepository.findById.mockResolvedValue(mockCharacter);
+        mockRepository.getComicsByIds.mockResolvedValue([mockComics[0], mockComics[1]]);
 
-        await expect(useCase.execute(1009610)).rejects.toThrow();
+        const result = await useCase.execute(1234);
+
+        expect(result).toHaveLength(2);
       });
 
-      it('should handle large result sets', async () => {
-        const manyComics = Array.from({ length: 100 }, (_, i) => new Comic({
-          id: i + 1,
-          title: `Comic ${i + 1}`,
-          description: 'Test',
-          thumbnail: new ImageUrl(`http://example.com/${i}`, 'jpg'),
-          onSaleDate: new ReleaseDate('2024-01-01'),
-          characterId: new CharacterId(1009610),
-        }));
+      it('should return empty array if repository returns empty', async () => {
+        mockRepository.findById.mockResolvedValue(mockCharacter);
+        mockRepository.getComicsByIds.mockResolvedValue([]);
 
-        mockRepository.getComics.mockResolvedValue(manyComics);
+        const result = await useCase.execute(1234);
 
-        const result = await useCase.execute(1009610, 100);
-
-        expect(result).toHaveLength(100);
+        expect(result).toEqual([]);
       });
     });
 
     describe('Repository interaction', () => {
-      it('should call repository only once', async () => {
-        mockRepository.getComics.mockResolvedValue(mockComics);
+      it('should call each repository method exactly once', async () => {
+        mockRepository.findById.mockResolvedValue(mockCharacter);
+        mockRepository.getComicsByIds.mockResolvedValue(mockComics);
 
-        await useCase.execute(1009610);
+        await useCase.execute(1234);
 
-        expect(mockRepository.getComics).toHaveBeenCalledTimes(1);
+        expect(mockRepository.findById).toHaveBeenCalledTimes(1);
+        expect(mockRepository.getComicsByIds).toHaveBeenCalledTimes(1);
       });
 
-      it('should not modify comics returned from repository', async () => {
-        const originalTitle = mockComics[0].title;
-        mockRepository.getComics.mockResolvedValue(mockComics);
+      it('should pass character ID correctly to both methods', async () => {
+        mockRepository.findById.mockResolvedValue(mockCharacter);
+        mockRepository.getComicsByIds.mockResolvedValue(mockComics);
 
-        await useCase.execute(1009610);
+        await useCase.execute(1234);
 
-        expect(mockComics[0].title).toBe(originalTitle);
-      });
-
-      it('should work with minimal comic data', async () => {
-        const minimalComic = new Comic({
-          id: 1,
-          title: 'A',
-          description: '',
-          thumbnail: new ImageUrl('http://example.com/a', 'jpg'),
-          onSaleDate: null,
-          characterId: new CharacterId(1009610),
-        });
-
-        mockRepository.getComics.mockResolvedValue([minimalComic]);
-
-        const result = await useCase.execute(1009610);
-
-        expect(result).toHaveLength(1);
-        expect(result[0]?.title).toBe('A');
+        const findByIdArg = mockRepository.findById.mock.calls[0]?.[0];
+        const getComicsByIdsArg = mockRepository.getComicsByIds.mock.calls[0]?.[1];
+        
+        expect(findByIdArg?.value).toBe(1234);
+        expect(getComicsByIdsArg?.value).toBe(1234);
       });
     });
   });

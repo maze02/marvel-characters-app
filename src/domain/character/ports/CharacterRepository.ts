@@ -62,12 +62,18 @@ export interface CharacterRepository {
   searchByName(query: string): Promise<Character[]>;
 
   /**
-   * Get comics for a specific character
+   * Get comics by their IDs
+   * Efficiently fetches multiple comics by batch querying the API with ID filters
    * 
-   * @param characterId - Character identifier
-   * @param limit - Maximum number of comics to return
-   * @returns List of comics featuring the character
+   * Recommended usage:
+   * 1. Fetch character with issue_credits field
+   * 2. Extract issue IDs from character.issueIds
+   * 3. Batch fetch comics using this method
+   * 
+   * @param issueIds - Array of issue/comic IDs to fetch
+   * @param characterId - Character these comics belong to (for domain mapping)
+   * @returns List of comics sorted by release date (newest first)
    * @throws {ApiError} When the API request fails
    */
-  getComics(characterId: CharacterId, limit: number): Promise<Comic[]>;
+  getComicsByIds(issueIds: number[], characterId: CharacterId): Promise<Comic[]>;
 }

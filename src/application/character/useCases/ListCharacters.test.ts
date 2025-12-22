@@ -10,7 +10,7 @@ describe('ListCharacters Use Case', () => {
     findMany: jest.fn(),
     findById: jest.fn(),
     searchByName: jest.fn(),
-    getComics: jest.fn(),
+    getComicsByIds: jest.fn(),
   });
 
   const createMockCharacter = (id: number, name: string): Character =>

@@ -94,7 +94,10 @@ export class ComicVineCharacterRepository implements CharacterRepository {
     try {
       const response = await this.apiClient.get<ComicVineSingleCharacterResponse>(
         `/character/4005-${id.value}/`,
-        {},
+        {
+          // Request issue_credits to get list of issues this character appears in
+          field_list: 'id,name,deck,description,image,publisher,date_last_updated,issue_credits',
+        },
         {
           useCache: true,
         }
@@ -137,11 +140,15 @@ export class ComicVineCharacterRepository implements CharacterRepository {
         return [];
       }
 
+      // Don't manually encode - axios will handle URL encoding automatically
+      const searchQuery = query.trim();
+      logger.info('Searching characters', { query: searchQuery, limit: API.SEARCH_RESULT_LIMIT });
+
       // Comic Vine filter syntax supports name filtering
       const response = await this.apiClient.get<ComicVineApiResponse<ComicVineCharacterResponse>>(
         '/characters/',
         {
-          filter: `publisher:${this.MARVEL_PUBLISHER_ID},name:${encodeURIComponent(query)}`,
+          filter: `publisher:${this.MARVEL_PUBLISHER_ID},name:${searchQuery}`,
           limit: API.SEARCH_RESULT_LIMIT,
         },
         {
@@ -149,42 +156,120 @@ export class ComicVineCharacterRepository implements CharacterRepository {
         }
       );
 
+      logger.info('Search results received', { 
+        query: searchQuery, 
+        totalResults: response.number_of_total_results,
+        returnedResults: response.results.length 
+      });
+
       return ComicVineCharacterMapper.toDomainList(response.results);
-    } catch (error) {
-      logger.error('Failed to search characters', error, { query });
+    } catch (error: any) {
+      // Don't log cancelled requests as errors (expected behavior from debouncing)
+      if (error?.message?.includes('cancel') || error?.code === 'ERR_CANCELED') {
+        logger.debug('Search request cancelled (debouncing)', { query });
+      } else {
+        logger.error('Failed to search characters', error, { query });
+      }
       throw error;
     }
   }
 
   /**
-   * Get comics for a specific character
-   * Fetches issues that feature the character, sorted by release date (newest first)
+   * Get comics by their IDs (batch fetching)
+   * Efficiently fetches multiple comics in batches of up to 100 per request
    * 
-   * @param characterId - Character identifier
-   * @param limit - Maximum number of comics to return (default 20)
-   * @returns List of comics featuring the character
+   * This is the recommended approach per Comic Vine API documentation:
+   * 1. Get character with issue_credits field
+   * 2. Batch fetch issues by ID using filter=id:123|456|789
+   * 
+   * @param issueIds - Array of issue IDs to fetch
+   * @param characterId - Character these issues belong to (for mapping)
+   * @returns List of comics, sorted by release date (newest first)
    * @throws {ApiError} When the API request fails
    */
-  async getComics(characterId: CharacterId, limit: number = 20): Promise<Comic[]> {
-    try {
-      const response = await this.apiClient.get<ComicVineIssuesApiResponse>(
-        '/issues/',
-        {
-          filter: `character:${characterId.value}`,
-          limit: Math.min(limit, 20), // Comic Vine API limit
-          sort: 'cover_date:desc', // Newest first
-        },
-        {
-          useCache: true,
-        }
-      );
+  async getComicsByIds(issueIds: number[], characterId: CharacterId): Promise<Comic[]> {
+    if (issueIds.length === 0) {
+      return [];
+    }
 
-      return ComicVineComicMapper.toDomainList(response.results, characterId);
+    try {
+      logger.debug('🔍 Fetching comics by IDs', {
+        characterId: characterId.value,
+        totalIssues: issueIds.length,
+        issueIdsPreview: issueIds.slice(0, 5), // Show first 5 for debugging
+      });
+
+      // Chunk IDs into groups of 100 (Comic Vine API maximum)
+      const BATCH_SIZE = 100;
+      const chunks = this.chunkArray(issueIds, BATCH_SIZE);
+      const allComics: Comic[] = [];
+
+      // Fetch each chunk sequentially (avoid overwhelming the API)
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        if (!chunk || chunk.length === 0) continue; // Skip empty chunks
+        
+        const filter = `id:${chunk.join('|')}`;
+
+        logger.debug(`📦 Fetching batch ${i + 1}/${chunks.length}`, {
+          batchSize: chunk.length,
+          filter: filter.substring(0, 50) + '...', // Truncate for readability
+        });
+
+        const response = await this.apiClient.get<ComicVineIssuesApiResponse>(
+          '/issues/',
+          {
+            filter,
+            field_list: 'id,name,issue_number,cover_date,image,volume,description',
+            limit: BATCH_SIZE,
+            sort: 'cover_date:desc', // Newest first
+          },
+          {
+            useCache: true,
+          }
+        );
+
+        if (response.status_code !== 1) {
+          logger.warn('Comic Vine API returned non-success status for batch', {
+            batchIndex: i,
+            statusCode: response.status_code,
+            error: response.error,
+          });
+          continue; // Skip this batch but continue with others
+        }
+
+        const batchComics = ComicVineComicMapper.toDomainList(response.results, characterId);
+        allComics.push(...batchComics);
+      }
+
+      logger.debug('✅ Comics fetched successfully', {
+        characterId: characterId.value,
+        totalFetched: allComics.length,
+        totalRequested: issueIds.length,
+        batchesProcessed: chunks.length,
+      });
+
+      return allComics;
     } catch (error) {
-      logger.error('Failed to fetch character comics', error, { characterId: characterId.value, limit });
+      logger.error('Failed to fetch comics by IDs', error, {
+        characterId: characterId.value,
+        issueCount: issueIds.length,
+      });
       // Return empty array on error rather than throwing
-      // This allows character detail page to still show even if comics fail
       return [];
     }
   }
+
+  /**
+   * Utility: Chunk array into smaller arrays
+   * @private
+   */
+  private chunkArray<T>(array: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  }
+
 }

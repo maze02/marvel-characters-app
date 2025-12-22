@@ -6,6 +6,16 @@
  */
 
 /**
+ * Comic Vine Issue Credit
+ * Minimal reference to an issue that a character appears in
+ */
+export interface ComicVineIssueCredit {
+  id: number;
+  api_detail_url: string;
+  name?: string; // Optional, not always included
+}
+
+/**
  * Comic Vine Character Response
  * Structure returned by /characters/ and /character/ endpoints
  */
@@ -33,6 +43,8 @@ export interface ComicVineCharacterResponse {
   date_last_updated: string; // ISO date
   site_detail_url: string;
   api_detail_url: string;
+  // List of issues this character appears in (only included with field_list)
+  issue_credits?: ComicVineIssueCredit[];
 }
 
 /**

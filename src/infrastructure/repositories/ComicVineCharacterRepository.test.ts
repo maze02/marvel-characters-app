@@ -2,7 +2,6 @@ import { ComicVineCharacterRepository } from './ComicVineCharacterRepository';
 import { ComicVineApiClient } from '../http/ComicVineApiClient';
 import { CharacterId } from '@domain/character/valueObjects/CharacterId';
 import { ComicVineApiResponse, ComicVineCharacterResponse } from '@application/character/dtos/ComicVineCharacterDTO';
-import { ComicVineIssuesApiResponse, ComicVineIssueResponse } from '@application/character/dtos/ComicVineComicDTO';
 
 // Mock the API client
 jest.mock('../http/ComicVineApiClient');
@@ -126,7 +125,9 @@ describe('ComicVineCharacterRepository', () => {
 
       expect(mockApiClient.get).toHaveBeenCalledWith(
         '/character/4005-1699/',
-        {},
+        {
+          field_list: 'id,name,deck,description,image,publisher,date_last_updated,issue_credits',
+        },
         expect.objectContaining({ useCache: true })
       );
 
@@ -209,125 +210,12 @@ describe('ComicVineCharacterRepository', () => {
       expect(mockApiClient.get).toHaveBeenCalledWith(
         '/characters/',
         expect.objectContaining({
-          filter: expect.stringContaining('Spider%20%26%20Venom'),
+          filter: expect.stringContaining('Spider & Venom'), // Raw string, axios will encode
         }),
         expect.any(Object)
       );
     });
   });
 
-  describe('getComics', () => {
-    const mockIssueResponse: ComicVineIssueResponse = {
-      id: 12345,
-      name: 'Amazing Spider-Man #1',
-      issue_number: '1',
-      volume: { id: 2127, name: 'Amazing Spider-Man' },
-      cover_date: '2024-01-15',
-      store_date: null,
-      description: null,
-      image: {
-        icon_url: '',
-        medium_url: 'https://comicvine.gamespot.com/a/uploads/scale_medium/11/111/12345.jpg',
-        screen_url: '',
-        screen_large_url: '',
-        small_url: '',
-        super_url: '',
-        thumb_url: '',
-        tiny_url: '',
-        original_url: '',
-      },
-      date_added: '2024-01-01 10:00:00',
-      date_last_updated: '2024-01-05 14:30:00',
-      site_detail_url: '',
-      api_detail_url: '',
-    };
-
-    it('should fetch comics for character with limit of 20', async () => {
-      const mockResponse: ComicVineIssuesApiResponse = {
-        error: 'OK',
-        limit: 20,
-        offset: 0,
-        number_of_page_results: 20,
-        number_of_total_results: 100,
-        status_code: 1,
-        results: Array(20).fill(mockIssueResponse),
-      };
-
-      mockApiClient.get.mockResolvedValue(mockResponse);
-
-      const characterId = new CharacterId(1699);
-      const comics = await repository.getComics(characterId, 20);
-
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        '/issues/',
-        expect.objectContaining({
-          filter: 'character:1699',
-          limit: 20,
-          sort: 'cover_date:desc',
-        }),
-        expect.any(Object)
-      );
-
-      expect(comics).toHaveLength(20);
-    });
-
-    it('should sort comics by cover date descending', async () => {
-      const mockResponse: ComicVineIssuesApiResponse = {
-        error: 'OK',
-        limit: 20,
-        offset: 0,
-        number_of_page_results: 20,
-        number_of_total_results: 100,
-        status_code: 1,
-        results: Array(20).fill(mockIssueResponse),
-      };
-
-      mockApiClient.get.mockResolvedValue(mockResponse);
-
-      const characterId = new CharacterId(1699);
-      await repository.getComics(characterId, 20);
-
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          sort: 'cover_date:desc', // Newest first
-        }),
-        expect.any(Object)
-      );
-    });
-
-    it('should cap limit at 20 even if higher requested', async () => {
-      const mockResponse: ComicVineIssuesApiResponse = {
-        error: 'OK',
-        limit: 20,
-        offset: 0,
-        number_of_page_results: 20,
-        number_of_total_results: 100,
-        status_code: 1,
-        results: Array(20).fill(mockIssueResponse),
-      };
-
-      mockApiClient.get.mockResolvedValue(mockResponse);
-
-      const characterId = new CharacterId(1699);
-      await repository.getComics(characterId, 100);
-
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          limit: 20, // Should be capped
-        }),
-        expect.any(Object)
-      );
-    });
-
-    it('should return empty array on error instead of throwing', async () => {
-      mockApiClient.get.mockRejectedValue(new Error('API Error'));
-
-      const characterId = new CharacterId(1699);
-      const comics = await repository.getComics(characterId, 20);
-
-      expect(comics).toHaveLength(0);
-    });
-  });
+  // Old getComics tests removed - now using getComicsByIds with efficient two-step approach
 });
