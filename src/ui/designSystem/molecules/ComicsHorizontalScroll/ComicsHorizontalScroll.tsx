@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Comic } from "@domain/character/entities/Comic";
 import styles from "./ComicsHorizontalScroll.module.scss";
 
@@ -43,7 +43,7 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const indicatorBarRef = useRef<HTMLDivElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
-  const [isScrollable, setIsScrollable] = React.useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
 
   // Check if content is scrollable
   useEffect(() => {
