@@ -128,6 +128,7 @@ export class ComicVineApiClient {
         });
         const fullUrl = `https://comicvine.gamespot.com/api${requestConfig.url}?${params.toString()}`;
         requestConfig.params = { url: encodeURIComponent(fullUrl) };
+        requestConfig.url = ""; // Clear URL since we're using ?url= param
       } else {
         // In development, add params directly
         requestConfig.params = {
