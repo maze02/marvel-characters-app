@@ -120,13 +120,13 @@ export class ComicVineApiClient {
     // Request interceptor - add API key and format
     this.axios.interceptors.request.use((requestConfig) => {
       if (isProduction) {
-        // In production, send full URL to proxy
+        // In production, send full Comic Vine URL to proxy
         const params = new URLSearchParams({
           ...requestConfig.params,
           api_key: config.comicVineApiKey,
           format: "json",
         });
-        const fullUrl = `${config.apiBaseUrl}${requestConfig.url}?${params.toString()}`;
+        const fullUrl = `https://comicvine.gamespot.com/api${requestConfig.url}?${params.toString()}`;
         requestConfig.params = { url: encodeURIComponent(fullUrl) };
       } else {
         // In development, add params directly
