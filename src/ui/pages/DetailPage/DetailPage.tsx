@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Icon } from "@ui/designSystem/atoms/Icon/Icon";
 import { CharacterHero } from "@ui/designSystem/molecules/CharacterHero/CharacterHero";
 import { ComicsHorizontalScroll } from "@ui/designSystem/molecules/ComicsHorizontalScroll/ComicsHorizontalScroll";
 import { Layout } from "@ui/components/Layout/Layout";
@@ -176,7 +175,13 @@ export const DetailPage: React.FC = () => {
           comicsOffset + COMICS_PAGE_SIZE < totalCount,
       );
     } catch (error) {
-      logger.error("Failed to load more comics", error, { characterId: id });
+      // Don't log cancelled requests as errors (expected behavior during navigation)
+      const isCancellation =
+        error instanceof Error && error.message === "Request was cancelled";
+
+      if (!isCancellation) {
+        logger.error("Failed to load more comics", error, { characterId: id });
+      }
       setHasMoreComics(false);
     } finally {
       setLoadingMoreComics(false);
@@ -198,7 +203,6 @@ export const DetailPage: React.FC = () => {
       <Layout>
         <div className={styles.main}>
           <div className={styles.emptyState}>
-            <Icon name="heart" size={48} className={styles.emptyIcon} />
             <h2 className={styles.emptyTitle}>Character Not Found</h2>
             <p className={styles.emptyMessage}>
               Unable to load character details. This may be due to an API error

@@ -20,17 +20,18 @@
   background: none;
   border: none;
   color: #000000;
-  font-size: $font-size-base;        // 16px (mockup spec)
+  font-size: $font-size-base; // 16px (mockup spec)
   font-family: $font-family-condensed; // Roboto Condensed
-  font-weight: $font-weight-regular;  // 400 (Regular)
+  font-weight: $font-weight-regular; // 400 (Regular)
   letter-spacing: $letter-spacing-normal; // 0% (mockup spec)
+  text-transform: uppercase;
   outline: none;
   padding: 0;
 
   &::placeholder {
-    color: #AAAAAA;
+    color: #aaaaaa;
     text-transform: uppercase;
-    font-size: $font-size-base;      // 16px (mockup spec)
+    font-size: $font-size-base; // 16px (mockup spec)
     font-family: $font-family-condensed; // Roboto Condensed
     font-weight: $font-weight-regular; // Regular
     letter-spacing: $letter-spacing-normal; // 0% (mockup spec)
