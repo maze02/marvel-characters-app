@@ -51,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <Icon name="heart-filled" size={24} />
           {favoritesCount > 0 && (
-            <span className={styles.favoritesCount}>
+            <span className={styles.favoritesCount} data-testid="favorites-count">
               {favoritesCount}
             </span>
           )}
