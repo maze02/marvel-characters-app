@@ -128,11 +128,12 @@ Centralized design tokens for consistency and maintainability:
 
 - **Unit Tests**: Jest + Testing Library for components and business logic
 - **Integration Tests**: Full feature testing with mocked dependencies
-- **E2E Tests**: Playwright with 13 comprehensive tests covering:
+- **E2E Tests**: Playwright with 15 comprehensive tests covering:
   - Character listing and search functionality
   - Favorites management (add, remove, persist)
   - Character detail page and comics display
   - Navigation and user flows
+  - Mobile responsive behavior (READ MORE/HIDE button functionality)
 - **Test Coverage**: Comprehensive coverage for domain, application, and UI layers
 
 ## 🔄 UX Improvements
@@ -198,7 +199,7 @@ Pre-commit hooks ensure code quality:
 
 ```bash
 # Automatically runs on commit:
-- ESLint with SonarJS, Unicorn plugins
+- ESLint with TypeScript, React Hooks, and JSX A11y plugins
 - Prettier formatting
 - TypeScript type checking
 

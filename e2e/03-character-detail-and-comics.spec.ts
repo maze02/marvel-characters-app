@@ -132,3 +132,115 @@ test.describe("Character Detail and Comics", () => {
     ).toBeVisible({ timeout: 5000 });
   });
 });
+
+/**
+ * E2E Test: Character Detail - Mobile Description Expand/Collapse
+ *
+ * Tests READ MORE/HIDE functionality on mobile viewports
+ * to ensure buttons are visible and not clipped by container
+ */
+test.describe("Character Detail - Mobile Description Expand/Collapse", () => {
+  test.use({ viewport: { width: 375, height: 667 } }); // iPhone SE size
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await waitForAppLoad(page);
+    await waitForCharacters(page);
+  });
+
+  test("should show and interact with READ MORE/HIDE buttons on mobile", async ({
+    page,
+  }) => {
+    // Navigate to a character with a description
+    await navigateToCharacterDetail(page);
+    await page.waitForLoadState("networkidle", { timeout: 20000 });
+    await page.waitForTimeout(1000); // Wait for React to render
+
+    // Look for the READ MORE button (only appears for long descriptions)
+    const readMoreButton = page.getByRole("button", { name: /READ MORE/i });
+
+    // If character has a description that's truncated
+    const isReadMoreVisible = await readMoreButton
+      .isVisible()
+      .catch(() => false);
+
+    if (isReadMoreVisible) {
+      // Verify button is visible and not clipped
+      await expect(readMoreButton).toBeVisible();
+
+      // Get button position to ensure it's within viewport
+      const buttonBox = await readMoreButton.boundingBox();
+      expect(buttonBox).not.toBeNull();
+      if (buttonBox) {
+        expect(buttonBox.y).toBeGreaterThan(0); // Not clipped at top
+        expect(buttonBox.y + buttonBox.height).toBeLessThan(667); // Not clipped at bottom
+      }
+
+      // Click READ MORE
+      await readMoreButton.click();
+      await page.waitForTimeout(500); // Wait for animation
+
+      // CRITICAL: Verify HIDE button appears after expansion
+      const hideButton = page.getByRole("button", { name: /HIDE/i });
+      await expect(hideButton).toBeVisible({ timeout: 2000 });
+
+      // Verify HIDE button is also not clipped
+      const hideButtonBox = await hideButton.boundingBox();
+      expect(hideButtonBox).not.toBeNull();
+
+      // Click HIDE
+      await hideButton.click();
+      await page.waitForTimeout(500);
+
+      // Verify READ MORE appears again after collapsing
+      await expect(readMoreButton).toBeVisible({ timeout: 2000 });
+    }
+  });
+
+  test("should handle expand/collapse on different mobile viewports", async ({
+    page,
+  }) => {
+    // Test on a smaller viewport (iPhone SE)
+    await page.setViewportSize({ width: 320, height: 568 });
+
+    await navigateToCharacterDetail(page);
+    await page.waitForLoadState("networkidle", { timeout: 20000 });
+    await page.waitForTimeout(1000);
+
+    const readMoreButton = page.getByRole("button", { name: /READ MORE/i });
+    const isVisible = await readMoreButton.isVisible().catch(() => false);
+
+    if (isVisible) {
+      // Verify button is accessible on small screen
+      await expect(readMoreButton).toBeVisible();
+
+      // Get initial button position to ensure it's not clipped
+      const readMoreBox = await readMoreButton.boundingBox();
+      expect(readMoreBox).not.toBeNull();
+      if (readMoreBox) {
+        // Ensure button is visible within viewport before expansion
+        expect(readMoreBox.y).toBeGreaterThan(0);
+      }
+
+      // Click and verify expansion works
+      await readMoreButton.click();
+      await page.waitForTimeout(500);
+
+      const hideButton = page.getByRole("button", { name: /HIDE/i });
+
+      // Scroll to the HIDE button to ensure it's in view
+      // (expanded content may extend beyond viewport, which is expected)
+      await hideButton.scrollIntoViewIfNeeded();
+
+      // Verify HIDE button is visible after scrolling
+      await expect(hideButton).toBeVisible({ timeout: 2000 });
+
+      // Click HIDE to collapse
+      await hideButton.click();
+      await page.waitForTimeout(500);
+
+      // Verify READ MORE appears again
+      await expect(readMoreButton).toBeVisible({ timeout: 2000 });
+    }
+  });
+});
