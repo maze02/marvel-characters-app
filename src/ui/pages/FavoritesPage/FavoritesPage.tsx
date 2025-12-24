@@ -2,13 +2,16 @@ import React, { useState, useEffect } from "react";
 import { SearchBar } from "@ui/designSystem/molecules/SearchBar/SearchBar";
 import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/CharacterCard";
 import { Layout } from "@ui/components/Layout/Layout";
+import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
 import { useUseCases } from "@ui/state/DependenciesContext";
 import { useDebouncedValue } from "@ui/hooks/useDebouncedValue";
 import { Character } from "@domain/character/entities/Character";
 import { UI } from "@config/constants";
+import { config } from "@infrastructure/config/env";
 import { logger } from "@infrastructure/logging/Logger";
+import { routes } from "@ui/routes/routes";
 import styles from "./FavoritesPage.module.scss";
 
 /**
@@ -75,6 +78,20 @@ export const FavoritesPage: React.FC = () => {
 
   return (
     <Layout>
+      <SEO
+        title="My Favorite Marvel Characters - Saved Heroes"
+        description="View your saved favorite Marvel characters. Browse your personal collection of Marvel heroes and superheroes."
+        image={`${config.appUrl}/marvel-logo.png`}
+        type="website"
+        canonicalUrl={`${config.appUrl}${routes.favorites}`}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "My Favorite Marvel Characters",
+          description: "Personal collection of favorite Marvel characters",
+          url: `${config.appUrl}${routes.favorites}`,
+        }}
+      />
       <div className={styles.main} id="main-content">
         <h1 className={styles.pageTitle}>FAVORITES</h1>
 

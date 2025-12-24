@@ -3,12 +3,14 @@ import { useParams, Link } from "react-router-dom";
 import { CharacterHero } from "@ui/designSystem/molecules/CharacterHero/CharacterHero";
 import { ComicsHorizontalScroll } from "@ui/designSystem/molecules/ComicsHorizontalScroll/ComicsHorizontalScroll";
 import { Layout } from "@ui/components/Layout/Layout";
+import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
 import { useUseCases } from "@ui/state/DependenciesContext";
 import { routes } from "@ui/routes/routes";
 import { Character } from "@domain/character/entities/Character";
 import { Comic } from "@domain/character/entities/Comic";
+import { config } from "@infrastructure/config/env";
 import { logger } from "@infrastructure/logging/Logger";
 import styles from "./DetailPage.module.scss";
 
@@ -220,6 +222,24 @@ export const DetailPage: React.FC = () => {
   // Render character details (success state)
   return (
     <Layout>
+      <SEO
+        title={`${character.name.value} - Marvel Character Profile | Comics & Info`}
+        description={
+          character.hasDescription()
+            ? `${character.name.value}: ${character.description.substring(0, 150)}...`
+            : `Learn about ${character.name.value}, a Marvel superhero. View character profile, comics, and detailed information.`
+        }
+        image={character.getThumbnailUrl()}
+        type="profile"
+        canonicalUrl={`${config.appUrl}${routes.characterDetail(character.id.value)}`}
+        character={{
+          name: character.name.value,
+          ...(character.hasDescription() && {
+            description: character.description,
+          }),
+          image: character.getThumbnailUrl(),
+        }}
+      />
       <div className={styles.main}>
         <CharacterHero
           imageUrl={character.getThumbnailUrl()}
