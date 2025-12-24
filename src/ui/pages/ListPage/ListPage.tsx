@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { SearchBar } from "@ui/designSystem/molecules/SearchBar/SearchBar";
 import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/CharacterCard";
 import { Layout } from "@ui/components/Layout/Layout";
+import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
 import { useUseCases } from "@ui/state/DependenciesContext";
@@ -9,7 +10,9 @@ import { useDebouncedValue } from "@ui/hooks/useDebouncedValue";
 import { useInfiniteScroll } from "@ui/hooks/useInfiniteScroll";
 import { Character } from "@domain/character/entities/Character";
 import { PAGINATION, UI } from "@config/constants";
+import { config } from "@infrastructure/config/env";
 import { logger } from "@infrastructure/logging/Logger";
+import { routes } from "@ui/routes/routes";
 import styles from "./ListPage.module.scss";
 
 /**
@@ -140,7 +143,26 @@ export const ListPage: React.FC = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Marvel Characters - Browse All Superheroes | Character Database"
+        description="Browse and explore Marvel's vast universe of characters. Search Marvel heroes, view character profiles, comics, and save your favorites. Complete Marvel character database with Spider-Man, Iron Man, Captain America, and more."
+        image={`${config.appUrl}/marvel-logo.png`}
+        type="website"
+        canonicalUrl={`${config.appUrl}${routes.home}`}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Marvel Characters",
+          description:
+            "Browse and search Marvel characters, heroes, and superheroes",
+          url: `${config.appUrl}${routes.home}`,
+        }}
+      />
       <div className={styles.main} id="main-content">
+        {/* H1 for SEO - visually hidden, helps search engines understand the page topic */}
+        <h1 className={styles.srOnly}>
+          Marvel Characters - Browse All Superheroes
+        </h1>
         <div className={styles.searchContainer}>
           <SearchBar
             value={searchQuery}

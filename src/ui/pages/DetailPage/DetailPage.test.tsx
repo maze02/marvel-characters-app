@@ -1,38 +1,41 @@
 /**
  * DetailPage Tests
- * 
+ *
  * Integration tests for character detail page with hero,
  * description, comics, and favorite functionality.
  */
 
-import { render, screen, waitFor, act } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { DetailPage } from './DetailPage';
+import React from "react";
+import { render, screen, waitFor, act } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { DetailPage } from "./DetailPage";
 
 // Mock router hooks
 const mockNavigate = jest.fn();
-const mockParams = { id: '123' };
+const mockParams = { id: "123" };
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
   useParams: () => mockParams,
   useNavigate: () => mockNavigate,
-  Link: ({ children, to }: any) => <a href={to}>{children}</a>,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 
 // Import types for mock data
-import { Character } from '@domain/character/entities/Character';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
-import { CharacterName } from '@domain/character/valueObjects/CharacterName';
-import { ImageUrl } from '@domain/character/valueObjects/ImageUrl';
+import { Character } from "@domain/character/entities/Character";
+import { CharacterId } from "@domain/character/valueObjects/CharacterId";
+import { CharacterName } from "@domain/character/valueObjects/CharacterName";
+import { ImageUrl } from "@domain/character/valueObjects/ImageUrl";
 
 // Create mock character data
 const mockCharacter = new Character({
   id: new CharacterId(123),
-  name: new CharacterName('Spider-Man'),
-  description: 'Friendly neighborhood Spider-Man',
-  thumbnail: new ImageUrl('https://example.com/spiderman', 'jpg'),
-  modifiedDate: new Date('2024-01-01'),
+  name: new CharacterName("Spider-Man"),
+  description: "Friendly neighborhood Spider-Man",
+  thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
+  modifiedDate: new Date("2024-01-01"),
 });
 
 // Create stable mock functions
@@ -64,21 +67,29 @@ const stableUseCases = {
 };
 
 // Mock contexts and hooks - MUST return exact same object instance every time
-jest.mock('@ui/state/FavoritesContext', () => ({
+jest.mock("@ui/state/FavoritesContext", () => ({
   useFavorites: jest.fn(() => stableFavoritesContext),
 }));
 
-jest.mock('@ui/state/LoadingContext', () => ({
+jest.mock("@ui/state/LoadingContext", () => ({
   useLoading: jest.fn(() => stableLoadingContext),
 }));
 
-jest.mock('@ui/state/DependenciesContext', () => ({
+jest.mock("@ui/state/DependenciesContext", () => ({
   useUseCases: jest.fn(() => stableUseCases),
+  useServices: jest.fn(() => ({
+    seo: {
+      updateMetadata: jest.fn(),
+      addStructuredData: jest.fn(),
+      removeStructuredData: jest.fn(),
+      reset: jest.fn(),
+    },
+  })),
 }));
 
-jest.mock('@infrastructure/logging/Logger');
+jest.mock("@infrastructure/logging/Logger");
 
-describe('DetailPage', () => {
+describe("DetailPage", () => {
   /**
    * Helper: Render page with router
    */
@@ -86,12 +97,14 @@ describe('DetailPage', () => {
     let result: ReturnType<typeof render>;
     await act(async () => {
       result = render(
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
           <DetailPage />
-        </BrowserRouter>
+        </BrowserRouter>,
       );
       // Give effects time to run
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
     return result!;
   };
@@ -100,64 +113,66 @@ describe('DetailPage', () => {
     jest.clearAllMocks();
   });
 
-  describe('Rendering', () => {
-    it('should render without crashing', async () => {
+  describe("Rendering", () => {
+    it("should render without crashing", async () => {
       const { container } = await renderPage();
       expect(container).toBeInTheDocument();
     });
 
-    it('should render character details', async () => {
+    it("should render character details", async () => {
       await renderPage();
       // Wait for character to load
       await waitFor(() => {
-        expect(screen.getByText('Spider-Man')).toBeInTheDocument();
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
       });
     });
 
-    it('should have main content area', async () => {
+    it("should have main content area", async () => {
       await renderPage();
-      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
     });
   });
 
-  describe('Loading state', () => {
-    it('should render page during loading', async () => {
+  describe("Loading state", () => {
+    it("should render page during loading", async () => {
       const { container } = await renderPage();
       expect(container).toBeInTheDocument();
-      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
     });
   });
 
-  describe('Error state', () => {
-    it('should render page structure on error', async () => {
+  describe("Error state", () => {
+    it("should render page structure on error", async () => {
       const { container } = await renderPage();
       // Page should render even if data fails to load
       expect(container).toBeInTheDocument();
     });
 
-    it('should have navigation link to home', async () => {
+    it("should have navigation link to home", async () => {
       await renderPage();
       await waitFor(() => {
         // The header has a home link (check it exists and goes to home)
-        const links = screen.getAllByRole('link');
-        const homeLink = links.find(link => link.getAttribute('href') === '/');
+        const links = screen.getAllByRole("link");
+        const homeLink = links.find(
+          (link) => link.getAttribute("href") === "/",
+        );
         expect(homeLink).toBeInTheDocument();
       });
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have main content region', async () => {
+  describe("Accessibility", () => {
+    it("should have main content region", async () => {
       await renderPage();
-      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
     });
 
-    it('should have accessible navigation', async () => {
+    it("should have accessible navigation", async () => {
       await renderPage();
       await waitFor(() => {
         // Check page has proper structure with header and main
-        expect(screen.getByRole('banner')).toBeInTheDocument(); // header
-        expect(screen.getByRole('main')).toBeInTheDocument();
+        expect(screen.getByRole("banner")).toBeInTheDocument(); // header
+        expect(screen.getByRole("main")).toBeInTheDocument();
       });
     });
   });

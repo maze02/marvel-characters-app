@@ -20,6 +20,7 @@ A modern, production-ready React application for browsing Marvel characters usin
 - 🎨 **Design System**: Atomic design pattern with reusable components and design tokens
 - 🏗️ **Clean Architecture**: Separation of concerns with DDD principles
 - ✅ **Comprehensive Testing**: Unit, integration, and E2E tests with Jest + Testing Library + Playwright
+- 🔍 **SEO Optimized**: Meta tags, Open Graph, Twitter Cards, and structured data for search engines
 - 🔄 **UX Optimizations**: Proper loading states, error handling, and smooth transitions
 
 ## 🚀 Getting Started
@@ -154,7 +155,42 @@ Recent UX enhancements for better user experience:
 - **Code Quality**: ESLint, Prettier, Husky, lint-staged
 - **API**: Comic Vine API integration with server-side proxy for production
 - **Storage**: localStorage for favorites persistence
+- **SEO**: Service-based architecture with dependency injection for meta tags and structured data
 - **Build**: Vite with separate development and production modes
+
+## 🔍 SEO & Discoverability
+
+Built with search engine optimization following Clean Architecture and Hexagonal Architecture principles:
+
+- **Meta Tags**: Dynamic page titles and descriptions for each route
+- **Open Graph Protocol**: Rich previews on Facebook, LinkedIn, and other social platforms
+- **Twitter Cards**: Enhanced sharing experience on Twitter
+- **Structured Data**: JSON-LD schema for better search engine understanding
+- **Sitemap & Robots.txt**: Complete search engine coverage and crawling instructions
+- **Canonical URLs**: Prevents duplicate content issues
+- **Hexagonal Architecture**: SEO service follows DDD principles with dependency injection
+
+### Architecture
+
+```
+UI Layer (React Components)
+    ↓ uses
+SEO Component → useServices() hook
+    ↓ gets from
+Dependency Container
+    ↓ provides
+SEOService (Interface) ← Application Layer Port
+    ↑ implements
+BrowserSEOService ← Infrastructure Layer Adapter
+```
+
+**Benefits:**
+- Easy to test (mock the SEOService)
+- Easy to extend (add SSR, analytics, etc.)
+- Consistent with rest of application architecture
+- No direct DOM manipulation in UI components
+
+See [SEO Architecture Documentation](./src/application/seo/README.md) for detailed implementation.
 
 ## 📝 Code Quality
 
@@ -187,17 +223,25 @@ This app uses the [Comic Vine API](https://comicvine.gamespot.com/api/) for Marv
 
 ```
 ├── src/
-│   ├── domain/             # Domain entities and business rules
-│   ├── application/       # Use cases and DTOs
-│   ├── infrastructure/      # API clients, repositories, DI
+│   ├── domain/              # Domain entities and business rules
+│   ├── application/         # Use cases, DTOs, and service ports
+│   │   ├── character/       # Character-related use cases
+│   │   └── seo/             # SEO service interface (Port)
+│   ├── infrastructure/      # API clients, repositories, DI, adapters
+│   │   ├── repositories/    # Data access implementations
+│   │   ├── seo/             # SEO service implementation (Adapter)
+│   │   └── dependencies/    # Dependency injection container
 │   ├── ui/                  # React components and pages
+│   │   ├── components/      # Reusable components (including SEO)
+│   │   ├── pages/           # Page components
+│   │   └── state/           # Context providers and hooks
 │   ├── config/              # App configuration
 │   └── tests/               # Test utilities and mocks
 ├── e2e/                     # End-to-end tests (Playwright)
 │   ├── helpers.ts           # E2E test utilities and helpers
 │   └── *.spec.ts            # E2E test suites
 ├── api/                     # Vercel serverless functions (API proxy)
-├── public/                  # Static assets
+├── public/                  # Static assets (sitemap, robots.txt)
 └── .storybook/              # Storybook configuration
 ```
 

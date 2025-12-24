@@ -15,6 +15,11 @@ const envSchema = z.object({
    */
   VITE_COMICVINE_API_KEY: z.string().optional().default(""),
   VITE_API_BASE_URL: z.string().default("/api"),
+  /**
+   * App URL for SEO meta tags and canonical URLs.
+   * Falls back to window.location.origin if not set.
+   */
+  VITE_APP_URL: z.string().optional().default(""),
 });
 
 function validateEnv() {
@@ -48,6 +53,7 @@ function validateEnv() {
       return {
         VITE_COMICVINE_API_KEY: "",
         VITE_API_BASE_URL: "/api",
+        VITE_APP_URL: "",
       };
     }
     throw error;
@@ -59,6 +65,9 @@ const env = validateEnv();
 export const config = {
   comicVineApiKey: env.VITE_COMICVINE_API_KEY,
   apiBaseUrl: env.VITE_API_BASE_URL,
+  appUrl:
+    env.VITE_APP_URL ||
+    (typeof window !== "undefined" ? window.location.origin : ""),
   isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD,
   isConfigured:

@@ -1,25 +1,25 @@
 /**
  * ListPage Tests
- * 
+ *
  * Integration tests for the main character list page with search,
  * infinite scroll, and favorites functionality.
  */
 
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { ListPage } from './ListPage';
-import { Character } from '@domain/character/entities/Character';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
-import { CharacterName } from '@domain/character/valueObjects/CharacterName';
-import { ImageUrl } from '@domain/character/valueObjects/ImageUrl';
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { ListPage } from "./ListPage";
+import { Character } from "@domain/character/entities/Character";
+import { CharacterId } from "@domain/character/valueObjects/CharacterId";
+import { CharacterName } from "@domain/character/valueObjects/CharacterName";
+import { ImageUrl } from "@domain/character/valueObjects/ImageUrl";
 
 // Create mock character data
 const mockCharacter = new Character({
   id: new CharacterId(1),
-  name: new CharacterName('Spider-Man'),
-  description: 'Friendly neighborhood Spider-Man',
-  thumbnail: new ImageUrl('https://example.com/spiderman', 'jpg'),
-  modifiedDate: new Date('2024-01-01'),
+  name: new CharacterName("Spider-Man"),
+  description: "Friendly neighborhood Spider-Man",
+  thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
+  modifiedDate: new Date("2024-01-01"),
 });
 
 // Create stable mock functions
@@ -68,29 +68,37 @@ const stableInfiniteScrollResult = {
 };
 
 // Mock dependencies - MUST return exact same object instance every time
-jest.mock('@ui/state/FavoritesContext', () => ({
+jest.mock("@ui/state/FavoritesContext", () => ({
   useFavorites: jest.fn(() => stableFavoritesContext),
 }));
 
-jest.mock('@ui/state/LoadingContext', () => ({
+jest.mock("@ui/state/LoadingContext", () => ({
   useLoading: jest.fn(() => stableLoadingContext),
 }));
 
-jest.mock('@ui/state/DependenciesContext', () => ({
+jest.mock("@ui/state/DependenciesContext", () => ({
   useUseCases: jest.fn(() => stableUseCases),
+  useServices: jest.fn(() => ({
+    seo: {
+      updateMetadata: jest.fn(),
+      addStructuredData: jest.fn(),
+      removeStructuredData: jest.fn(),
+      reset: jest.fn(),
+    },
+  })),
 }));
 
-jest.mock('@ui/hooks/useInfiniteScroll', () => ({
+jest.mock("@ui/hooks/useInfiniteScroll", () => ({
   useInfiniteScroll: jest.fn(() => stableInfiniteScrollResult),
 }));
 
-jest.mock('@ui/hooks/useDebouncedValue', () => ({
-  useDebouncedValue: jest.fn((value: any) => value), // Return immediately without debounce
+jest.mock("@ui/hooks/useDebouncedValue", () => ({
+  useDebouncedValue: jest.fn(<T,>(value: T) => value), // Return immediately without debounce
 }));
 
-jest.mock('@infrastructure/logging/Logger');
+jest.mock("@infrastructure/logging/Logger");
 
-describe('ListPage', () => {
+describe("ListPage", () => {
   /**
    * Helper: Render page with router
    */
@@ -98,12 +106,14 @@ describe('ListPage', () => {
     let result: ReturnType<typeof render>;
     await act(async () => {
       result = render(
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
           <ListPage />
-        </BrowserRouter>
+        </BrowserRouter>,
       );
       // Give effects time to run
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
     return result!;
   };
@@ -112,81 +122,81 @@ describe('ListPage', () => {
     jest.clearAllMocks();
   });
 
-  describe('Rendering', () => {
-    it('should render page title', async () => {
+  describe("Rendering", () => {
+    it("should render page title", async () => {
       await renderPage();
       // The page title is now in the header as a visual element, not a heading
       // Check for search functionality instead
-      expect(screen.getByRole('searchbox')).toBeInTheDocument();
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
     });
 
-    it('should render search bar', async () => {
+    it("should render search bar", async () => {
       await renderPage();
       expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
     });
 
-    it('should render main content area', async () => {
+    it("should render main content area", async () => {
       await renderPage();
-      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
     });
 
-    it('should render without crashing', async () => {
+    it("should render without crashing", async () => {
       const { container } = await renderPage();
       expect(container).toBeInTheDocument();
     });
   });
 
-  describe('Search functionality', () => {
-    it('should update search input value', async () => {
+  describe("Search functionality", () => {
+    it("should update search input value", async () => {
       await renderPage();
       const searchInput = screen.getByPlaceholderText(/search/i);
       await act(async () => {
-        fireEvent.change(searchInput, { target: { value: 'Spider' } });
+        fireEvent.change(searchInput, { target: { value: "Spider" } });
       });
-      expect(searchInput).toHaveValue('Spider');
+      expect(searchInput).toHaveValue("Spider");
     });
 
-    it('should allow typing in search', async () => {
+    it("should allow typing in search", async () => {
       await renderPage();
       const searchInput = screen.getByPlaceholderText(/search/i);
       await act(async () => {
-        fireEvent.change(searchInput, { target: { value: 'Spider-Man' } });
+        fireEvent.change(searchInput, { target: { value: "Spider-Man" } });
       });
-      expect(searchInput).toHaveValue('Spider-Man');
+      expect(searchInput).toHaveValue("Spider-Man");
     });
   });
 
-  describe('Page structure', () => {
-    it('should render page with proper structure', async () => {
+  describe("Page structure", () => {
+    it("should render page with proper structure", async () => {
       const { container } = await renderPage();
       expect(container).toBeInTheDocument();
-      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
     });
 
-    it('should have heading and search', async () => {
+    it("should have heading and search", async () => {
       await renderPage();
       // Page has searchbox functionality
-      expect(screen.getByRole('searchbox')).toBeInTheDocument();
-      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have main content region', async () => {
+  describe("Accessibility", () => {
+    it("should have main content region", async () => {
       await renderPage();
-      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
     });
 
-    it('should have page heading', async () => {
+    it("should have page heading", async () => {
       await renderPage();
       // Check that page renders with proper structure
-      expect(screen.getByRole('main')).toBeInTheDocument();
-      expect(screen.getByRole('banner')).toBeInTheDocument();
+      expect(screen.getByRole("main")).toBeInTheDocument();
+      expect(screen.getByRole("banner")).toBeInTheDocument();
     });
 
-    it('should have searchbox role', async () => {
+    it("should have searchbox role", async () => {
       await renderPage();
-      expect(screen.getByRole('searchbox')).toBeInTheDocument();
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
     });
   });
 });

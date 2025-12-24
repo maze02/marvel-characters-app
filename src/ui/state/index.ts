@@ -1,14 +1,15 @@
 /**
  * State Management - Public API
- * 
+ *
  * Centralized exports for all context providers and hooks.
  */
 
-export { FavoritesProvider, useFavorites } from './FavoritesContext';
-export { LoadingProvider, useLoading } from './LoadingContext';
-export { 
-  DependenciesProvider, 
+export { FavoritesProvider, useFavorites } from "./FavoritesContext";
+export { LoadingProvider, useLoading } from "./LoadingContext";
+export {
+  DependenciesProvider,
   useDependencyContainer,
   useUseCases,
-  useRepositories 
-} from './DependenciesContext';
+  useServices,
+  useRepositories,
+} from "./DependenciesContext";

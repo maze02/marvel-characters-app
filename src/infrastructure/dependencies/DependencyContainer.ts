@@ -1,27 +1,29 @@
-import { CharacterRepository } from '@domain/character/ports/CharacterRepository';
-import { FavoritesRepository } from '@domain/character/ports/FavoritesRepository';
-import { ComicVineCharacterRepository } from '@infrastructure/repositories/ComicVineCharacterRepository';
-import { LocalStorageFavoritesRepository } from '@infrastructure/repositories/LocalStorageFavoritesRepository';
-import { ListCharacters } from '@application/character/useCases/ListCharacters';
-import { SearchCharacters } from '@application/character/useCases/SearchCharacters';
-import { GetCharacterDetail } from '@application/character/useCases/GetCharacterDetail';
-import { ListCharacterComics } from '@application/character/useCases/ListCharacterComics';
-import { ToggleFavorite } from '@application/character/useCases/ToggleFavorite';
-import { ListFavorites } from '@application/character/useCases/ListFavorites';
-import { FilterCharacters } from '@application/character/useCases/FilterCharacters';
+import { CharacterRepository } from "@domain/character/ports/CharacterRepository";
+import { FavoritesRepository } from "@domain/character/ports/FavoritesRepository";
+import { ComicVineCharacterRepository } from "@infrastructure/repositories/ComicVineCharacterRepository";
+import { LocalStorageFavoritesRepository } from "@infrastructure/repositories/LocalStorageFavoritesRepository";
+import { ListCharacters } from "@application/character/useCases/ListCharacters";
+import { SearchCharacters } from "@application/character/useCases/SearchCharacters";
+import { GetCharacterDetail } from "@application/character/useCases/GetCharacterDetail";
+import { ListCharacterComics } from "@application/character/useCases/ListCharacterComics";
+import { ToggleFavorite } from "@application/character/useCases/ToggleFavorite";
+import { ListFavorites } from "@application/character/useCases/ListFavorites";
+import { FilterCharacters } from "@application/character/useCases/FilterCharacters";
+import { SEOService } from "@application/seo/ports/SEOService";
+import { BrowserSEOService } from "@infrastructure/seo/BrowserSEOService";
 
 /**
  * Dependency Container
- * 
+ *
  * Centralized factory for creating and managing application dependencies.
  * Implements the Dependency Injection pattern to decouple components from concrete implementations.
- * 
+ *
  * Benefits:
  * - Single source of truth for dependency configuration
  * - Easy to swap implementations (e.g., for testing or different APIs)
  * - Follows Dependency Inversion Principle
  * - Simplifies testing by allowing mock injection
- * 
+ *
  * @example
  * ```typescript
  * const container = DependencyContainer.create();
@@ -32,6 +34,10 @@ export class DependencyContainer {
   private readonly _repositories: {
     character: CharacterRepository;
     favorites: FavoritesRepository;
+  };
+
+  private readonly _services: {
+    seo: SEOService;
   };
 
   private readonly _useCases: {
@@ -46,12 +52,18 @@ export class DependencyContainer {
 
   private constructor(
     characterRepository: CharacterRepository,
-    favoritesRepository: FavoritesRepository
+    favoritesRepository: FavoritesRepository,
+    seoService: SEOService,
   ) {
     // Store repositories
     this._repositories = {
       character: characterRepository,
       favorites: favoritesRepository,
+    };
+
+    // Store services
+    this._services = {
+      seo: seoService,
     };
 
     // Create use cases with injected repositories
@@ -61,7 +73,10 @@ export class DependencyContainer {
       getCharacterDetail: new GetCharacterDetail(characterRepository),
       listCharacterComics: new ListCharacterComics(characterRepository),
       toggleFavorite: new ToggleFavorite(favoritesRepository),
-      listFavorites: new ListFavorites(characterRepository, favoritesRepository),
+      listFavorites: new ListFavorites(
+        characterRepository,
+        favoritesRepository,
+      ),
       filterCharacters: new FilterCharacters(),
     };
   }
@@ -72,13 +87,18 @@ export class DependencyContainer {
   static create(): DependencyContainer {
     const characterRepository = new ComicVineCharacterRepository();
     const favoritesRepository = new LocalStorageFavoritesRepository();
-    
-    return new DependencyContainer(characterRepository, favoritesRepository);
+    const seoService = new BrowserSEOService();
+
+    return new DependencyContainer(
+      characterRepository,
+      favoritesRepository,
+      seoService,
+    );
   }
 
   /**
    * Factory method for testing - allows custom repository implementations
-   * 
+   *
    * @example
    * ```typescript
    * const mockCharacterRepo = new MockCharacterRepository();
@@ -88,9 +108,21 @@ export class DependencyContainer {
    */
   static createForTesting(
     characterRepository: CharacterRepository,
-    favoritesRepository: FavoritesRepository
+    favoritesRepository: FavoritesRepository,
+    seoService?: SEOService,
   ): DependencyContainer {
-    return new DependencyContainer(characterRepository, favoritesRepository);
+    return new DependencyContainer(
+      characterRepository,
+      favoritesRepository,
+      seoService || new BrowserSEOService(),
+    );
+  }
+
+  /**
+   * Get services (infrastructure services like SEO)
+   */
+  get services() {
+    return this._services;
   }
 
   /**
