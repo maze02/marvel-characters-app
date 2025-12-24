@@ -14,16 +14,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Home page - Main character listing -->
   <url>
-    <loc>https://your-domain.com/</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://marvel-characters-app-five.vercel.app/</loc>
+    <lastmod>2024-12-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   
   <!-- Favorites page -->
   <url>
-    <loc>https://your-domain.com/favorites</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://marvel-characters-app-five.vercel.app/favorites</loc>
+    <lastmod>2024-12-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

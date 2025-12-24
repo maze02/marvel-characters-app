@@ -11,5 +11,5 @@ User-agent: *
 Allow: /
 
 # Tell search engines where to find your sitemap (helps them discover all your pages)
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://marvel-characters-app-five.vercel.app/sitemap.xml
 

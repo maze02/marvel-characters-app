@@ -9,16 +9,27 @@
  * - Information about characters (for character detail pages)
  *
  * This makes your site appear better in search results and look nicer when shared.
+ *
+ * Implementation Details:
+ * - Uses Dependency Injection to get the SEO service
+ * - Follows Clean Architecture / Hexagonal Architecture principles
+ * - No direct DOM manipulation - delegates to SEOService
  */
 
-import React from "react";
-import { useSEO, SEOConfig } from "@ui/hooks/useSEO";
+import React, { useEffect } from "react";
+import { useServices } from "@ui/state/DependenciesContext";
+import { SEOMetadata } from "@application/seo/ports/SEOService";
 
 /**
  * SEO Component Props
+ *
+ * Extends SEOMetadata with optional additional structured data.
  */
-export interface SEOProps extends SEOConfig {
-  /** Optional: Additional structured data to inject */
+export interface SEOProps extends SEOMetadata {
+  /**
+   * Optional: Additional structured data to inject
+   * This is separate from the main metadata and can be used for custom JSON-LD.
+   */
   structuredData?: Record<string, unknown>;
 }
 
@@ -29,36 +40,60 @@ export interface SEOProps extends SEOConfig {
  * This component doesn't render anything visible - it only updates hidden tags
  * that search engines read.
  *
+ * Architecture:
+ * - UI Layer component (presentation/infrastructure concern)
+ * - Uses SEOService via Dependency Injection
+ * - Follows Dependency Inversion Principle
+ *
+ * Clean Code Principles:
+ * - Single Responsibility: Only manages SEO metadata lifecycle
+ * - Dependency Injection: Gets SEO service from DI container
+ * - No direct DOM manipulation: Delegates to SEOService
+ *
  * @example
  * ```tsx
  * <SEO
  *   title="Spider-Man - Marvel Character Profile"
  *   description="Learn about Spider-Man, his comics, and story"
  *   image="/spider-man-image.jpg"
+ *   canonicalUrl="https://example.com/character/spider-man"
  * />
  * ```
  */
-export const SEO: React.FC<SEOProps> = (props) => {
-  // Use the SEO hook to update all meta tags
-  useSEO(props);
+export const SEO: React.FC<SEOProps> = ({ structuredData, ...metadata }) => {
+  // Get SEO service from DI container (Hexagonal Architecture pattern)
+  const { seo } = useServices();
 
-  // Also inject additional structured data if provided
-  React.useEffect(() => {
-    if (props.structuredData) {
-      const existingScript = document.querySelector(
-        "#additional-structured-data",
-      );
-      if (existingScript) {
-        existingScript.remove();
-      }
+  // Update metadata when props change
+  // Note: We list individual properties instead of the whole `metadata` object
+  // to avoid infinite re-renders (objects are compared by reference, not value).
+  // This is intentional and correct behavior.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    seo.updateMetadata(metadata);
+  }, [
+    seo,
+    metadata.title,
+    metadata.description,
+    metadata.image,
+    metadata.type,
+    metadata.canonicalUrl,
+    metadata.character,
+  ]);
 
-      const script = document.createElement("script");
-      script.id = "additional-structured-data";
-      script.type = "application/ld+json";
-      script.textContent = JSON.stringify(props.structuredData);
-      document.head.appendChild(script);
+  // Inject additional structured data if provided
+  useEffect(() => {
+    if (structuredData) {
+      seo.addStructuredData(structuredData, "additional-structured-data");
     }
-  }, [props.structuredData]);
+
+    // Cleanup on unmount
+    return () => {
+      if (structuredData) {
+        seo.removeStructuredData("additional-structured-data");
+      }
+    };
+  }, [seo, structuredData]);
 
   // This component doesn't render anything visible
   return null;
