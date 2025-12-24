@@ -58,7 +58,10 @@
 // BEM: Element - textBox
 .textBox {
   width: 100%;
-  height: $hero-textbox-height-mobile;
+  // Mobile: use auto height to prevent clipping the READ MORE button
+  // The fixed 20vh was too small to fit header + description + button
+  height: auto;
+  min-height: $hero-textbox-height-mobile;
   background-color: $color-black;
   padding: 24px 16px;
   display: flex;
@@ -75,7 +78,7 @@
     @include triangle-clip($triangle-clip-mobile);
   }
 
-  // Tablet: side-by-side layout
+  // Tablet: side-by-side layout, restore fixed height
   @include md {
     width: calc(100% - #{$hero-tablet-box-size});
     height: $hero-tablet-box-size;
@@ -91,7 +94,7 @@
     }
   }
 
-  // Desktop: full width black box spanning edge to edge
+  // Desktop: full width black box spanning edge to edge, restore fixed height
   @include lg {
     width: 100%; // Full width, edge to edge
     height: $hero-image-height-desktop; // 320px height
@@ -114,10 +117,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
+  // Remove height: 100% on mobile to prevent clipping of the READ MORE button
+  // The fixed textBox height (20vh) is too small to fit header + description + button
 
-  // Tablet: 47px from left and right edges, specific gap
+  // Tablet: restore height constraint and add padding
   @include md {
+    height: 100%;
     padding: 47px; // 47px from left and right edges
     gap: 35px;
   }
