@@ -7,11 +7,11 @@ $comic-card-gap: 16px;
 
 // BEM: Block
 .comicsSection {
-  padding: 0 $padding-mobile $spacing-6;
+  padding: $padding-mobile $padding-mobile $spacing-6;
   background-color: $color-background;
 
   @include md {
-    padding: $padding-desktop $padding-desktop $spacing-6;
+    padding: $padding-tablet $padding-desktop $spacing-6;
   }
 
   // Desktop: 273px horizontal padding
