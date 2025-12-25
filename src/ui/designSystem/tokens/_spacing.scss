@@ -20,8 +20,9 @@ $spacing-16: calc($spacing-unit * 8); // 64px
 $spacing-20: calc($spacing-unit * 10); // 80px
 
 // Layout padding tokens (from mockup specifications)
-$padding-mobile: 16px;   // Mobile horizontal padding
-$padding-desktop: 48px;  // Tablet & Desktop horizontal padding
+$padding-mobile: 16px; // Mobile horizontal padding
+$padding-tablet: 24px; // Tablet horizontal padding
+$padding-desktop: 48px; // Tablet & Desktop horizontal padding
 
 // Export as CSS custom properties
 :root {
