@@ -1,0 +1,171 @@
+name: E2E Tests
+
+# Run E2E tests on pull requests and scheduled nightly builds
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master]
+  schedule:
+    # Run full suite nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  # Fast smoke tests - run on every PR
+  smoke-tests:
+    name: Smoke Tests (Fast)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run smoke tests (critical paths only)
+        run: |
+          npx playwright test \
+            e2e/01-character-list-and-search.spec.ts \
+            e2e/02-favorites-functionality.spec.ts \
+            e2e/03-character-detail-and-comics.spec.ts \
+            --project=chromium
+        env:
+          CI: true
+          VITE_MARVEL_API_PUBLIC_KEY: ${{ secrets.VITE_MARVEL_API_PUBLIC_KEY }}
+          VITE_MARVEL_API_PRIVATE_KEY: ${{ secrets.VITE_MARVEL_API_PRIVATE_KEY }}
+
+      - name: Upload smoke test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload smoke test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-screenshots
+          path: test-results/
+          retention-days: 7
+
+  # Full E2E test suite - run nightly and on main branch
+  full-suite:
+    name: Full E2E Suite (All Tests)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run full E2E test suite
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          CI: true
+          VITE_MARVEL_API_PUBLIC_KEY: ${{ secrets.VITE_MARVEL_API_PUBLIC_KEY }}
+          VITE_MARVEL_API_PRIVATE_KEY: ${{ secrets.VITE_MARVEL_API_PRIVATE_KEY }}
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test screenshots and videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failures-${{ matrix.browser }}
+          path: test-results/
+          retention-days: 30
+
+  # Cross-browser compatibility tests - run on main branch only
+  cross-browser:
+    name: Cross-Browser Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install all Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run tests on all browsers
+        run: npx playwright test
+        env:
+          CI: true
+          VITE_MARVEL_API_PUBLIC_KEY: ${{ secrets.VITE_MARVEL_API_PUBLIC_KEY }}
+          VITE_MARVEL_API_PRIVATE_KEY: ${{ secrets.VITE_MARVEL_API_PRIVATE_KEY }}
+
+      - name: Upload cross-browser report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-browser-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-browser-failures
+          path: test-results/
+          retention-days: 30
+

@@ -81,10 +81,7 @@ test.describe("Empty States", () => {
     const searchInput = getSearchInput(page);
     await searchInput.fill("ZZZInvalidCharacterName999XXX");
 
-    // Wait for debounce and search to complete
-    await page.waitForTimeout(500);
-    await page.waitForLoadState("networkidle", { timeout: 10000 });
-
+    // Wait for debounce and empty state using condition-based waiting
     // Should show empty state
     await expect(
       page.getByRole("heading", { name: /No Characters Found/i }),
@@ -114,10 +111,7 @@ test.describe("Empty States", () => {
     // Navigate to a character detail page
     await navigateToCharacterDetail(page);
 
-    // Wait for page to fully load
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
-
-    // Verify the page loaded successfully (character hero is visible)
+    // Wait for page content to load using condition-based waiting
     const favoriteButton = page
       .locator('[data-testid="favorite-button"]')
       .first();
@@ -195,8 +189,8 @@ test.describe("Empty States", () => {
     // Search for something that doesn't match
     const searchInput = getSearchInput(page);
     await searchInput.fill("ZZZNoMatchXXX");
-    await page.waitForTimeout(500);
 
+    // Wait for debounce and empty state using condition-based waiting
     // Should show empty state for search
     await expect(
       page.getByRole("heading", { name: /No Characters Found/i }),

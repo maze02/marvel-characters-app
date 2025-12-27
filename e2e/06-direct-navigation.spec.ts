@@ -101,9 +101,8 @@ test.describe("Direct URL Navigation", () => {
 
     // Navigate directly to character detail page via URL
     await page.goto(`/character/${characterId}`);
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
 
-    // Should display character name
+    // Wait for character detail page to load using condition-based waiting
     const nameElement = page
       .getByRole("heading")
       .filter({ hasText: new RegExp(characterName || "", "i") })
@@ -132,9 +131,7 @@ test.describe("Direct URL Navigation", () => {
     // Navigate to invalid character ID
     await page.goto("/character/999999999");
 
-    // Wait for error state to load
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
-
+    // Wait for error page to load using condition-based waiting
     // Should show error heading
     await expect(
       page.getByRole("heading", { name: /Character Not Found/i }),
@@ -169,9 +166,8 @@ test.describe("Direct URL Navigation", () => {
 
     // Navigate to character detail
     const characterName = await navigateToCharacterDetail(page);
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
 
-    // Verify character is displayed
+    // Wait for detail page to load using condition-based waiting
     const nameElement = page
       .getByRole("heading")
       .filter({ hasText: new RegExp(characterName, "i") })
@@ -183,8 +179,8 @@ test.describe("Direct URL Navigation", () => {
 
     // Refresh the page
     await page.reload();
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
 
+    // Wait for page to reload using condition-based waiting
     // Should still display the same character
     await expect(nameElement.first()).toBeVisible({ timeout: 15000 });
 
