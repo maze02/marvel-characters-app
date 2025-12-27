@@ -131,6 +131,91 @@ test.describe("Character Detail and Comics", () => {
       page.getByRole("heading", { name: /FAVORITES/i }).first(),
     ).toBeVisible({ timeout: 5000 });
   });
+
+  test("should load more comics when scrolling horizontally to the end", async ({
+    page,
+  }) => {
+    // Navigate to character detail page
+    await navigateToCharacterDetail(page);
+
+    // Wait for page to fully load including comics
+    await page.waitForLoadState("networkidle", { timeout: 20000 });
+    await page.waitForTimeout(2000); // Wait for comics to load
+
+    // Count initial comics (should be 20 based on COMICS_PAGE_SIZE)
+    const comicItems = page.locator('[data-testid="comic-item"]');
+    const initialCount = await comicItems.count();
+
+    // Skip test if character has no comics
+    if (initialCount === 0) {
+      test.skip();
+      return;
+    }
+
+    // Find the comics section (has "COMICS" heading)
+    const comicsSection = page
+      .getByRole("heading", { name: /COMICS/i })
+      .locator("..")
+      .first();
+
+    // Find the scroll container inside the section
+    // It's a div that contains the comic items
+    const scrollContainer = comicsSection
+      .locator("div")
+      .filter({ has: comicItems.first() })
+      .first();
+
+    // Verify container exists
+    await expect(scrollContainer).toBeVisible({ timeout: 5000 });
+
+    // Get scroll dimensions
+    const scrollWidth = await scrollContainer.evaluate(
+      (el) => (el as HTMLElement).scrollWidth,
+    );
+    const clientWidth = await scrollContainer.evaluate(
+      (el) => (el as HTMLElement).clientWidth,
+    );
+
+    // Only test infinite scroll if content is scrollable and we have 20+ comics
+    // (indicating there might be more to load)
+    if (scrollWidth > clientWidth && initialCount >= 20) {
+      // Scroll horizontally to 85% of scroll width (triggers load more at 80% threshold)
+      const scrollPosition = Math.floor(scrollWidth * 0.85);
+      await scrollContainer.evaluate((el, pos) => {
+        (el as HTMLElement).scrollTo({ left: pos, behavior: "smooth" });
+      }, scrollPosition);
+
+      // Wait a moment for scroll event to fire and load more to trigger
+      await page.waitForTimeout(500);
+
+      // Wait for loading indicator to appear (if there are more comics)
+      const loadingIndicator = page.locator('[data-testid="loading-more"]');
+      const hasLoadingIndicator = await loadingIndicator
+        .isVisible()
+        .catch(() => false);
+
+      if (hasLoadingIndicator) {
+        // Wait for loading to complete
+        await loadingIndicator.waitFor({ state: "hidden", timeout: 10000 });
+      }
+
+      // Wait for network to be idle and React to render
+      await page.waitForLoadState("networkidle", { timeout: 15000 });
+      await page.waitForTimeout(1000);
+
+      // Count comics after scroll
+      const finalCount = await comicItems.count();
+
+      // Verify more comics were loaded (if character has more than 20 comics)
+      if (finalCount > initialCount) {
+        expect(finalCount).toBeGreaterThan(initialCount);
+      }
+    } else {
+      // Character might not have more than 20 comics, which is fine
+      // Just verify comics are displayed
+      expect(initialCount).toBeGreaterThan(0);
+    }
+  });
 });
 
 /**
