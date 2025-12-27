@@ -1,6 +1,6 @@
 /**
  * Application Constants
- * 
+ *
  * Centralized configuration for magic numbers and application-wide constants.
  * Following best practices to avoid scattered hardcoded values.
  */
@@ -34,9 +34,9 @@ export const API = {
  */
 export const UI = {
   /** Intersection Observer margin for infinite scroll (starts loading before reaching end) */
-  INFINITE_SCROLL_ROOT_MARGIN: '100px',
+  INFINITE_SCROLL_ROOT_MARGIN: "100px",
   /** Debounce delay for search input in milliseconds */
-  SEARCH_DEBOUNCE_MS: 300,
+  SEARCH_DEBOUNCE_MS: 400,
 } as const;
 
 /**

@@ -136,8 +136,9 @@ describe("ListPage", () => {
     });
 
     it("should render main content area", async () => {
-      await renderPage();
-      expect(screen.getByRole("main")).toBeInTheDocument();
+      const { container } = await renderPage();
+      // Page component uses id="main-content", Layout adds role="main"
+      expect(container.querySelector("#main-content")).toBeInTheDocument();
     });
 
     it("should render without crashing", async () => {
@@ -170,28 +171,33 @@ describe("ListPage", () => {
     it("should render page with proper structure", async () => {
       const { container } = await renderPage();
       expect(container).toBeInTheDocument();
-      expect(screen.getByRole("main")).toBeInTheDocument();
+      // Check for main content area by id (Layout adds role="main")
+      expect(container.querySelector("#main-content")).toBeInTheDocument();
     });
 
     it("should have heading and search", async () => {
       await renderPage();
       // Page has searchbox functionality
       expect(screen.getByRole("searchbox")).toBeInTheDocument();
-      expect(screen.getByRole("main")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Marvel Characters/i }),
+      ).toBeInTheDocument();
     });
   });
 
   describe("Accessibility", () => {
     it("should have main content region", async () => {
-      await renderPage();
-      expect(screen.getByRole("main")).toBeInTheDocument();
+      const { container } = await renderPage();
+      // Page component uses id="main-content", Layout adds role="main"
+      expect(container.querySelector("#main-content")).toBeInTheDocument();
     });
 
     it("should have page heading", async () => {
       await renderPage();
-      // Check that page renders with proper structure
-      expect(screen.getByRole("main")).toBeInTheDocument();
-      expect(screen.getByRole("banner")).toBeInTheDocument();
+      // Check for H1 heading (semantic structure)
+      expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+      // Check for searchbox
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
     });
 
     it("should have searchbox role", async () => {

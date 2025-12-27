@@ -147,13 +147,16 @@ export class ComicVineCharacterRepository implements CharacterRepository {
 
   /**
    * Search characters by name
-   * Uses Comic Vine's filter syntax: "publisher:31,name:query"
+   * Uses Comic Vine's filter syntax to find Marvel characters only
    *
-   * @param query - Search query (name filter)
+   * @param query - What to search for (e.g., "Spider")
+   * @param signal - Can cancel the search if needed (optional)
    * @returns List of matching Marvel characters
-   * @throws {ApiError} When the API request fails
    */
-  async searchByName(query: string): Promise<Character[]> {
+  async searchByName(
+    query: string,
+    signal?: AbortSignal,
+  ): Promise<Character[]> {
     try {
       if (!query || query.trim().length === 0) {
         return [];
@@ -177,6 +180,7 @@ export class ComicVineCharacterRepository implements CharacterRepository {
         },
         {
           useCache: true,
+          ...(signal && { signal }),
         },
       );
 

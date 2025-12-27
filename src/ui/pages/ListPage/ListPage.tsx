@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { SearchBar } from "@ui/designSystem/molecules/SearchBar/SearchBar";
 import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/CharacterCard";
-import { Layout } from "@ui/components/Layout/Layout";
 import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
@@ -16,17 +15,16 @@ import { routes } from "@ui/routes/routes";
 import styles from "./ListPage.module.scss";
 
 /**
- * List Page
+ * Main page showing all Marvel characters
  *
- * Main page displaying character list with infinite scroll and search.
- * Uses Comic Vine API to fetch Marvel characters.
+ * Shows a grid of character cards that you can scroll through infinitely.
+ * You can search for characters and mark favorites.
  *
- * Features:
- * - Loads 50 characters initially
- * - Infinite scroll (loads more as user scrolls)
- * - Real-time search with debouncing
- * - Favorites persistence via localStorage
- * - Dependencies injected via Context (no direct instantiation)
+ * How it works:
+ * - Loads 50 characters at a time as you scroll
+ * - Search waits 400ms after you stop typing before making API call
+ * - Favorites are saved in your browser
+ * - Cancels old search requests when you type new text
  */
 export const ListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +62,14 @@ export const ListPage: React.FC = () => {
   }, [isInfiniteScrollLoading, searchQuery]);
 
   // Handle search - only runs when debouncedQuery changes (not on every keystroke!)
+  // Uses AbortController to cancel outdated requests and prevent race conditions
   useEffect(() => {
+    // Create abort controller for this search request
+    const abortController = new AbortController();
+    // Track if this is still the latest request
+    const requestId = Date.now();
+    let isLatestRequest = true;
+
     const performSearch = async () => {
       if (!debouncedQuery) {
         setSearchResults([]);
@@ -74,20 +79,47 @@ export const ListPage: React.FC = () => {
         return;
       }
 
-      logger.info("Performing search", { debouncedQuery });
+      logger.info("Performing search", { debouncedQuery, requestId });
       setIsSearchLoading(true);
       setSearchError(null);
       startLoading();
+
       try {
-        const result = await searchCharacters.execute(debouncedQuery);
-        logger.info("Search results received", {
-          query: debouncedQuery,
-          count: result.count,
-          charactersLength: result.characters.length,
+        // Pass abort signal to allow cancellation
+        const result = await searchCharacters.execute(debouncedQuery, {
+          signal: abortController.signal,
         });
-        setSearchResults(result.characters);
-        setSearchError(null);
+
+        // Only update state if this is still the latest request and not aborted
+        if (isLatestRequest && !abortController.signal.aborted) {
+          logger.info("Search results received", {
+            query: debouncedQuery,
+            requestId,
+            count: result.count,
+            charactersLength: result.characters.length,
+          });
+          setSearchResults(result.characters);
+          setSearchError(null);
+        } else {
+          logger.debug("Search result ignored (newer request exists)", {
+            query: debouncedQuery,
+            requestId,
+          });
+        }
       } catch (error: any) {
+        // Ignore errors from aborted requests (expected behavior)
+        if (
+          abortController.signal.aborted ||
+          error?.name === "AbortError" ||
+          error?.message?.includes("abort")
+        ) {
+          logger.debug("Search aborted (expected)", {
+            query: debouncedQuery,
+            requestId,
+          });
+          return;
+        }
+
         // Don't log cancelled requests as errors (expected behavior from debouncing)
         if (
           error?.message?.includes("cancel") ||
@@ -95,10 +127,18 @@ export const ListPage: React.FC = () => {
         ) {
           logger.debug("Search request cancelled (debouncing)", {
             query: debouncedQuery,
+            requestId,
           });
-          setSearchError(null);
-        } else {
-          logger.error("Search failed", error, { query: debouncedQuery });
+          return;
+        }
+
+        // Only update error state if this is still the latest request
+        if (isLatestRequest) {
+          logger.error("Search failed", error, {
+            query: debouncedQuery,
+            requestId,
+          });
+
           // Set user-friendly error message
           if (error?.message?.includes("timeout")) {
             setSearchError(
@@ -113,16 +153,25 @@ export const ListPage: React.FC = () => {
               "Search failed. Please check your connection and try again.",
             );
           }
+          setSearchResults([]);
         }
-        setSearchResults([]);
       } finally {
-        setIsSearchLoading(false);
-        stopLoading();
+        // Only update loading state if this is still the latest request and not aborted
+        if (isLatestRequest && !abortController.signal.aborted) {
+          setIsSearchLoading(false);
+          stopLoading();
+        }
       }
     };
 
     void performSearch();
-  }, [debouncedQuery, searchCharacters, startLoading, stopLoading]); // ✅ Removed searchQuery - only trigger on debouncedQuery!
+
+    // Cleanup: abort request when component unmounts or debouncedQuery changes
+    return () => {
+      isLatestRequest = false;
+      abortController.abort();
+    };
+  }, [debouncedQuery, searchCharacters, startLoading, stopLoading]);
 
   // Retry search handler
   const retrySearch = () => {
@@ -142,7 +191,7 @@ export const ListPage: React.FC = () => {
     : isInfiniteScrollLoading && infiniteScrollCharacters.length === 0; // Show loading for initial list
 
   return (
-    <Layout>
+    <>
       <SEO
         title="Marvel Characters - Browse All Superheroes | Character Database"
         description="Browse and explore Marvel's vast universe of characters. Search Marvel heroes, view character profiles, comics, and save your favorites. Complete Marvel character database with Spider-Man, Iron Man, Captain America, and more."
@@ -158,12 +207,12 @@ export const ListPage: React.FC = () => {
           url: `${config.appUrl}${routes.home}`,
         }}
       />
-      <div className={styles.main} id="main-content">
+      <div className={styles.listPage} id="main-content">
         {/* H1 for SEO - visually hidden, helps search engines understand the page topic */}
-        <h1 className={styles.srOnly}>
+        <h1 className={styles.listPage__srOnly}>
           Marvel Characters - Browse All Superheroes
         </h1>
-        <div className={styles.searchContainer}>
+        <div className={styles.listPage__search}>
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
@@ -171,7 +220,7 @@ export const ListPage: React.FC = () => {
           />
         </div>
 
-        <div className={styles.resultsCount}>
+        <div className={styles.listPage__resultsCount}>
           {displayedCharacters.length} RESULTS
         </div>
 
@@ -179,13 +228,13 @@ export const ListPage: React.FC = () => {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className={styles.srOnly}
+          className={styles.listPage__srOnly}
         >
           {displayedCharacters.length} characters found
         </div>
 
         {!isLoading && (
-          <div className={styles.grid}>
+          <div className={styles.listPage__grid}>
             {displayedCharacters.map((character) => (
               <CharacterCard
                 key={character.id.value}
@@ -203,17 +252,17 @@ export const ListPage: React.FC = () => {
         {!searchQuery && hasMore && (
           <div
             ref={sentinelRef}
-            className={styles.sentinel}
+            className={styles.listPage__sentinel}
             data-testid="sentinel"
           />
         )}
 
         {/* Search error state */}
         {!isLoading && searchError && searchQuery && (
-          <div className={styles.errorState}>
-            <h2 className={styles.emptyTitle}>Search Failed</h2>
-            <p className={styles.emptyMessage}>{searchError}</p>
-            <button onClick={retrySearch} className={styles.retryButton}>
+          <div className={styles.listPage__errorState}>
+            <h2 className={styles.listPage__heading}>Search Failed</h2>
+            <p className={styles.listPage__message}>{searchError}</p>
+            <button onClick={retrySearch} className={styles.listPage__action}>
               Retry Search
             </button>
           </div>
@@ -224,9 +273,9 @@ export const ListPage: React.FC = () => {
           infiniteScrollError &&
           !searchQuery &&
           infiniteScrollCharacters.length === 0 && (
-            <div className={styles.errorState}>
+            <div className={styles.listPage__errorState}>
               <p>Failed to load characters. Please try again.</p>
-              <button onClick={retry} className={styles.retryButton}>
+              <button onClick={retry} className={styles.listPage__action}>
                 Retry
               </button>
             </div>
@@ -238,21 +287,21 @@ export const ListPage: React.FC = () => {
           displayedCharacters.length === 0 &&
           // If user is typing but debounce hasn't triggered yet, don't show empty state
           (searchQuery && !debouncedQuery ? null : (
-            <div className={styles.emptyState}>
-              <h2 className={styles.emptyTitle}>
+            <div className={styles.listPage__emptyState}>
+              <h2 className={styles.listPage__heading}>
                 {searchQuery ? "No Characters Found" : "No Data Available"}
               </h2>
               {searchQuery ? (
-                <p className={styles.emptyMessage}>
+                <p className={styles.listPage__message}>
                   Try searching for different character names like "Spider",
                   "Iron", or "Captain"
                 </p>
               ) : (
                 <>
-                  <p className={styles.emptyMessage}>
+                  <p className={styles.listPage__message}>
                     Configure Comic Vine API key in .env to load character data
                   </p>
-                  <p className={styles.emptyMessage}>
+                  <p className={styles.listPage__message}>
                     Get your API key at{" "}
                     <a
                       href="https://comicvine.gamespot.com/api/"
@@ -268,6 +317,6 @@ export const ListPage: React.FC = () => {
             </div>
           ))}
       </div>
-    </Layout>
+    </>
   );
 };
