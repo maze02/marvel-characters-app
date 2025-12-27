@@ -120,6 +120,11 @@ export const CharacterHero: React.FC<CharacterHeroProps> = ({
                       ? `Hide ${characterName}'s description`
                       : `Read more about ${characterName}`
                   }
+                  data-testid={
+                    isExpanded
+                      ? "collapse-description-button"
+                      : "expand-description-button"
+                  }
                 >
                   {isExpanded ? "HIDE" : "READ MORE"}
                 </button>

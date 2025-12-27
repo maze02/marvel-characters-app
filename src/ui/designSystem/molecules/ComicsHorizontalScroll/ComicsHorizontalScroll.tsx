@@ -355,12 +355,13 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
   }
 
   return (
-    <section className={styles.comicsSection}>
+    <section className={styles.comicsSection} data-testid="comics-section">
       <h2 className={styles.comicsSection__title}>{title}</h2>
       <div className={styles.comicsSection__scrollWrapper}>
         <div
           className={`${styles.comicsSection__scrollContainer} ${isScrollable ? styles["comicsSection__scrollContainer--scrollable"] : ""}`}
           ref={scrollContainerRef}
+          data-testid="comics-scroll-container"
         >
           <div className={styles.comicsSection__track}>
             {comics.map((comic) => (

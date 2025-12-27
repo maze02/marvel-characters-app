@@ -10,13 +10,27 @@ import {
 } from "./helpers";
 
 /**
- * E2E Test 1: Character List and Search
+ * USER JOURNEY: Browsing and Searching for Characters
  *
- * Tests the main functionality:
+ * BUSINESS VALUE: Ensures users can discover Marvel characters through browsing
+ * and search functionality. This is the primary entry point to the application.
+ *
+ * WHAT THIS TESTS:
+ * 1. When users first visit the site, they see a list of Marvel characters
+ * 2. Users can type in a search box to find specific characters
+ * 3. The search results update to show only matching characters
+ * 4. Users can click on a character card to learn more about them
+ * 5. Users can scroll down to automatically load more characters (infinite scroll)
+ * 6. Users can clear their search to see all characters again
+ *
+ * FAILURE IMPACT: If these tests fail, users cannot browse or find characters.
+ * This is a CRITICAL failure that makes the app unusable.
+ *
+ * TECHNICAL DETAILS:
  * - Loads initial 50 characters
- * - Search functionality works
- * - Results count updates
- * - Navigation to character detail
+ * - Search is debounced (waits 400ms after typing stops)
+ * - Infinite scroll triggers at page bottom
+ * - Results count updates dynamically
  */
 test.describe("Character List and Search", () => {
   test.beforeEach(async ({ page }) => {
@@ -25,6 +39,13 @@ test.describe("Character List and Search", () => {
   });
 
   test("should load initial 50 characters", async ({ page }) => {
+    /**
+     * WHAT THIS TESTS: When users visit the homepage, they should immediately
+     * see a list of Marvel characters to browse.
+     *
+     * WHY IT MATTERS: This is the first impression. If this fails, users see
+     * an empty page and think the site is broken.
+     */
     await waitForCharacters(page);
 
     // Check that characters are displayed
@@ -40,6 +61,13 @@ test.describe("Character List and Search", () => {
   });
 
   test("should search for characters by name", async ({ page }) => {
+    /**
+     * WHAT THIS TESTS: Users can type in the search box to find specific
+     * characters (like "Spider-Man") and see filtered results.
+     *
+     * WHY IT MATTERS: Users often know which character they want to see.
+     * Without search, they'd have to scroll through hundreds of characters.
+     */
     await waitForCharacters(page);
 
     // Verify search bar is visible
@@ -63,13 +91,17 @@ test.describe("Character List and Search", () => {
   test("should navigate to character detail page on card click", async ({
     page,
   }) => {
+    /**
+     * WHAT THIS TESTS: When users click on a character card, they navigate
+     * to that character's detail page to learn more.
+     *
+     * WHY IT MATTERS: This is the main interaction in the app. If this breaks,
+     * users can see the list but can't access any detailed information.
+     */
     await waitForCharacters(page);
 
     // Get character name before navigation
     const characterName = await navigateToCharacterDetail(page);
-
-    // Wait for detail page to fully render
-    await page.waitForTimeout(1000);
 
     // Verify character name is displayed on detail page (could be in heading or text)
     const nameElement = page
@@ -80,6 +112,13 @@ test.describe("Character List and Search", () => {
   });
 
   test("should clear search and show all characters", async ({ page }) => {
+    /**
+     * WHAT THIS TESTS: After searching, users can clear the search box to
+     * return to browsing all characters.
+     *
+     * WHY IT MATTERS: Users might search for "Spider", see Spider-Man, but then
+     * want to browse other characters. They shouldn't have to reload the page.
+     */
     await waitForCharacters(page);
 
     // Perform search
@@ -93,7 +132,8 @@ test.describe("Character List and Search", () => {
     // Clear search
     const searchInput = getSearchInput(page);
     await searchInput.clear();
-    await page.waitForTimeout(800); // Wait for debounce + API call
+    // Wait for the search to complete and new results to load
+    await page.waitForLoadState("networkidle", { timeout: 10000 });
 
     // Should show all characters again
     await waitForCharacters(page);
@@ -106,6 +146,14 @@ test.describe("Character List and Search", () => {
   test("should load more characters when scrolling to bottom", async ({
     page,
   }) => {
+    /**
+     * WHAT THIS TESTS: The "infinite scroll" feature that automatically loads
+     * more characters as users scroll down the page.
+     *
+     * WHY IT MATTERS: There are thousands of Marvel characters. Without infinite
+     * scroll, users would only see 50 characters or have to click pagination buttons.
+     * This provides a smooth, modern browsing experience.
+     */
     await waitForCharacters(page);
 
     // Count initial characters loaded
