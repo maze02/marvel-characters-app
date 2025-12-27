@@ -1,4 +1,5 @@
-.container {
+// Block: characterDescription
+.characterDescription {
   padding: $spacing-6 $padding-mobile;
   background-color: $color-background;
 
@@ -9,53 +10,59 @@
   @include lg {
     padding: $spacing-8 $padding-desktop;
   }
-}
 
-.description {
-  font-size: 14px;
-  font-family: $font-family-condensed;
-  font-weight: $font-weight-regular;
-  letter-spacing: $letter-spacing-normal;
-  line-height: $line-height-relaxed;
-  color: $color-gray-500;
-  margin: 0 0 $spacing-4;
-  overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  // Element: description text
+  &__text {
+    font-size: 14px;
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-regular;
+    letter-spacing: $letter-spacing-normal;
+    line-height: $line-height-relaxed;
+    color: $color-gray-500;
+    margin: 0 0 $spacing-4;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
 
-  // Mobile: show ~6 lines before truncation
-  &.collapsed {
-    display: -webkit-box;
-    -webkit-line-clamp: 6;
-    -webkit-box-orient: vertical;
-    max-height: calc(14px * #{$line-height-relaxed} * 6);
+    // Modifier: collapsed state (default)
+    &--collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      line-clamp: 6;
+      -webkit-box-orient: vertical;
+      max-height: calc(14px * #{$line-height-relaxed} * 6);
 
-    @include md {
-      // Tablet: show ~8 lines before truncation
-      -webkit-line-clamp: 8;
-      max-height: calc(14px * #{$line-height-relaxed} * 8);
+      @include md {
+        // Tablet: show ~8 lines before truncation
+        -webkit-line-clamp: 8;
+        line-clamp: 8;
+        max-height: calc(14px * #{$line-height-relaxed} * 8);
+      }
+
+      @include lg {
+        // Desktop: show ~10 lines before truncation
+        -webkit-line-clamp: 10;
+        line-clamp: 10;
+        max-height: calc(14px * #{$line-height-relaxed} * 10);
+      }
     }
 
-    @include lg {
-      // Desktop: show ~10 lines before truncation
-      -webkit-line-clamp: 10;
-      max-height: calc(14px * #{$line-height-relaxed} * 10);
+    // Modifier: expanded state
+    &--expanded {
+      display: block;
+      max-height: 3000px; // Large enough for any description, allows smooth animation
     }
   }
 
-  &.expanded {
-    display: block;
-    max-height: 3000px; // Large enough for any description, allows smooth animation
+  // Element: toggle button
+  &__button {
+    @include button-interactive($color-primary);
+    color: $color-primary;
+    font-size: 14px;
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-normal;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
   }
-}
-
-.toggleButton {
-  @include button-interactive($color-primary);
-  color: $color-primary;
-  font-size: 14px;
-  font-family: $font-family-condensed;
-  font-weight: $font-weight-bold;
-  letter-spacing: $letter-spacing-normal;
-  text-transform: uppercase;
-  display: inline-flex;
-  align-items: center;
 }

@@ -1,41 +1,50 @@
 // CharacterCard uses shared card mixins for consistency
 // This component is flexible and adapts to grid layout
 
+// Block: card
 .card {
   @include card-base;
   position: relative;
   overflow: hidden;
   // No fixed dimensions - inherits from grid
-}
 
-.cardLink {
-  @include card-link;
-}
+  // Element: card link wrapper
+  &__link {
+    @include card-link;
 
-.cardImage {
-  @include card-image;
-}
+    // Hover state for accent
+    &:hover {
+      .card__accent {
+        @include card-hover-accent;
+      }
 
-.cardFooter {
-  @include card-footer;
-}
+      // Hover state for heart button
+      @include card-hover-heart;
+    }
+  }
 
-.cardAccent {
-  @include card-accent;
-}
+  // Element: card image container
+  &__image {
+    @include card-image;
+  }
 
-.cardLink:hover .cardAccent {
-  @include card-hover-accent;
-}
+  // Element: card footer section
+  &__footer {
+    @include card-footer;
+  }
 
-.cardContent {
-  @include card-content;
-}
+  // Element: red accent line
+  &__accent {
+    @include card-accent;
+  }
 
-.cardLink:hover {
-  @include card-hover-heart;
-}
+  // Element: content area (name + favorite button)
+  &__content {
+    @include card-content;
+  }
 
-.cardTitle {
-  @include card-title;
+  // Element: character name title
+  &__title {
+    @include card-title;
+  }
 }

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import styles from './CharacterDescription.module.scss';
+import React, { useState, useRef, useEffect } from "react";
+import styles from "./CharacterDescription.module.scss";
 
 interface CharacterDescriptionProps {
   description: string;
@@ -8,7 +8,7 @@ interface CharacterDescriptionProps {
 
 /**
  * CharacterDescription Component
- * 
+ *
  * Displays character description with text truncation and expand/collapse functionality.
  * Mobile-first responsive design matching mockup specifications.
  */
@@ -34,10 +34,10 @@ export const CharacterDescription: React.FC<CharacterDescriptionProps> = ({
   };
 
   return (
-    <div className={styles.container}>
-      <p 
+    <div className={styles.characterDescription}>
+      <p
         ref={descriptionRef}
-        className={`${styles.description} ${isExpanded ? styles.expanded : styles.collapsed}`}
+        className={`${styles.characterDescription__text} ${isExpanded ? styles["characterDescription__text--expanded"] : styles["characterDescription__text--collapsed"]}`}
       >
         {description}
       </p>
@@ -45,11 +45,15 @@ export const CharacterDescription: React.FC<CharacterDescriptionProps> = ({
         <button
           type="button"
           onClick={toggleExpanded}
-          className={styles.toggleButton}
+          className={styles.characterDescription__button}
           aria-expanded={isExpanded}
-          aria-label={isExpanded ? `Show less about ${characterName}` : `Read more about ${characterName}`}
+          aria-label={
+            isExpanded
+              ? `Show less about ${characterName}`
+              : `Read more about ${characterName}`
+          }
         >
-          {isExpanded ? 'Show less' : 'Read more'}
+          {isExpanded ? "Show less" : "Read more"}
         </button>
       )}
     </div>

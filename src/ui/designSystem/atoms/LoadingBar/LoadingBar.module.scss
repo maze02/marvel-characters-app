@@ -1,3 +1,4 @@
+// Block: loadingBar
 .loadingBar {
   position: fixed;
   top: 84px; // Position below navbar (navbar height = 84px)
@@ -7,47 +8,48 @@
   z-index: $z-index-sticky; // Same z-index as navbar to appear directly below it
   background-color: transparent;
   overflow: hidden;
-}
 
-.loadingBarProgress {
-  height: 100%;
-  background-color: $color-primary;
-  width: 100%;
-  transform-origin: left;
-  animation: loadingAnimation 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  // Element: progress indicator
+  &__progress {
+    height: 100%;
+    background-color: $color-primary;
+    width: 100%;
+    transform-origin: left;
+    animation: loadingAnimation 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  // Element: screen reader only text
+  &__srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 }
 
 @keyframes loadingAnimation {
   0% {
     transform: translateX(-100%) scaleX(0.3);
   }
-  
+
   40% {
     transform: translateX(-20%) scaleX(0.6);
   }
-  
+
   60% {
     transform: translateX(20%) scaleX(0.8);
   }
-  
+
   80% {
     transform: translateX(60%) scaleX(0.4);
   }
-  
+
   100% {
     transform: translateX(100%) scaleX(0.2);
   }
-}
-
-// Screen reader only utility
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }
