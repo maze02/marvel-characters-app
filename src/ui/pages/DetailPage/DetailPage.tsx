@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { CharacterHero } from "@ui/designSystem/molecules/CharacterHero/CharacterHero";
 import { ComicsHorizontalScroll } from "@ui/designSystem/molecules/ComicsHorizontalScroll/ComicsHorizontalScroll";
-import { Layout } from "@ui/components/Layout/Layout";
 import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
@@ -190,38 +189,32 @@ export const DetailPage: React.FC = () => {
     }
   };
 
-  // Show layout with navbar while loading (global spinner handles loading state)
+  // Show loading state (navbar already visible from AppRouter Layout)
   if (loadingState === "loading") {
-    return (
-      <Layout>
-        <div className={styles.main} />
-      </Layout>
-    );
+    return <div className={styles.detailPage} />;
   }
 
   // Render error state only after loading attempt fails
   if (loadingState === "error" || !character) {
     return (
-      <Layout>
-        <div className={styles.main}>
-          <div className={styles.emptyState}>
-            <h2 className={styles.emptyTitle}>Character Not Found</h2>
-            <p className={styles.emptyMessage}>
-              Unable to load character details. This may be due to an API error
-              or the character may not exist.
-            </p>
-            <Link to={routes.home} className={styles.backButton}>
-              Return to Home
-            </Link>
-          </div>
+      <div className={styles.detailPage}>
+        <div className={styles.detailPage__emptyState}>
+          <h2 className={styles.detailPage__heading}>Character Not Found</h2>
+          <p className={styles.detailPage__message}>
+            Unable to load character details. This may be due to an API error or
+            the character may not exist.
+          </p>
+          <Link to={routes.home} className={styles.detailPage__action}>
+            Return to Home
+          </Link>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   // Render character details (success state)
   return (
-    <Layout>
+    <>
       <SEO
         title={`${character.name.value} - Marvel Character Profile | Comics & Info`}
         description={
@@ -240,7 +233,7 @@ export const DetailPage: React.FC = () => {
           image: character.getThumbnailUrl(),
         }}
       />
-      <div className={styles.main}>
+      <div className={styles.detailPage}>
         <CharacterHero
           imageUrl={character.getThumbnailUrl()}
           characterName={character.name.value}
@@ -260,6 +253,6 @@ export const DetailPage: React.FC = () => {
           onLoadMore={loadMoreComics}
         />
       </div>
-    </Layout>
+    </>
   );
 };
