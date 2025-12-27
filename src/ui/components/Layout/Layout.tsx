@@ -1,9 +1,9 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Navbar } from '../Navbar/Navbar';
-import { ApiKeyBanner } from '../ApiKeyBanner/ApiKeyBanner';
-import { routes } from '@ui/routes/routes';
-import styles from './Layout.module.scss';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Navbar } from "../Navbar/Navbar";
+import { ApiKeyBanner } from "../ApiKeyBanner/ApiKeyBanner";
+import { routes } from "@ui/routes/routes";
+import styles from "./Layout.module.scss";
 
 export interface LayoutProps {
   children: React.ReactNode;
@@ -13,14 +13,11 @@ export interface LayoutProps {
 
 /**
  * Layout Component
- * 
+ *
  * Provides consistent page structure with persistent navbar and API banner.
  * Ensures navbar remains visible during page transitions.
  */
-export const Layout: React.FC<LayoutProps> = ({ 
-  children,
-  onLogoClick
-}) => {
+export const Layout: React.FC<LayoutProps> = ({ children, onLogoClick }) => {
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
@@ -38,14 +35,11 @@ export const Layout: React.FC<LayoutProps> = ({
   return (
     <div className={styles.layout}>
       <ApiKeyBanner />
-      <Navbar 
+      <Navbar
         onLogoClick={handleLogoClick}
         onFavoritesClick={handleFavoritesClick}
       />
-      <main className={styles.content}>
-        {children}
-      </main>
+      <main className={styles.layout__content}>{children}</main>
     </div>
   );
 };
-
