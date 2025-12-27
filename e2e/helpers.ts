@@ -34,8 +34,10 @@ export async function waitForAppLoad(page: Page): Promise<void> {
   // Wait for main content area
   await page.waitForSelector("main", { timeout: 15000 });
 
-  // Wait for network to be idle (API calls completed)
-  await page.waitForLoadState("networkidle", { timeout: 20000 });
+  // Instead of networkidle (which can be flaky with continuous requests),
+  // wait for the page to be in a ready state by checking for key UI elements
+  // This is more reliable and follows E2E best practice #6 (condition-based waits)
+  await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
 }
 
 /**
@@ -151,7 +153,8 @@ export async function navigateToCharacterDetail(
   const cardLink = card.locator('[data-testid="character-card-link"]');
   await cardLink.click();
   await page.waitForURL(/\/character\/\d+/, { timeout: 15000 });
-  await page.waitForLoadState("networkidle", { timeout: 20000 });
+  // Wait for page to load (not networkidle - can be flaky)
+  await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
   return characterName;
 }
 
@@ -262,7 +265,8 @@ export async function navigateToFavorites(page: Page): Promise<void> {
   await favoritesButton.waitFor({ state: "visible", timeout: 5000 });
   await favoritesButton.click();
   await page.waitForURL(/\/favorites/, { timeout: 10000 });
-  await waitForAppLoad(page);
+  // Wait for page to load
+  await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
 }
 
 /**
@@ -367,5 +371,6 @@ export async function navigateToHome(page: Page): Promise<void> {
   const logoLink = getLogoLink(page);
   await logoLink.click();
   await page.waitForURL(/\//, { timeout: 5000 });
-  await waitForAppLoad(page);
+  // Wait for page to load
+  await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
 }

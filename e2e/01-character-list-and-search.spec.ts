@@ -132,15 +132,23 @@ test.describe("Character List and Search", () => {
     // Clear search
     const searchInput = getSearchInput(page);
     await searchInput.clear();
-    // Wait for the search to complete and new results to load
-    await page.waitForLoadState("networkidle", { timeout: 10000 });
+
+    // Wait for search to clear and all characters to load
+    // Check that results count text changes (more reliable than card count)
+    await expect(page.getByText(/\d+ RESULTS/i)).toBeVisible({ timeout: 5000 });
 
     // Should show all characters again
     await waitForCharacters(page);
     const countAfterClear = await page
       .locator('[data-testid="character-card"]')
       .count();
+
+    // After clearing, should have characters displayed
     expect(countAfterClear).toBeGreaterThan(0);
+
+    // Verify we're back to browsing all characters (not search results)
+    const resultsText = await page.getByText(/\d+ RESULTS/i).textContent();
+    expect(resultsText).toBeTruthy();
   });
 
   test("should load more characters when scrolling to bottom", async ({

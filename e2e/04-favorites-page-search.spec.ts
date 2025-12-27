@@ -93,9 +93,7 @@ test.describe("Favorites Page Search and Management", () => {
     const searchInput = getSearchInput(page);
     await searchInput.fill(firstName || "");
 
-    // Wait for debounce and results to update
-    await page.waitForTimeout(500); // Debounce time
-
+    // Wait for debounce and results to update using condition-based waiting
     // Should show filtered results: "1 OF 2 RESULTS"
     await expect(page.getByText(/1 OF 2 RESULTS/i)).toBeVisible({
       timeout: 5000,
@@ -137,17 +135,19 @@ test.describe("Favorites Page Search and Management", () => {
       .locator('[data-testid="character-name"]')
       .textContent();
     await searchInput.fill(firstName || "");
-    await page.waitForTimeout(500);
 
+    // Wait for debounce using condition-based waiting
     // Should show filtered: "1 OF 3 RESULTS"
-    await expect(page.getByText(/1 OF 3 RESULTS/i)).toBeVisible();
+    await expect(page.getByText(/1 OF 3 RESULTS/i)).toBeVisible({
+      timeout: 5000,
+    });
 
     // Clear search
     await searchInput.clear();
-    await page.waitForTimeout(500);
 
+    // Wait for debounce using condition-based waiting
     // Should show all again: "3 RESULTS"
-    await expect(page.getByText(/^3 RESULTS$/i)).toBeVisible();
+    await expect(page.getByText(/^3 RESULTS$/i)).toBeVisible({ timeout: 5000 });
   });
 
   test("should show empty state when search yields no results", async ({
@@ -178,10 +178,12 @@ test.describe("Favorites Page Search and Management", () => {
     // Search for something that doesn't exist
     const searchInput = getSearchInput(page);
     await searchInput.fill("ZZZNoMatchXXX123");
-    await page.waitForTimeout(500);
 
+    // Wait for debounce and empty state using condition-based waiting
     // Should show empty state
-    await expect(page.getByText("No Characters Found")).toBeVisible();
+    await expect(page.getByText("No Characters Found")).toBeVisible({
+      timeout: 5000,
+    });
     await expect(
       page.getByText(/Try searching for different character names/i),
     ).toBeVisible();
@@ -255,9 +257,11 @@ test.describe("Favorites Page Search and Management", () => {
       .locator('[data-testid="character-name"]')
       .textContent();
     await searchInput.fill(firstName || "");
-    await page.waitForTimeout(500);
 
+    // Wait for debounce using condition-based waiting
     // Search format: "1 OF 3 RESULTS"
-    await expect(page.getByText(/1 OF 3 RESULTS/i)).toBeVisible();
+    await expect(page.getByText(/1 OF 3 RESULTS/i)).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

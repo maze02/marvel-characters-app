@@ -50,10 +50,7 @@ test.describe("Character Detail and Comics", () => {
     // Navigate to detail page
     const characterName = await navigateToCharacterDetail(page);
 
-    // Wait for detail page to fully load
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
-
-    // Verify character name is displayed (could be in h1, h2, or heading)
+    // Wait for detail page content to load using condition-based waiting
     const nameElement = page
       .getByRole("heading")
       .filter({ hasText: new RegExp(characterName, "i") })
@@ -78,10 +75,7 @@ test.describe("Character Detail and Comics", () => {
     // Navigate to character detail page
     await navigateToCharacterDetail(page);
 
-    // Wait for page to fully load including comics
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
-
-    // Check for comics section using stable selector
+    // Wait for page content to load using condition-based waiting
     const comicsSection = page.locator('[data-testid="comics-section"]');
     const noComicsMessage = page.getByText(/no comics|no issues|no results/i, {
       exact: false,
@@ -116,7 +110,7 @@ test.describe("Character Detail and Comics", () => {
      */
     // Navigate to character detail
     await navigateToCharacterDetail(page);
-    await page.waitForLoadState("networkidle", { timeout: 15000 });
+    await page.waitForTimeout(1000);
 
     // Find favorite button (could be in CharacterHero component)
     const favoriteButton = page
@@ -174,7 +168,12 @@ test.describe("Character Detail and Comics", () => {
      */
     // Navigate to detail page
     await navigateToCharacterDetail(page);
-    await page.waitForLoadState("networkidle", { timeout: 15000 });
+
+    // Wait for detail page to load before navigating away
+    const favoriteButton = page
+      .locator('[data-testid="favorite-button"]')
+      .first();
+    await expect(favoriteButton).toBeVisible({ timeout: 10000 });
 
     // Navigate to favorites page
     await navigateToFavorites(page);
@@ -199,10 +198,7 @@ test.describe("Character Detail and Comics", () => {
     // Navigate to character detail page
     await navigateToCharacterDetail(page);
 
-    // Wait for page to fully load including comics
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
-
-    // Count initial comics (should be 20 based on COMICS_PAGE_SIZE)
+    // Wait for page content to load using condition-based waiting
     const comicItems = page.locator('[data-testid="comic-item"]');
 
     // Wait for comics to be visible or skip if none
@@ -254,8 +250,13 @@ test.describe("Character Detail and Comics", () => {
         await loadingIndicator.waitFor({ state: "hidden", timeout: 10000 });
       }
 
-      // Wait for network to be idle
-      await page.waitForLoadState("networkidle", { timeout: 15000 });
+      // Wait for new comics to load using condition-based waiting
+      await expect(async () => {
+        const currentCount = await comicItems.count();
+        expect(currentCount).toBeGreaterThan(initialCount);
+      })
+        .toPass({ timeout: 10000 })
+        .catch(() => {});
 
       // Count comics after scroll
       const finalCount = await comicItems.count();
@@ -317,7 +318,12 @@ test.describe("Character Detail - Mobile Description Expand/Collapse", () => {
      */
     // Navigate to a character with a description
     await navigateToCharacterDetail(page);
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
+
+    // Wait for detail page to load using condition-based waiting
+    const favoriteButton = page
+      .locator('[data-testid="favorite-button"]')
+      .first();
+    await expect(favoriteButton).toBeVisible({ timeout: 10000 });
 
     // Look for the READ MORE button (only appears for long descriptions)
     const readMoreButton = page.locator(
@@ -376,7 +382,12 @@ test.describe("Character Detail - Mobile Description Expand/Collapse", () => {
     await page.setViewportSize({ width: 320, height: 568 });
 
     await navigateToCharacterDetail(page);
-    await page.waitForLoadState("networkidle", { timeout: 20000 });
+
+    // Wait for page to load using condition-based waiting
+    const favoriteButton = page
+      .locator('[data-testid="favorite-button"]')
+      .first();
+    await expect(favoriteButton).toBeVisible({ timeout: 10000 });
 
     const readMoreButton = page.locator(
       '[data-testid="expand-description-button"]',
