@@ -1,7 +1,70 @@
-.main {
+// Block: detailPage
+.detailPage {
   margin: 0 auto;
   padding: 0;
   animation: slideDown 0.3s ease-out;
+
+  // Element: empty state container (used for errors, no results, etc.)
+  &__emptyState {
+    text-align: center;
+    padding: $spacing-16;
+    font-family: $font-family-condensed; // Roboto Condensed (consistent typography)
+    letter-spacing: $letter-spacing-normal; // 0% (consistent)
+    color: $color-gray-500;
+    background-color: $color-white;
+    min-height: 60vh;
+    @include flex-column-center;
+  }
+
+  // Element: heading within page
+  &__heading {
+    color: $color-text-primary;
+    margin-bottom: $spacing-3;
+    font-size: 20px;
+    font-family: $font-family-condensed; // Roboto Condensed (matches other pages)
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-normal; // 0% (consistent)
+  }
+
+  // Element: message/description text
+  &__message {
+    color: $color-gray-500;
+    font-size: 14px;
+    font-family: $font-family-condensed; // Roboto Condensed (matches other pages)
+    font-weight: $font-weight-regular;
+    letter-spacing: $letter-spacing-normal; // 0% (consistent)
+    line-height: $line-height-relaxed;
+    margin: 0 0 $spacing-6;
+    max-width: 400px;
+  }
+
+  // Element: action link/button
+  &__action {
+    display: inline-flex;
+    align-items: center;
+    padding: $spacing-3 $spacing-5;
+    background-color: $color-primary;
+    color: $color-white;
+    text-decoration: none;
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-bold;
+    font-size: 14px;
+    letter-spacing: $letter-spacing-normal;
+    text-transform: uppercase;
+    border-radius: 2px;
+    @include safe-animation(all $duration-fast $ease-out);
+    @include focus-outline($color-primary, 4px);
+
+    &:hover {
+      background-color: $color-primary-dark;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
 }
 
 @keyframes slideDown {
@@ -11,64 +74,6 @@
   }
   to {
     opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.emptyState {
-  text-align: center;
-  padding: $spacing-16;
-  font-family: $font-family-condensed; // Roboto Condensed (consistent typography)
-  letter-spacing: $letter-spacing-normal; // 0% (consistent)
-  color: $color-gray-500;
-  background-color: $color-white;
-  min-height: 60vh;
-  @include flex-column-center;
-}
-
-.emptyTitle {
-  color: $color-text-primary;
-  margin-bottom: $spacing-3;
-  font-size: 20px;
-  font-family: $font-family-condensed; // Roboto Condensed (matches other pages)
-  font-weight: $font-weight-bold;
-  text-transform: uppercase;
-  letter-spacing: $letter-spacing-normal; // 0% (consistent)
-}
-
-.emptyMessage {
-  color: $color-gray-500;
-  font-size: 14px;
-  font-family: $font-family-condensed; // Roboto Condensed (matches other pages)
-  font-weight: $font-weight-regular;
-  letter-spacing: $letter-spacing-normal; // 0% (consistent)
-  line-height: $line-height-relaxed;
-  margin: 0 0 $spacing-6;
-  max-width: 400px;
-}
-
-.backButton {
-  display: inline-flex;
-  align-items: center;
-  padding: $spacing-3 $spacing-5;
-  background-color: $color-primary;
-  color: $color-white;
-  text-decoration: none;
-  font-family: $font-family-condensed;
-  font-weight: $font-weight-bold;
-  font-size: 14px;
-  letter-spacing: $letter-spacing-normal;
-  text-transform: uppercase;
-  border-radius: 2px;
-  @include safe-animation(all $duration-fast $ease-out);
-  @include focus-outline($color-primary, 4px);
-
-  &:hover {
-    background-color: $color-primary-dark;
-    transform: translateY(-1px);
-  }
-
-  &:active {
     transform: translateY(0);
   }
 }

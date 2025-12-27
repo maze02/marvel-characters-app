@@ -332,8 +332,8 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
   if (loading) {
     return (
       <section className={styles.comicsSection}>
-        <h2 className={styles.sectionTitle}>{title}</h2>
-        <p className={styles.emptyMessage}>Loading comics...</p>
+        <h2 className={styles.comicsSection__title}>{title}</h2>
+        <p className={styles.comicsSection__message}>Loading comics...</p>
       </section>
     );
   }
@@ -346,8 +346,8 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
 
     return (
       <section className={styles.comicsSection}>
-        <h2 className={styles.sectionTitle}>{title}</h2>
-        <p className={styles.emptyMessage}>
+        <h2 className={styles.comicsSection__title}>{title}</h2>
+        <p className={styles.comicsSection__message}>
           No comics available for this character.
         </p>
       </section>
@@ -356,20 +356,20 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
 
   return (
     <section className={styles.comicsSection}>
-      <h2 className={styles.sectionTitle}>{title}</h2>
-      <div className={styles.scrollWrapper}>
+      <h2 className={styles.comicsSection__title}>{title}</h2>
+      <div className={styles.comicsSection__scrollWrapper}>
         <div
-          className={`${styles.scrollContainer} ${isScrollable ? styles.scrollable : ""}`}
+          className={`${styles.comicsSection__scrollContainer} ${isScrollable ? styles["comicsSection__scrollContainer--scrollable"] : ""}`}
           ref={scrollContainerRef}
         >
-          <div className={styles.comicsTrack}>
+          <div className={styles.comicsSection__track}>
             {comics.map((comic) => (
               <article
                 key={comic.id}
-                className={styles.comicCard}
+                className={styles.comicsSection__card}
                 data-testid="comic-item"
               >
-                <picture className={styles.comicImageWrapper}>
+                <picture className={styles.comicsSection__imageWrapper}>
                   {/* Desktop: Use portrait_xlarge for high-quality display */}
                   <source
                     media="(min-width: 1024px)"
@@ -385,15 +385,17 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
                     src={comic.getThumbnailUrl("portrait_xlarge")}
                     alt={comic.title}
                     loading="lazy"
-                    className={styles.comicImage}
+                    className={styles.comicsSection__image}
                     draggable="false"
                   />
                 </picture>
 
-                <div className={styles.comicInfo}>
-                  <h3 className={styles.comicTitle}>{comic.title}</h3>
+                <div className={styles.comicsSection__info}>
+                  <h3 className={styles.comicsSection__cardTitle}>
+                    {comic.title}
+                  </h3>
                   {comic.hasReleaseDate() && (
-                    <time className={styles.comicDate}>
+                    <time className={styles.comicsSection__cardDate}>
                       {comic.onSaleDate?.toDisplayString()}
                     </time>
                   )}
@@ -403,9 +405,12 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
 
             {/* Loading more indicator */}
             {loadingMore && (
-              <div className={styles.loadingMore} data-testid="loading-more">
+              <div
+                className={styles.comicsSection__loadingMore}
+                data-testid="loading-more"
+              >
                 <div
-                  className={styles.loadingSpinner}
+                  className={styles.comicsSection__spinner}
                   aria-label="Loading more comics"
                 />
               </div>
@@ -415,11 +420,14 @@ export const ComicsHorizontalScroll: React.FC<ComicsHorizontalScrollProps> = ({
         {/* Custom scroll indicator - only visible when scrollable */}
         {isScrollable && (
           <div
-            className={styles.scrollIndicator}
+            className={styles.comicsSection__scrollIndicator}
             ref={scrollIndicatorRef}
             aria-hidden="true"
           >
-            <div className={styles.scrollIndicatorBar} ref={indicatorBarRef} />
+            <div
+              className={styles.comicsSection__scrollIndicatorBar}
+              ref={indicatorBarRef}
+            />
           </div>
         )}
       </div>
