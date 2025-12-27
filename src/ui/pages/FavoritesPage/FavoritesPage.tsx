@@ -136,9 +136,9 @@ export const FavoritesPage: React.FC = () => {
         {!isLoading && !hasFavorites && displayedCharacters.length === 0 && (
           <div className={styles.favoritesPage__emptyState}>
             <h2 className={styles.favoritesPage__heading}>
-              {searchQuery ? "No Characters Found" : "No Favorites Yet"}
+              {debouncedQuery ? "No Characters Found" : "No Favorites Yet"}
             </h2>
-            {searchQuery ? (
+            {debouncedQuery ? (
               <p className={styles.favoritesPage__message}>
                 Try searching for different character names
               </p>
@@ -153,7 +153,7 @@ export const FavoritesPage: React.FC = () => {
         {/* Search filter empty state - when searching yields no results but favorites exist */}
         {!isLoading &&
           hasFavorites &&
-          searchQuery &&
+          debouncedQuery &&
           displayedCharacters.length === 0 && (
             <div className={styles.favoritesPage__emptyState}>
               <h2 className={styles.favoritesPage__heading}>

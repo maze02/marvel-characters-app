@@ -181,4 +181,282 @@ describe("DetailPage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe("Loading State Tests", () => {
+    it("should show loading state initially", async () => {
+      // Arrange: Delay character loading
+      mockGetCharacterDetail.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve(mockCharacter), 100),
+          ),
+      );
+
+      // Act
+      await act(async () => {
+        render(
+          <BrowserRouter
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
+            <DetailPage />
+          </BrowserRouter>,
+        );
+      });
+
+      // Assert: Should not show character immediately
+      expect(screen.queryByText("Spider-Man")).not.toBeInTheDocument();
+
+      // Wait for character to load
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+    });
+
+    it("should call startLoading when loading begins", async () => {
+      // Act
+      await renderPage();
+
+      // Assert
+      expect(mockStartLoading).toHaveBeenCalled();
+    });
+
+    it("should call stopLoading when loading completes", async () => {
+      // Act
+      await renderPage();
+
+      // Assert: Wait for loading to complete
+      await waitFor(() => {
+        expect(mockStopLoading).toHaveBeenCalled();
+      });
+    });
+
+    it("should not show character content during loading", async () => {
+      // Arrange: Never resolve to keep in loading state
+      mockGetCharacterDetail.mockImplementation(() => new Promise(() => {}));
+
+      // Act
+      const { container } = await renderPage();
+
+      // Assert: Character should not be visible during loading
+      expect(screen.queryByText("Spider-Man")).not.toBeInTheDocument();
+      expect(container).toBeInTheDocument();
+    });
+  });
+
+  describe("Error State Tests", () => {
+    beforeEach(() => {
+      // Reset mocks for error tests
+      mockGetCharacterDetail.mockRejectedValue(
+        new Error("Character not found"),
+      );
+    });
+
+    it("should show error message when character fails to load", async () => {
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        expect(screen.getByText("Character Not Found")).toBeInTheDocument();
+      });
+    });
+
+    it("should show error description", async () => {
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Unable to load character details/i),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should show return home link on error", async () => {
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        const link = screen.getByText("Return to Home");
+        expect(link).toBeInTheDocument();
+        expect(link.tagName).toBe("A");
+      });
+    });
+
+    it("should call stopLoading on error", async () => {
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        expect(mockStopLoading).toHaveBeenCalled();
+      });
+    });
+
+    it("should handle error when character is null", async () => {
+      // Arrange
+      mockGetCharacterDetail.mockResolvedValue(null as any);
+
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        expect(screen.getByText("Character Not Found")).toBeInTheDocument();
+      });
+    });
+
+    it("should show error when ID is missing", async () => {
+      // Arrange: Set params to undefined
+      mockParams.id = undefined as any;
+
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        expect(screen.getByText("Character Not Found")).toBeInTheDocument();
+      });
+
+      // Cleanup
+      mockParams.id = "123";
+    });
+  });
+
+  describe("Empty State Tests - Comics", () => {
+    beforeEach(() => {
+      // Reset to successful character load
+      mockGetCharacterDetail.mockResolvedValue(mockCharacter);
+    });
+
+    it("should show character when comics fail to load", async () => {
+      // Arrange: Comics fail but character succeeds
+      mockListCharacterComics.mockRejectedValue(
+        new Error("Comics not available"),
+      );
+
+      // Act
+      await renderPage();
+
+      // Assert: Character still shows
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+    });
+
+    it("should show empty comics list when no comics available", async () => {
+      // Arrange: Return empty comics array
+      mockListCharacterComics.mockResolvedValue([]);
+
+      // Act
+      await renderPage();
+
+      // Assert: Character shows, comics section present but empty
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+        expect(
+          screen.getByRole("heading", { name: /COMICS/i }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should handle comics loading failure gracefully", async () => {
+      // Arrange
+      mockListCharacterComics.mockRejectedValue(new Error("API Error"));
+
+      // Act
+      await renderPage();
+
+      // Assert: Should still show character hero
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Conditional Rendering - Character Description", () => {
+    it("should show description when character has one", async () => {
+      // Arrange: Character with description
+      const characterWithDesc = new Character({
+        id: new CharacterId(123),
+        name: new CharacterName("Spider-Man"),
+        description: "Friendly neighborhood Spider-Man",
+        thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
+        modifiedDate: new Date("2024-01-01"),
+      });
+      mockGetCharacterDetail.mockResolvedValue(characterWithDesc);
+
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        expect(
+          screen.getByText("Friendly neighborhood Spider-Man"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should not show description section when character has no description", async () => {
+      // Arrange: Character without description
+      const characterNoDesc = new Character({
+        id: new CharacterId(123),
+        name: new CharacterName("Spider-Man"),
+        description: "",
+        thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
+        modifiedDate: new Date("2024-01-01"),
+      });
+      mockGetCharacterDetail.mockResolvedValue(characterNoDesc);
+
+      // Act
+      await renderPage();
+
+      // Assert: Name shows but description doesn't
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+      // Description should not be passed to CharacterHero
+    });
+  });
+
+  describe("Favorite Toggle", () => {
+    it("should call toggleFavorite when favorite button clicked", async () => {
+      // Act
+      await renderPage();
+
+      // Wait for character to load
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+
+      // Get favorite button and click it
+      const favoriteButton = screen.getByRole("button", {
+        name: /favorite/i,
+      });
+      await act(async () => {
+        favoriteButton.click();
+      });
+
+      // Assert
+      expect(mockToggleFavorite).toHaveBeenCalledWith(123);
+    });
+
+    it("should show correct favorite state", async () => {
+      // Arrange: Set as favorite
+      mockIsFavorite.mockReturnValue(true);
+
+      // Act
+      await renderPage();
+
+      // Assert
+      await waitFor(() => {
+        const favoriteButton = screen.getByRole("button", {
+          name: /favorite/i,
+        });
+        expect(favoriteButton).toBeInTheDocument();
+      });
+    });
+  });
 });

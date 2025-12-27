@@ -1,21 +1,21 @@
-import log from 'loglevel';
+import log from "loglevel";
 
 /**
  * Application Logger
- * 
+ *
  * Centralized logging service using loglevel library.
  * Provides structured logging with different severity levels.
- * 
+ *
  * Features:
  * - Multiple log levels (trace, debug, info, warn, error)
  * - Configurable based on environment
  * - Consistent logging format across the app
  * - Can be easily replaced or extended (e.g., send to external service)
- * 
+ *
  * @example
  * ```typescript
  * import { logger } from '@infrastructure/logging/Logger';
- * 
+ *
  * logger.info('User logged in', { userId: 123 });
  * logger.error('API call failed', { error, endpoint: '/api/characters' });
  * logger.debug('Cache hit', { key: 'characters-page-1' });
@@ -25,7 +25,7 @@ import log from 'loglevel';
 /**
  * Log level type
  */
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent';
+export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "silent";
 
 /**
  * Logger context data
@@ -71,15 +71,16 @@ class Logger {
    */
   private getLogLevel(): LogLevel {
     // Check NODE_ENV for test and development environments
-    const nodeEnv = typeof process !== 'undefined' ? process.env?.NODE_ENV : undefined;
-    const isDev = nodeEnv === 'development' || nodeEnv === 'test';
-    
+    const nodeEnv =
+      typeof process !== "undefined" ? process.env?.NODE_ENV : undefined;
+    const isDev = nodeEnv === "development" || nodeEnv === "test";
+
     // In production, only show warnings and errors
     // In development/test, show debug and above
     if (isDev) {
-      return 'debug';
+      return "debug";
     }
-    return 'warn';
+    return "warn";
   }
 
   /**
@@ -87,7 +88,7 @@ class Logger {
    */
   private formatContext(context?: LogContext): string {
     if (!context || Object.keys(context).length === 0) {
-      return '';
+      return "";
     }
     return JSON.stringify(context, null, 2);
   }
@@ -96,8 +97,9 @@ class Logger {
    * Log trace message (most verbose)
    */
   trace(message: string, context?: LogContext): void {
-    if (context) {
-      this.logger.trace(message, this.formatContext(context));
+    const formattedContext = this.formatContext(context);
+    if (formattedContext) {
+      this.logger.trace(message, formattedContext);
     } else {
       this.logger.trace(message);
     }
@@ -107,8 +109,9 @@ class Logger {
    * Log debug message
    */
   debug(message: string, context?: LogContext): void {
-    if (context) {
-      this.logger.debug(message, this.formatContext(context));
+    const formattedContext = this.formatContext(context);
+    if (formattedContext) {
+      this.logger.debug(message, formattedContext);
     } else {
       this.logger.debug(message);
     }
@@ -118,8 +121,9 @@ class Logger {
    * Log info message
    */
   info(message: string, context?: LogContext): void {
-    if (context) {
-      this.logger.info(message, this.formatContext(context));
+    const formattedContext = this.formatContext(context);
+    if (formattedContext) {
+      this.logger.info(message, formattedContext);
     } else {
       this.logger.info(message);
     }
@@ -129,8 +133,9 @@ class Logger {
    * Log warning message
    */
   warn(message: string, context?: LogContext): void {
-    if (context) {
-      this.logger.warn(message, this.formatContext(context));
+    const formattedContext = this.formatContext(context);
+    if (formattedContext) {
+      this.logger.warn(message, formattedContext);
     } else {
       this.logger.warn(message);
     }
@@ -168,8 +173,15 @@ class Logger {
    */
   getLevel(): LogLevel {
     const level = this.logger.getLevel();
-    const levels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'silent'];
-    return levels[level] || 'silent';
+    const levels: LogLevel[] = [
+      "trace",
+      "debug",
+      "info",
+      "warn",
+      "error",
+      "silent",
+    ];
+    return levels[level] || "silent";
   }
 }
 

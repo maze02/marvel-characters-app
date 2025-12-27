@@ -179,7 +179,9 @@ test.describe("Favorites Page Search and Management", () => {
     const searchInput = getSearchInput(page);
     await searchInput.fill("ZZZNoMatchXXX123");
 
-    // Wait for debounce and empty state using condition-based waiting
+    // Wait for debounce (400ms) plus buffer
+    await page.waitForTimeout(600);
+
     // Should show empty state
     await expect(page.getByText("No Characters Found")).toBeVisible({
       timeout: 5000,
