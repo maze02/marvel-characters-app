@@ -102,4 +102,53 @@ test.describe("Character List and Search", () => {
       .count();
     expect(countAfterClear).toBeGreaterThan(0);
   });
+
+  test("should load more characters when scrolling to bottom", async ({
+    page,
+  }) => {
+    await waitForCharacters(page);
+
+    // Count initial characters loaded
+    const characterCards = page.locator('[data-testid="character-card"]');
+    const initialCount = await characterCards.count();
+
+    // Verify we have initial characters (should be 50 based on PAGINATION.DEFAULT_LIMIT)
+    expect(initialCount).toBeGreaterThan(0);
+
+    // Find the sentinel element (triggers infinite scroll when visible)
+    const sentinel = page.locator('[data-testid="sentinel"]');
+    await expect(sentinel).toBeVisible({ timeout: 5000 });
+
+    // Scroll to sentinel to trigger infinite scroll
+    // IntersectionObserver has 100px rootMargin, so scrolling into view should trigger it
+    await sentinel.scrollIntoViewIfNeeded();
+
+    // Wait for IntersectionObserver to fire and API call to complete
+    // Use waitFor with a function that checks if count increased
+    await expect(async () => {
+      const currentCount = await characterCards.count();
+      if (currentCount > initialCount) {
+        return currentCount;
+      }
+      throw new Error(
+        `Count still ${currentCount}, expected > ${initialCount}`,
+      );
+    }).toPass({
+      timeout: 15000,
+      intervals: [500, 1000, 2000], // Check every 500ms, then 1s, then 2s
+    });
+
+    // Get final count
+    const finalCount = await characterCards.count();
+
+    // Verify more characters were loaded
+    expect(finalCount).toBeGreaterThan(initialCount);
+
+    // Verify sentinel is still present (for potential further loading)
+    // Note: sentinel might be hidden if hasMore becomes false, which is fine
+    const sentinelVisible = await sentinel.isVisible().catch(() => false);
+    if (sentinelVisible) {
+      await expect(sentinel).toBeVisible();
+    }
+  });
 });

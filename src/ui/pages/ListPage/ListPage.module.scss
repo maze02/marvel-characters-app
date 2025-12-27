@@ -4,83 +4,95 @@
 // Following BEM methodology and DRY principles
 // Unique styles: sentinel, errorState, retryButton (infinite scroll feature)
 
-.main {
+// Block: listPage
+.listPage {
   @include page-main;
-}
 
-.pageTitle {
-  @include page-title;
-}
-
-.searchContainer {
-  @include page-search-container;
-}
-
-.resultsCount {
-  @include page-results-count;
-}
-
-.grid {
-  @include page-character-grid(15px);
-}
-
-// CharacterCard component handles all card styling
-// Grid controls card dimensions through direct children
-.grid > article {
-  @include page-character-card-dimensions;
-}
-
-.emptyState {
-  @include page-empty-state;
-}
-
-.emptyTitle {
-  @include page-empty-title;
-}
-
-.emptyMessage {
-  @include page-empty-message;
-}
-
-// =============================================================================
-// Unique ListPage styles (infinite scroll feature)
-// =============================================================================
-
-.sentinel {
-  margin-top: $spacing-6;
-  min-height: 100px;
-  @include flex-center;
-}
-
-.errorState {
-  text-align: center;
-  padding: $spacing-8 $spacing-4;
-
-  p {
-    color: $color-gray-500;
-    margin-bottom: $spacing-4;
+  // Element: page title/heading
+  &__title {
+    @include page-title;
   }
-}
 
-.retryButton {
-  background-color: $color-primary;
-  color: $color-white;
-  border: none;
-  padding: $spacing-3 $spacing-6;
-  font-size: $font-size-base;
-  font-family: $font-family-condensed;
-  font-weight: $font-weight-bold;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 4px;
-  @include safe-animation(background-color $duration-base $ease-out);
-  @include focus-outline($color-primary, 4px);
-
-  &:hover {
-    background-color: color.adjust($color-primary, $lightness: -10%);
+  // Element: search bar container
+  &__search {
+    @include page-search-container;
   }
-}
 
-.srOnly {
-  @include sr-only;
+  // Element: results count display
+  &__resultsCount {
+    @include page-results-count;
+  }
+
+  // Element: character cards grid
+  &__grid {
+    @include page-character-grid(15px);
+
+    // CharacterCard component handles all card styling
+    // Grid controls card dimensions through direct children
+    > article {
+      @include page-character-card-dimensions;
+    }
+  }
+
+  // Element: empty state container
+  &__emptyState {
+    @include page-empty-state;
+  }
+
+  // Element: heading within page
+  &__heading {
+    @include page-empty-title;
+  }
+
+  // Element: message/description text
+  &__message {
+    @include page-empty-message;
+  }
+
+  // =============================================================================
+  // Unique ListPage elements (infinite scroll feature)
+  // =============================================================================
+
+  // Element: infinite scroll sentinel/observer
+  &__sentinel {
+    margin-top: $spacing-6;
+    min-height: 100px;
+    @include flex-center;
+  }
+
+  // Element: error state container
+  &__errorState {
+    text-align: center;
+    padding: $spacing-8 $spacing-4;
+
+    p {
+      color: $color-gray-500;
+      margin-bottom: $spacing-4;
+    }
+  }
+
+  // Element: action button (retry)
+  &__action {
+    background-color: $color-primary;
+    color: $color-white;
+    border: none;
+    padding: $spacing-3 $spacing-6;
+    font-size: $font-size-base;
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    @include safe-animation(background-color $duration-base $ease-out);
+    @include focus-outline($color-primary, 4px);
+
+    &:hover {
+      background-color: color.adjust($color-primary, $lightness: -10%);
+    }
+  }
+
+  // Element: screen reader only content
+  &__srOnly {
+    @include sr-only;
+  }
 }

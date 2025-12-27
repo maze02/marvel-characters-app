@@ -1,5 +1,5 @@
-import React, { forwardRef, useId } from 'react';
-import styles from './Input.module.scss';
+import React, { forwardRef, useId } from "react";
+import styles from "./Input.module.scss";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -11,9 +11,9 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 /**
  * Input Component
- * 
+ *
  * Accessible input field with label, error, and helper text support.
- * 
+ *
  * @example
  * ```tsx
  * <Input
@@ -35,7 +35,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const generatedId = useId();
     const inputId = id || `input-${generatedId}`;
@@ -44,51 +44,59 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const containerClasses = [
       styles.inputContainer,
-      fullWidth && styles['inputContainer--fullWidth'],
+      fullWidth && styles["inputContainer--fullWidth"],
       className,
     ]
       .filter(Boolean)
-      .join(' ');
+      .join(" ");
 
     const inputClasses = [
-      styles.input,
-      error && styles['input--error'],
-      icon && styles['input--with-icon'],
+      styles.inputContainer__input,
+      error && styles["inputContainer__input--error"],
+      icon && styles["inputContainer__input--with-icon"],
     ]
       .filter(Boolean)
-      .join(' ');
+      .join(" ");
 
     return (
       <div className={containerClasses}>
         {label && (
-          <label htmlFor={inputId} className={styles.label}>
+          <label htmlFor={inputId} className={styles.inputContainer__label}>
             {label}
           </label>
         )}
-        <div className={styles.inputWrapper}>
-          {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
+        <div className={styles.inputContainer__wrapper}>
+          {icon && (
+            <span className={styles.inputContainer__icon} aria-hidden="true">
+              {icon}
+            </span>
+          )}
           <input
             ref={ref}
             id={inputId}
             className={inputClasses}
             aria-invalid={!!error}
-            aria-describedby={[errorId, helperId].filter(Boolean).join(' ')}
+            aria-describedby={[errorId, helperId].filter(Boolean).join(" ")}
             {...props}
           />
         </div>
         {error && (
-          <span id={errorId} className={styles.error} role="alert">
+          <span
+            id={errorId}
+            className={styles.inputContainer__error}
+            role="alert"
+          >
             {error}
           </span>
         )}
         {helperText && !error && (
-          <span id={helperId} className={styles.helperText}>
+          <span id={helperId} className={styles.inputContainer__helperText}>
             {helperText}
           </span>
         )}
       </div>
     );
-  }
+  },
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";

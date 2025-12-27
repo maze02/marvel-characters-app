@@ -1,7 +1,7 @@
-import { renderHook, waitFor } from '@testing-library/react';
-import { useDebouncedValue } from './useDebouncedValue';
+import { renderHook, waitFor } from "@testing-library/react";
+import { useDebouncedValue } from "./useDebouncedValue";
 
-describe('useDebouncedValue', () => {
+describe("useDebouncedValue", () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -11,120 +11,120 @@ describe('useDebouncedValue', () => {
     jest.useRealTimers();
   });
 
-  it('should return initial value immediately', () => {
-    const { result } = renderHook(() => useDebouncedValue('initial', 300));
-    expect(result.current).toBe('initial');
+  it("should return initial value immediately", () => {
+    const { result } = renderHook(() => useDebouncedValue("initial", 400));
+    expect(result.current).toBe("initial");
   });
 
-  it('should debounce value changes', async () => {
+  it("should debounce value changes", async () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useDebouncedValue(value, 300),
-      { initialProps: { value: 'first' } }
+      ({ value }) => useDebouncedValue(value, 400),
+      { initialProps: { value: "first" } },
     );
 
-    expect(result.current).toBe('first');
+    expect(result.current).toBe("first");
 
     // Change value
-    rerender({ value: 'second' });
+    rerender({ value: "second" });
 
     // Value should not change immediately
-    expect(result.current).toBe('first');
+    expect(result.current).toBe("first");
 
     // Fast-forward time
-    jest.advanceTimersByTime(300);
+    jest.advanceTimersByTime(400);
 
     // Wait for state update
     await waitFor(() => {
-      expect(result.current).toBe('second');
+      expect(result.current).toBe("second");
     });
   });
 
-  it('should reset timer on rapid value changes', async () => {
+  it("should reset timer on rapid value changes", async () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useDebouncedValue(value, 300),
-      { initialProps: { value: 'first' } }
+      ({ value }) => useDebouncedValue(value, 400),
+      { initialProps: { value: "first" } },
     );
 
     // Rapid changes
-    rerender({ value: 'second' });
+    rerender({ value: "second" });
     jest.advanceTimersByTime(100);
-    rerender({ value: 'third' });
+    rerender({ value: "third" });
     jest.advanceTimersByTime(100);
-    rerender({ value: 'fourth' });
+    rerender({ value: "fourth" });
 
     // Value should still be 'first' because timer keeps resetting
-    expect(result.current).toBe('first');
+    expect(result.current).toBe("first");
 
     // Fast-forward past delay
-    jest.advanceTimersByTime(300);
+    jest.advanceTimersByTime(400);
 
     // Should now have the latest value
     await waitFor(() => {
-      expect(result.current).toBe('fourth');
+      expect(result.current).toBe("fourth");
     });
   });
 
-  it('should handle different delay values', async () => {
+  it("should handle different delay values", async () => {
     const { result, rerender } = renderHook(
       ({ value }) => useDebouncedValue(value, 500),
-      { initialProps: { value: 'initial' } }
+      { initialProps: { value: "initial" } },
     );
 
-    rerender({ value: 'updated' });
+    rerender({ value: "updated" });
 
-    // 300ms should not be enough
-    jest.advanceTimersByTime(300);
-    expect(result.current).toBe('initial');
+    // 400ms should not be enough
+    jest.advanceTimersByTime(400);
+    expect(result.current).toBe("initial");
 
     // 500ms total should update
-    jest.advanceTimersByTime(200);
+    jest.advanceTimersByTime(100);
     await waitFor(() => {
-      expect(result.current).toBe('updated');
+      expect(result.current).toBe("updated");
     });
   });
 
-  it('should work with non-string values', async () => {
+  it("should work with non-string values", async () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useDebouncedValue(value, 300),
-      { initialProps: { value: 42 } }
+      ({ value }) => useDebouncedValue(value, 400),
+      { initialProps: { value: 42 } },
     );
 
     expect(result.current).toBe(42);
 
     rerender({ value: 100 });
-    jest.advanceTimersByTime(300);
+    jest.advanceTimersByTime(400);
 
     await waitFor(() => {
       expect(result.current).toBe(100);
     });
   });
 
-  it('should work with objects', async () => {
-    const obj1 = { id: 1, name: 'Test' };
-    const obj2 = { id: 2, name: 'Updated' };
+  it("should work with objects", async () => {
+    const obj1 = { id: 1, name: "Test" };
+    const obj2 = { id: 2, name: "Updated" };
 
     const { result, rerender } = renderHook(
-      ({ value }) => useDebouncedValue(value, 300),
-      { initialProps: { value: obj1 } }
+      ({ value }) => useDebouncedValue(value, 400),
+      { initialProps: { value: obj1 } },
     );
 
     expect(result.current).toBe(obj1);
 
     rerender({ value: obj2 });
-    jest.advanceTimersByTime(300);
+    jest.advanceTimersByTime(400);
 
     await waitFor(() => {
       expect(result.current).toBe(obj2);
     });
   });
 
-  it('should cleanup timeout on unmount', () => {
-    const { unmount } = renderHook(() => useDebouncedValue('test', 300));
+  it("should cleanup timeout on unmount", () => {
+    const { unmount } = renderHook(() => useDebouncedValue("test", 400));
 
     // Should not throw or cause memory leaks
     unmount();
 
     // Advance timers to ensure no pending timeouts
-    jest.advanceTimersByTime(300);
+    jest.advanceTimersByTime(400);
   });
 });

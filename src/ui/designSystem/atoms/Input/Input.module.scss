@@ -6,84 +6,84 @@
   &--fullWidth {
     width: 100%;
   }
-}
 
-.label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $color-text-primary;
-}
-
-.inputWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.icon {
-  position: absolute;
-  left: $spacing-3;
-  display: flex;
-  align-items: center;
-  color: $color-text-secondary;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.input {
-  width: 100%;
-  padding: $spacing-2 $spacing-3;
-  font-family: $font-family-base;
-  font-size: $font-size-base;
-  color: $color-text-primary;
-  background-color: $color-surface;
-  border: 1px solid $color-border;
-  border-radius: $border-radius-base;
-  @include safe-animation(
-    border-color $duration-base $ease-out,
-    box-shadow $duration-base $ease-out
-  );
-
-  &:hover:not(:disabled) {
-    border-color: $color-border-light;
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-text-primary;
   }
 
-  &:focus {
-    outline: none;
-    border-color: $color-border-focus;
-    box-shadow: 0 0 0 3px rgba($color-primary, 0.2);
+  &__wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
   }
 
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-    background-color: rgba($color-surface, 0.5);
-  }
-
-  &::placeholder {
+  &__icon {
+    position: absolute;
+    left: $spacing-3;
+    display: flex;
+    align-items: center;
     color: $color-text-secondary;
+    pointer-events: none;
+    z-index: 1;
   }
 
-  &--error {
-    border-color: $color-error;
+  &__input {
+    width: 100%;
+    padding: $spacing-2 $spacing-3;
+    font-family: $font-family-base;
+    font-size: $font-size-base;
+    color: $color-text-primary;
+    background-color: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $border-radius-base;
+    @include safe-animation(
+      border-color $duration-base $ease-out,
+      box-shadow $duration-base $ease-out
+    );
+
+    &:hover:not(:disabled) {
+      border-color: $color-border-light;
+    }
 
     &:focus {
+      outline: none;
+      border-color: $color-border-focus;
+      box-shadow: 0 0 0 3px rgba($color-primary, 0.2);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      background-color: rgba($color-surface, 0.5);
+    }
+
+    &::placeholder {
+      color: $color-text-secondary;
+    }
+
+    &--error {
       border-color: $color-error;
-      box-shadow: 0 0 0 3px rgba($color-error, 0.2);
+
+      &:focus {
+        border-color: $color-error;
+        box-shadow: 0 0 0 3px rgba($color-error, 0.2);
+      }
+    }
+
+    &--with-icon {
+      padding-left: calc($spacing-3 + 24px + $spacing-2);
     }
   }
 
-  &--with-icon {
-    padding-left: calc($spacing-3 + 24px + $spacing-2);
+  &__error {
+    font-size: $font-size-sm;
+    color: $color-error;
   }
-}
 
-.error {
-  font-size: $font-size-sm;
-  color: $color-error;
-}
-
-.helperText {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
+  &__helperText {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+  }
 }
