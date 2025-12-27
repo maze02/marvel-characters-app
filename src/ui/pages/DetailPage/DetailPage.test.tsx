@@ -193,9 +193,8 @@ describe("DetailPage", () => {
       );
 
       // Act
-      let result: ReturnType<typeof render>;
       await act(async () => {
-        result = render(
+        render(
           <BrowserRouter
             future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
           >
