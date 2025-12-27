@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { SearchBar } from "@ui/designSystem/molecules/SearchBar/SearchBar";
 import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/CharacterCard";
-import { Layout } from "@ui/components/Layout/Layout";
 import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
@@ -77,7 +76,7 @@ export const FavoritesPage: React.FC = () => {
   );
 
   return (
-    <Layout>
+    <>
       <SEO
         title="My Favorite Marvel Characters - Saved Heroes"
         description="View your saved favorite Marvel characters. Browse your personal collection of Marvel heroes and superheroes."
@@ -92,10 +91,10 @@ export const FavoritesPage: React.FC = () => {
           url: `${config.appUrl}${routes.favorites}`,
         }}
       />
-      <div className={styles.main} id="main-content">
-        <h1 className={styles.pageTitle}>FAVORITES</h1>
+      <div className={styles.favoritesPage} id="main-content">
+        <h1 className={styles.favoritesPage__title}>FAVORITES</h1>
 
-        <div className={styles.searchContainer}>
+        <div className={styles.favoritesPage__search}>
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
@@ -103,7 +102,7 @@ export const FavoritesPage: React.FC = () => {
           />
         </div>
 
-        <div className={styles.resultsCount}>
+        <div className={styles.favoritesPage__resultsCount}>
           {searchQuery
             ? `${displayedCharacters.length} OF ${favoritesCount} RESULTS`
             : `${favoritesCount} RESULTS`}
@@ -113,13 +112,13 @@ export const FavoritesPage: React.FC = () => {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className={styles.srOnly}
+          className={styles.favoritesPage__srOnly}
         >
           {displayedCharacters.length} favorite characters found
         </div>
 
         {!isLoading && (
-          <div className={styles.grid}>
+          <div className={styles.favoritesPage__grid}>
             {displayedCharacters.map((character) => (
               <CharacterCard
                 key={character.id.value}
@@ -135,16 +134,16 @@ export const FavoritesPage: React.FC = () => {
 
         {/* Empty state - only show after loading completes AND when truly empty */}
         {!isLoading && !hasFavorites && displayedCharacters.length === 0 && (
-          <div className={styles.emptyState}>
-            <h2 className={styles.emptyTitle}>
+          <div className={styles.favoritesPage__emptyState}>
+            <h2 className={styles.favoritesPage__heading}>
               {searchQuery ? "No Characters Found" : "No Favorites Yet"}
             </h2>
             {searchQuery ? (
-              <p className={styles.emptyMessage}>
+              <p className={styles.favoritesPage__message}>
                 Try searching for different character names
               </p>
             ) : (
-              <p className={styles.emptyMessage}>
+              <p className={styles.favoritesPage__message}>
                 Start favoriting characters to see them here!
               </p>
             )}
@@ -156,14 +155,16 @@ export const FavoritesPage: React.FC = () => {
           hasFavorites &&
           searchQuery &&
           displayedCharacters.length === 0 && (
-            <div className={styles.emptyState}>
-              <h2 className={styles.emptyTitle}>No Characters Found</h2>
-              <p className={styles.emptyMessage}>
+            <div className={styles.favoritesPage__emptyState}>
+              <h2 className={styles.favoritesPage__heading}>
+                No Characters Found
+              </h2>
+              <p className={styles.favoritesPage__message}>
                 Try searching for different character names
               </p>
             </div>
           )}
       </div>
-    </Layout>
+    </>
   );
 };

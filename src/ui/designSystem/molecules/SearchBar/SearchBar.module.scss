@@ -1,3 +1,4 @@
+// Block: searchBar
 .searchBar {
   position: relative;
   width: 100%;
@@ -5,47 +6,49 @@
   border-bottom: 1px solid $color-text-primary;
   padding: 12px 0;
   gap: 12px;
-}
 
-.searchIcon {
-  color: $color-text-primary;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
+  // Element: search icon
+  &__icon {
+    color: $color-text-primary;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
 
-.searchInput {
-  flex: 1;
-  background: none;
-  border: none;
-  color: $color-text-primary;
-  font-size: $font-size-base; // 16px (mockup spec)
-  font-family: $font-family-condensed; // Roboto Condensed
-  font-weight: $font-weight-regular; // 400 (Regular)
-  letter-spacing: $letter-spacing-normal; // 0% (mockup spec)
-  text-transform: uppercase;
-  outline: none;
-  padding: 0;
-
-  &::placeholder {
-    color: $color-text-secondary;
-    text-transform: uppercase;
+  // Element: search input field
+  &__input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: $color-text-primary;
     font-size: $font-size-base; // 16px (mockup spec)
     font-family: $font-family-condensed; // Roboto Condensed
-    font-weight: $font-weight-regular; // Regular
+    font-weight: $font-weight-regular; // 400 (Regular)
     letter-spacing: $letter-spacing-normal; // 0% (mockup spec)
-  }
-
-  &:focus {
+    text-transform: uppercase;
     outline: none;
-  }
+    padding: 0;
 
-  // Remove default search input styling
-  &::-webkit-search-cancel-button {
-    display: none;
-  }
+    &::placeholder {
+      color: $color-text-secondary;
+      text-transform: uppercase;
+      font-size: $font-size-base; // 16px (mockup spec)
+      font-family: $font-family-condensed; // Roboto Condensed
+      font-weight: $font-weight-regular; // Regular
+      letter-spacing: $letter-spacing-normal; // 0% (mockup spec)
+    }
 
-  &::-webkit-search-decoration {
-    display: none;
+    &:focus {
+      outline: none;
+    }
+
+    // Remove default search input styling
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    &::-webkit-search-decoration {
+      display: none;
+    }
   }
 }
