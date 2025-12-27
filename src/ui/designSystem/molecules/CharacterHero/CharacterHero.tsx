@@ -76,17 +76,21 @@ export const CharacterHero: React.FC<CharacterHeroProps> = ({
   };
 
   return (
-    <div className={styles.hero}>
-      <div className={styles.imageSection}>
-        <img src={imageUrl} alt={characterName} className={styles.heroImage} />
+    <div className={styles.characterHero}>
+      <div className={styles.characterHero__imageSection}>
+        <img
+          src={imageUrl}
+          alt={characterName}
+          className={styles.characterHero__image}
+        />
       </div>
       <div
         ref={textBoxRef}
-        className={`${styles.textBox} ${isExpanded ? styles.expanded : ""}`}
+        className={`${styles.characterHero__textBox} ${isExpanded ? styles["characterHero__textBox--expanded"] : ""}`}
       >
-        <div className={styles.content}>
-          <div className={styles.header}>
-            <h1 className={styles.characterName}>{characterName}</h1>
+        <div className={styles.characterHero__content}>
+          <div className={styles.characterHero__header}>
+            <h1 className={styles.characterHero__name}>{characterName}</h1>
             <FavoriteButton
               isFavorite={isFavorite}
               onToggle={onToggleFavorite}
@@ -95,13 +99,13 @@ export const CharacterHero: React.FC<CharacterHeroProps> = ({
             />
           </div>
           {description && (
-            <div className={styles.descriptionWrapper}>
+            <div className={styles.characterHero__descriptionWrapper}>
               <p
                 ref={descriptionRef}
                 style={{
                   WebkitLineClamp: isExpanded ? "unset" : lineClamp,
                 }}
-                className={`${styles.description} ${isExpanded ? styles.descriptionExpanded : ""}`}
+                className={`${styles.characterHero__description} ${isExpanded ? styles["characterHero__description--expanded"] : ""}`}
               >
                 {description}
               </p>
@@ -109,7 +113,7 @@ export const CharacterHero: React.FC<CharacterHeroProps> = ({
                 <button
                   type="button"
                   onClick={toggleExpanded}
-                  className={styles.toggleButton}
+                  className={styles.characterHero__button}
                   aria-expanded={isExpanded}
                   aria-label={
                     isExpanded
