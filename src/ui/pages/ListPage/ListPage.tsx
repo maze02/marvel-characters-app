@@ -220,7 +220,10 @@ export const ListPage: React.FC = () => {
           />
         </div>
 
-        <div className={styles.listPage__resultsCount}>
+        <div
+          className={styles.listPage__resultsCount}
+          data-testid="results-count"
+        >
           {displayedCharacters.length} RESULTS
         </div>
 

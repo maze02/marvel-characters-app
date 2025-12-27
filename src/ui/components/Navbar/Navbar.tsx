@@ -50,6 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-label={
             isFavoritesActive ? "Viewing favorites" : "View favorites"
           }
+          data-testid="favorites-nav-button"
         >
           <Icon name="heart-filled" size={24} />
           {favoritesCount > 0 && (

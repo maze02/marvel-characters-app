@@ -21,6 +21,7 @@ export const Logo: React.FC<LogoProps> = ({ onClick }) => {
       className={styles.logo}
       onClick={onClick}
       aria-label="Marvel - Go to home"
+      data-testid="site-logo"
     >
       <svg
         width="130"
