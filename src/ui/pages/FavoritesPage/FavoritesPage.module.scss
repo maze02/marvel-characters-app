@@ -1,44 +1,53 @@
 // FavoritesPage uses shared page layout mixins for consistency
 // Following BEM methodology and DRY principles
 
-.main {
+// Block: favoritesPage
+.favoritesPage {
   @include page-main;
-}
 
-.pageTitle {
-  @include page-title;
-}
+  // Element: page title/heading
+  &__title {
+    @include page-title;
+  }
 
-.searchContainer {
-  @include page-search-container;
-}
+  // Element: search bar container
+  &__search {
+    @include page-search-container;
+  }
 
-.resultsCount {
-  @include page-results-count;
-}
+  // Element: results count display
+  &__resultsCount {
+    @include page-results-count;
+  }
 
-.grid {
-  @include page-character-grid(19px);
-}
+  // Element: character cards grid
+  &__grid {
+    @include page-character-grid(19px);
 
-// CharacterCard component handles all card styling
-// Grid controls card dimensions through direct children
-.grid > article {
-  @include page-character-card-dimensions;
-}
+    // CharacterCard component handles all card styling
+    // Grid controls card dimensions through direct children
+    > article {
+      @include page-character-card-dimensions;
+    }
+  }
 
-.emptyState {
-  @include page-empty-state;
-}
+  // Element: empty state container
+  &__emptyState {
+    @include page-empty-state;
+  }
 
-.emptyTitle {
-  @include page-empty-title;
-}
+  // Element: heading within page
+  &__heading {
+    @include page-empty-title;
+  }
 
-.emptyMessage {
-  @include page-empty-message;
-}
+  // Element: message/description text
+  &__message {
+    @include page-empty-message;
+  }
 
-.srOnly {
-  @include sr-only;
+  // Element: screen reader only content
+  &__srOnly {
+    @include sr-only;
+  }
 }

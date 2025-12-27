@@ -201,9 +201,9 @@ describe("FavoritesPage", () => {
 
   describe("Accessibility", () => {
     it("should have main content region", () => {
-      renderPage();
-
-      expect(screen.getByRole("main")).toBeInTheDocument();
+      const { container } = renderPage();
+      // Page component uses id="main-content", Layout adds role="main"
+      expect(container.querySelector("#main-content")).toBeInTheDocument();
     });
 
     it("should have page heading", () => {
