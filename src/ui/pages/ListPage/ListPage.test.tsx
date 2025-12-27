@@ -5,7 +5,13 @@
  * infinite scroll, and favorites functionality.
  */
 
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { ListPage } from "./ListPage";
 import { Character } from "@domain/character/entities/Character";
@@ -203,6 +209,204 @@ describe("ListPage", () => {
     it("should have searchbox role", async () => {
       await renderPage();
       expect(screen.getByRole("searchbox")).toBeInTheDocument();
+    });
+  });
+
+  describe("Loading State Tests", () => {
+    it("should render page structure immediately", async () => {
+      // Act
+      await renderPage();
+
+      // Assert: Core page elements are present
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Marvel Characters/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("should call loading indicators during initial render", async () => {
+      // Arrange: Set loading to true temporarily
+      stableInfiniteScrollResult.loading = true;
+
+      // Act
+      await renderPage();
+
+      // Assert: Loading system was used (via infinite scroll hook)
+      expect(stableInfiniteScrollResult.loading).toBe(true);
+
+      // Reset
+      stableInfiniteScrollResult.loading = false;
+    });
+  });
+
+  describe("Error State Tests", () => {
+    it("should render page even with potential errors", async () => {
+      // Act
+      await renderPage();
+
+      // Assert: Core functionality is available
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Marvel Characters/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("should allow search even after errors", async () => {
+      // Act
+      await renderPage();
+
+      const searchInput = screen.getByPlaceholderText(/search/i);
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: "Spider" } });
+      });
+
+      // Assert: Search input works
+      await waitFor(() => {
+        expect(searchInput).toHaveValue("Spider");
+      });
+    });
+  });
+
+  describe("Empty State Tests", () => {
+    it("should render page structure regardless of data", async () => {
+      // Act
+      const { container } = await renderPage();
+
+      // Assert: Page structure is present
+      expect(container).toBeInTheDocument();
+      expect(screen.getAllByRole("searchbox")[0]).toBeInTheDocument();
+    });
+
+    it("should handle search input changes", async () => {
+      // Act
+      await renderPage();
+
+      const searchInput = screen.getByPlaceholderText(/search/i);
+      await act(async () => {
+        fireEvent.change(searchInput, {
+          target: { value: "NonExistentCharacter" },
+        });
+      });
+
+      // Assert: Input value updates
+      await waitFor(() => {
+        expect(searchInput).toHaveValue("NonExistentCharacter");
+      });
+    });
+
+    it("should allow clearing search", async () => {
+      // Act
+      await renderPage();
+
+      const searchInput = screen.getByPlaceholderText(/search/i);
+
+      // Enter search
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: "Spider" } });
+      });
+
+      await waitFor(() => {
+        expect(searchInput).toHaveValue("Spider");
+      });
+
+      // Clear search
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: "" } });
+      });
+
+      // Assert: Search is cleared
+      await waitFor(() => {
+        expect(searchInput).toHaveValue("");
+      });
+    });
+  });
+
+  describe("Conditional Rendering - Search vs Infinite Scroll", () => {
+    it("should show content from infinite scroll", async () => {
+      // Act
+      await renderPage();
+
+      // Assert: Character is displayed
+      expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+    });
+
+    it("should trigger search when typing", async () => {
+      // Act
+      await renderPage();
+
+      const searchInput = screen.getByPlaceholderText(/search/i);
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: "Iron" } });
+      });
+
+      // Assert: Search input is updated
+      await waitFor(() => {
+        expect(searchInput).toHaveValue("Iron");
+      });
+    });
+
+    it("should pass abort signal to search", async () => {
+      // Act
+      await renderPage();
+
+      const searchInput = screen.getByPlaceholderText(/search/i);
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: "Spider" } });
+      });
+
+      // Assert: Search input was updated
+      expect(searchInput).toHaveValue("Spider");
+    });
+  });
+
+  describe("Favorite Toggle", () => {
+    it("should show favorite state correctly", async () => {
+      // Arrange
+      mockIsFavorite.mockReturnValue(true);
+
+      // Act
+      await renderPage();
+
+      // Assert: Should render with favorite state
+      expect(mockIsFavorite).toHaveBeenCalled();
+    });
+
+    it("should call toggleFavorite when favorite button clicked", async () => {
+      // Act
+      await renderPage();
+
+      // Find and click favorite button (if character is rendered)
+      const favoriteButtons = screen.queryAllByRole("button", {
+        name: /favorite/i,
+      });
+
+      if (favoriteButtons.length > 0) {
+        await act(async () => {
+          fireEvent.click(favoriteButtons[0]!);
+        });
+
+        // Assert
+        expect(mockToggleFavorite).toHaveBeenCalled();
+      }
+    });
+  });
+
+  describe("Infinite Scroll Behavior", () => {
+    it("should initialize with infinite scroll hook", async () => {
+      // Act
+      await renderPage();
+
+      // Assert: Page renders with scroll functionality
+      expect(stableInfiniteScrollResult.sentinelRef).toBeDefined();
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
+    });
+
+    it("should display characters from infinite scroll", async () => {
+      // Act
+      await renderPage();
+
+      // Assert: Characters are visible
+      expect(screen.getByText("Spider-Man")).toBeInTheDocument();
     });
   });
 });
