@@ -46,10 +46,10 @@ export const DetailPage: React.FC = () => {
       return;
     }
 
-    // Use AbortController to handle cleanup
+    // Use flag to handle cleanup
     let isCancelled = false;
 
-    // Immediately set loading state - this is synchronous and atomic
+    // Set loading state immediately (synchronous)
     setLoadingState("loading");
     setCharacter(null);
     setComics([]);
@@ -57,91 +57,96 @@ export const DetailPage: React.FC = () => {
     setHasMoreComics(false);
     startLoading();
 
-    const loadData = async () => {
-      try {
-        // Load character (required)
-        const charData = await getCharacterDetail.execute(Number(id));
-
-        // Only update state if not cancelled
-        if (!isCancelled) {
-          setCharacter(charData);
-          setLoadingState("success");
-        }
-
-        // Load FIRST PAGE of comics (lazy loading for fast initial render)
+    // Defer async operation to next event loop iteration
+    // This ensures React renders the loading bar before fetching data
+    const timeoutId = setTimeout(() => {
+      const loadData = async () => {
         try {
-          setComicsLoading(true);
+          // Load character (required)
+          const charData = await getCharacterDetail.execute(Number(id));
 
-          // Fetch only first 20 comics (fast!)
-          const firstPage = await listCharacterComics.execute(Number(id), {
-            offset: 0,
-            limit: COMICS_PAGE_SIZE,
-          });
-
-          // Check if there are more comics to load (use character data, no extra API call)
-          const totalCount = charData.getIssueCount();
-
+          // Only update state if not cancelled
           if (!isCancelled) {
-            setComics(firstPage);
-            setComicsOffset(COMICS_PAGE_SIZE);
-            setHasMoreComics(
-              firstPage.length === COMICS_PAGE_SIZE &&
-                totalCount > COMICS_PAGE_SIZE,
-            );
+            setCharacter(charData);
+            setLoadingState("success");
           }
-        } catch (comicsError) {
-          logger.warn("Failed to load comics, continuing anyway", {
-            characterId: id,
-            error: comicsError,
-          });
-          if (!isCancelled) {
-            setComics([]);
-            setHasMoreComics(false);
+
+          // Load FIRST PAGE of comics (lazy loading for fast initial render)
+          try {
+            setComicsLoading(true);
+
+            // Fetch only first 20 comics (fast!)
+            const firstPage = await listCharacterComics.execute(Number(id), {
+              offset: 0,
+              limit: COMICS_PAGE_SIZE,
+            });
+
+            // Check if there are more comics to load (use character data, no extra API call)
+            const totalCount = charData.getIssueCount();
+
+            if (!isCancelled) {
+              setComics(firstPage);
+              setComicsOffset(COMICS_PAGE_SIZE);
+              setHasMoreComics(
+                firstPage.length === COMICS_PAGE_SIZE &&
+                  totalCount > COMICS_PAGE_SIZE,
+              );
+            }
+          } catch (comicsError) {
+            logger.warn("Failed to load comics, continuing anyway", {
+              characterId: id,
+              error: comicsError,
+            });
+            if (!isCancelled) {
+              setComics([]);
+              setHasMoreComics(false);
+            }
+          } finally {
+            if (!isCancelled) {
+              setComicsLoading(false);
+            }
           }
+        } catch (error: unknown) {
+          // Ignore errors if the component was unmounted or effect cleaned up
+          if (isCancelled) {
+            return;
+          }
+
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          const errorName = error instanceof Error ? error.name : undefined;
+
+          // Ignore cancellation errors - don't show error state
+          if (
+            errorMessage.includes("cancelled") ||
+            errorName === "CanceledError" ||
+            errorMessage.includes("canceled")
+          ) {
+            logger.debug("Request was cancelled, ignoring error", {
+              characterId: id,
+            });
+            return;
+          }
+
+          logger.error("Failed to load character", error, { characterId: id });
+          setLoadingState("error");
+          setCharacter(null);
+          setComics([]);
+          setHasMoreComics(false);
         } finally {
           if (!isCancelled) {
-            setComicsLoading(false);
+            stopLoading();
           }
         }
-      } catch (error: unknown) {
-        // Ignore errors if the component was unmounted or effect cleaned up
-        if (isCancelled) {
-          return;
-        }
+      };
 
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        const errorName = error instanceof Error ? error.name : undefined;
+      void loadData();
+    }, 0);
 
-        // Ignore cancellation errors - don't show error state
-        if (
-          errorMessage.includes("cancelled") ||
-          errorName === "CanceledError" ||
-          errorMessage.includes("canceled")
-        ) {
-          logger.debug("Request was cancelled, ignoring error", {
-            characterId: id,
-          });
-          return;
-        }
-
-        logger.error("Failed to load character", error, { characterId: id });
-        setLoadingState("error");
-        setCharacter(null);
-        setComics([]);
-        setHasMoreComics(false);
-      } finally {
-        if (!isCancelled) {
-          stopLoading();
-        }
-      }
-    };
-
-    void loadData();
-
-    // Cleanup function to prevent state updates after unmount
+    // Cleanup function to prevent state updates after unmount and cancel timeout
     return () => {
       isCancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [
     id,

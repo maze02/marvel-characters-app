@@ -20,10 +20,18 @@ import styles from "./FavoritesPage.module.scss";
  *
  * Features:
  * - Loads favorite characters from localStorage
- * - Real-time search filtering
- * - Proper loading states (prevents "No favorites" flash during load)
+ * - Real-time search filtering with debouncing
+ * - Proper loading states with global loading bar visibility
+ * - React 18 compatible loading state management using setTimeout(0)
  * - Synchronized with favorites context for real-time updates
- * - Dependencies injected via Context (no direct instantiation)
+ * - Shared API cache for fast subsequent loads
+ *
+ * Technical Implementation:
+ * - Dependencies injected via DependencyContainer (DI pattern)
+ * - Uses shared repository instances for consistent caching
+ * - setTimeout(0) ensures loading bar renders before data fetch
+ * - Separates concerns: UI state, loading state, and business logic
+ * - Clean code: No flushSync in lifecycle methods (React best practice)
  */
 export const FavoritesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,32 +49,51 @@ export const FavoritesPage: React.FC = () => {
 
   // Load favorite characters on mount and when favorites change
   useEffect(() => {
-    const loadFavorites = async () => {
-      // Start loading state for navbar
-      setIsLoading(true);
-      startLoading();
+    /**
+     * Load favorites with proper loading state management
+     *
+     * Sets loading state immediately, then defers the async operation using
+     * setTimeout(0), which schedules it as a macrotask. This ensures React
+     * commits and renders the loading bar before the data fetch begins.
+     *
+     * This avoids React 18 batching issues while staying compliant with
+     * React's rendering lifecycle (no flushSync in lifecycle methods).
+     */
 
-      // Early return if no favorites - skip API call but maintain loading state briefly
-      if (!hasFavorites) {
-        setFavoriteCharacters([]);
-        setIsLoading(false);
-        stopLoading();
-        return;
-      }
+    // Early return if no favorites - no need for loading state
+    if (!hasFavorites) {
+      setFavoriteCharacters([]);
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const characters = await listFavorites.execute();
-        setFavoriteCharacters(characters);
-      } catch (error) {
-        logger.error("Failed to load favorites", error);
-        setFavoriteCharacters([]);
-      } finally {
-        setIsLoading(false);
-        stopLoading();
-      }
-    };
+    // Set loading state immediately (synchronous)
+    setIsLoading(true);
+    startLoading();
 
-    void loadFavorites();
+    // Defer async operation to next event loop iteration (macrotask)
+    // This guarantees React renders the loading bar before fetching data
+    const timeoutId = setTimeout(() => {
+      const loadFavorites = async () => {
+        try {
+          // API call - will use shared cache from DependencyContainer
+          const characters = await listFavorites.execute();
+          setFavoriteCharacters(characters);
+        } catch (error) {
+          logger.error("Failed to load favorites", error);
+          setFavoriteCharacters([]);
+        } finally {
+          // Always stop loading, even on error
+          setIsLoading(false);
+          stopLoading();
+        }
+      };
+
+      void loadFavorites();
+    }, 0);
+
+    // Cleanup: cancel timeout if component unmounts
+    return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [favoritesCount]); // Only reload when favorites count changes
 

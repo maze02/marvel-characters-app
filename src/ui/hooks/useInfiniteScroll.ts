@@ -34,6 +34,7 @@ import { logger } from "@infrastructure/logging/Logger";
 export function useInfiniteScroll<T>(
   fetchMore: (offset: number) => Promise<PaginatedResult<T>>,
   initialLimit: number = PAGINATION.DEFAULT_LIMIT,
+  getItemKey?: (item: T) => string | number,
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,7 +58,18 @@ export function useInfiniteScroll<T>(
     try {
       const result = await fetchMore(offset);
 
-      setItems((prev) => [...prev, ...result.items]);
+      setItems((prev) => {
+        // If getItemKey is provided, deduplicate items
+        if (getItemKey) {
+          const existingKeys = new Set(prev.map(getItemKey));
+          const newUniqueItems = result.items.filter(
+            (item) => !existingKeys.has(getItemKey(item)),
+          );
+          return [...prev, ...newUniqueItems];
+        }
+        // Otherwise, just append (original behavior)
+        return [...prev, ...result.items];
+      });
       setOffset((prev) => prev + initialLimit);
 
       // Check if we have more data
@@ -76,7 +88,7 @@ export function useInfiniteScroll<T>(
     } finally {
       setLoading(false);
     }
-  }, [fetchMore, offset, initialLimit, loading, hasMore]);
+  }, [fetchMore, offset, initialLimit, loading, hasMore, getItemKey]);
 
   /**
    * Initial load on mount

@@ -131,7 +131,10 @@ describe("DetailPage", () => {
       const { container } = await renderPage();
       // DetailPage component content is present
       expect(container).toBeInTheDocument();
-      expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+      // Wait for the heading to be rendered
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+      });
     });
   });
 
@@ -139,10 +142,12 @@ describe("DetailPage", () => {
     it("should render page during loading", async () => {
       const { container } = await renderPage();
       expect(container).toBeInTheDocument();
-      // Check for character name heading
-      expect(
-        screen.getByRole("heading", { name: /Spider-Man/i }),
-      ).toBeInTheDocument();
+      // Wait for character name heading to be rendered
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { name: /Spider-Man/i }),
+        ).toBeInTheDocument();
+      });
     });
   });
 
@@ -155,10 +160,12 @@ describe("DetailPage", () => {
 
     it("should have character name visible", async () => {
       await renderPage();
-      // Character information is displayed
-      expect(
-        screen.getByRole("heading", { name: /Spider-Man/i }),
-      ).toBeInTheDocument();
+      // Wait for character information to be displayed
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { name: /Spider-Man/i }),
+        ).toBeInTheDocument();
+      });
     });
   });
 
@@ -167,15 +174,20 @@ describe("DetailPage", () => {
       const { container } = await renderPage();
       // Page component content exists
       expect(container).toBeInTheDocument();
-      expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+      // Wait for heading to be rendered
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+      });
     });
 
     it("should have accessible heading structure", async () => {
       await renderPage();
-      // Check for proper heading hierarchy
-      expect(
-        screen.getByRole("heading", { level: 1, name: /Spider-Man/i }),
-      ).toBeInTheDocument();
+      // Wait for heading hierarchy to be rendered
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { level: 1, name: /Spider-Man/i }),
+        ).toBeInTheDocument();
+      });
       expect(
         screen.getByRole("heading", { level: 2, name: /COMICS/i }),
       ).toBeInTheDocument();
