@@ -1,10 +1,10 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Logo } from '@ui/designSystem/atoms/Logo/Logo';
-import { Icon } from '@ui/designSystem/atoms/Icon/Icon';
-import { useFavorites } from '@ui/state/FavoritesContext';
-import { routes } from '@ui/routes/routes';
-import styles from './Navbar.module.scss';
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Logo } from "@ui/designSystem/atoms/Logo/Logo";
+import { Icon } from "@ui/designSystem/atoms/Icon/Icon";
+import { useFavorites } from "@ui/state/FavoritesContext";
+import { routes } from "@ui/routes/routes";
+import styles from "./Navbar.module.scss";
 
 export interface NavbarProps {
   /** Optional callback when logo is clicked */
@@ -15,14 +15,14 @@ export interface NavbarProps {
 
 /**
  * Navbar Component
- * 
+ *
  * Reusable navigation bar with Marvel logo and favorites button.
  * Displays favorites count badge when user has favorites.
  * Consistent across all pages.
  */
-export const Navbar: React.FC<NavbarProps> = ({ 
-  onLogoClick, 
-  onFavoritesClick
+export const Navbar: React.FC<NavbarProps> = ({
+  onLogoClick,
+  onFavoritesClick,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,17 +41,23 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className={styles.navbar}>
-      <div className={styles.content}>
+      <div className={styles.navbar__content}>
         {onLogoClick ? <Logo onClick={onLogoClick} /> : <Logo />}
         <button
           type="button"
           onClick={handleFavoritesClick}
-          className={styles.favoritesButton}
-          aria-label={isFavoritesActive ? 'Viewing favorites' : 'View favorites'}
+          className={styles.navbar__favoritesButton}
+          aria-label={
+            isFavoritesActive ? "Viewing favorites" : "View favorites"
+          }
+          data-testid="favorites-nav-button"
         >
           <Icon name="heart-filled" size={24} />
           {favoritesCount > 0 && (
-            <span className={styles.favoritesCount} data-testid="favorites-count">
+            <span
+              className={styles.navbar__favoritesCount}
+              data-testid="favorites-count"
+            >
               {favoritesCount}
             </span>
           )}

@@ -46,6 +46,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       className={`${styles.favoriteButton} ${styles[`favoriteButton--${size}`]} ${isFavorite ? styles["favoriteButton--active"] : ""}`}
       aria-label={ariaLabel}
       aria-pressed={isFavorite}
+      data-testid="favorite-button"
     >
       <Icon
         name={isFavorite ? "heart-filled" : "heart"}

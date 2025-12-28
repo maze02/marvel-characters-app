@@ -1,5 +1,5 @@
-import React from 'react';
-import styles from './LoadingBar.module.scss';
+import React from "react";
+import styles from "./LoadingBar.module.scss";
 
 export interface LoadingBarProps {
   /** Whether the loading bar is visible and animating */
@@ -8,10 +8,10 @@ export interface LoadingBarProps {
 
 /**
  * LoadingBar Component
- * 
+ *
  * A thin red progress bar that appears at the top of the viewport during navigation/loading.
  * Animates from left to right with a smooth indeterminate progress animation.
- * 
+ *
  * Features:
  * - Fixed positioning at top of viewport
  * - Marvel red (#EC1D24) color
@@ -26,19 +26,19 @@ export const LoadingBar: React.FC<LoadingBarProps> = ({ isLoading }) => {
 
   return (
     <>
-      <div 
+      <div
         className={styles.loadingBar}
         role="progressbar"
         aria-label="Loading content"
         aria-busy="true"
       >
-        <div className={styles.loadingBarProgress} />
+        <div className={styles.loadingBar__progress} />
       </div>
-      <div 
-        role="status" 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className={styles.srOnly}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className={styles.loadingBar__srOnly}
       >
         Loading content
       </div>

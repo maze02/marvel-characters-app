@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FavoriteButton } from '@ui/designSystem/molecules/FavoriteButton/FavoriteButton';
-import { useAdaptiveLineClamp } from '@ui/hooks/useAdaptiveLineClamp';
-import styles from './CharacterHero.module.scss';
+import React, { useState, useRef, useEffect } from "react";
+import { FavoriteButton } from "@ui/designSystem/molecules/FavoriteButton/FavoriteButton";
+import { useAdaptiveLineClamp } from "@ui/hooks/useAdaptiveLineClamp";
+import styles from "./CharacterHero.module.scss";
 
 interface CharacterHeroProps {
   imageUrl: string;
@@ -13,12 +13,12 @@ interface CharacterHeroProps {
 
 /**
  * CharacterHero Component
- * 
+ *
  * Displays character image with overlay containing name, description, and favorite button.
  * Features a clipped triangle design on the bottom-right corner of the overlay.
  * Description can be expanded/collapsed with smooth animation.
  * Uses adaptive line clamping to fit description text within available space.
- * 
+ *
  * Specifications:
  * - Total height: 607.89px
  * - Overlay height: 280px (collapsed), expands when "Read more" is clicked
@@ -59,34 +59,38 @@ export const CharacterHero: React.FC<CharacterHeroProps> = ({
   });
 
   useEffect(() => {
+    // Only check for truncation when text is collapsed
+    // When expanded, button should remain visible to allow collapsing
+    if (isExpanded) return;
+
     // Check if text is truncated
     const element = descriptionRef.current;
     if (element && description) {
       const isTruncated = element.scrollHeight > element.clientHeight;
       setShowButton(isTruncated);
     }
-  }, [description, lineClamp]); // Re-check when lineClamp changes
+  }, [description, lineClamp, isExpanded]); // Re-check when lineClamp or isExpanded changes
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
   };
 
   return (
-    <div className={styles.hero}>
-      <div className={styles.imageSection}>
+    <div className={styles.characterHero}>
+      <div className={styles.characterHero__imageSection}>
         <img
           src={imageUrl}
           alt={characterName}
-          className={styles.heroImage}
+          className={styles.characterHero__image}
         />
       </div>
-      <div 
+      <div
         ref={textBoxRef}
-        className={`${styles.textBox} ${isExpanded ? styles.expanded : ''}`}
+        className={`${styles.characterHero__textBox} ${isExpanded ? styles["characterHero__textBox--expanded"] : ""}`}
       >
-        <div className={styles.content}>
-          <div className={styles.header}>
-            <h1 className={styles.characterName}>{characterName}</h1>
+        <div className={styles.characterHero__content}>
+          <div className={styles.characterHero__header}>
+            <h1 className={styles.characterHero__name}>{characterName}</h1>
             <FavoriteButton
               isFavorite={isFavorite}
               onToggle={onToggleFavorite}
@@ -95,13 +99,13 @@ export const CharacterHero: React.FC<CharacterHeroProps> = ({
             />
           </div>
           {description && (
-            <div className={styles.descriptionWrapper}>
-              <p 
+            <div className={styles.characterHero__descriptionWrapper}>
+              <p
                 ref={descriptionRef}
-                style={{ 
-                  WebkitLineClamp: isExpanded ? 'unset' : lineClamp 
+                style={{
+                  WebkitLineClamp: isExpanded ? "unset" : lineClamp,
                 }}
-                className={`${styles.description} ${isExpanded ? styles.descriptionExpanded : ''}`}
+                className={`${styles.characterHero__description} ${isExpanded ? styles["characterHero__description--expanded"] : ""}`}
               >
                 {description}
               </p>
@@ -109,11 +113,20 @@ export const CharacterHero: React.FC<CharacterHeroProps> = ({
                 <button
                   type="button"
                   onClick={toggleExpanded}
-                  className={styles.toggleButton}
+                  className={styles.characterHero__button}
                   aria-expanded={isExpanded}
-                  aria-label={isExpanded ? `Hide ${characterName}'s description` : `Read more about ${characterName}`}
+                  aria-label={
+                    isExpanded
+                      ? `Hide ${characterName}'s description`
+                      : `Read more about ${characterName}`
+                  }
+                  data-testid={
+                    isExpanded
+                      ? "collapse-description-button"
+                      : "expand-description-button"
+                  }
                 >
-                  {isExpanded ? 'HIDE' : 'READ MORE'}
+                  {isExpanded ? "HIDE" : "READ MORE"}
                 </button>
               )}
             </div>

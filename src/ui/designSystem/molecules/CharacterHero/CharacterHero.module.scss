@@ -1,8 +1,8 @@
 // Import dimension tokens
 @use "../../tokens/dimensions" as *;
 
-// BEM: Block
-.hero {
+// Block: characterHero
+.characterHero {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -19,228 +19,234 @@
     position: relative;
     flex-direction: column;
   }
-}
 
-// BEM: Element - imageSection
-.imageSection {
-  width: 100%;
-  height: $hero-image-height-mobile;
-  overflow: hidden;
-  flex-shrink: 0;
+  // Element: image section container
+  &__imageSection {
+    width: 100%;
+    height: $hero-image-height-mobile;
+    overflow: hidden;
+    flex-shrink: 0;
 
-  // Tablet: fixed size, on the left
-  @include md {
-    width: $hero-tablet-box-size;
-    height: $hero-tablet-box-size;
-    order: 1;
+    // Tablet: fixed size, on the left
+    @include md {
+      width: $hero-tablet-box-size;
+      height: $hero-tablet-box-size;
+      order: 1;
+    }
+
+    // Desktop: absolute positioned, 277px from left
+    @include lg {
+      position: absolute;
+      left: $hero-desktop-padding-x; // 277px from left
+      top: 0;
+      width: $hero-image-height-desktop; // 320px square
+      height: $hero-image-height-desktop;
+      z-index: 1;
+    }
   }
 
-  // Desktop: absolute positioned, 277px from left
-  @include lg {
-    position: absolute;
-    left: $hero-desktop-padding-x; // 277px from left
-    top: 0;
-    width: $hero-image-height-desktop; // 320px square
-    height: $hero-image-height-desktop;
-    z-index: 1;
+  // Element: hero image
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top; // Show top of image (face) instead of center
+    display: block;
   }
-}
 
-// BEM: Element - heroImage
-.heroImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top; // Show top of image (face) instead of center
-  display: block;
-}
-
-// BEM: Element - textBox
-.textBox {
-  width: 100%;
-  height: $hero-textbox-height-mobile;
-  background-color: $color-black;
-  padding: 24px 16px;
-  display: flex;
-  flex-direction: column;
-  @include safe-animation(height 0.4s $ease-in-out);
-
-  // Mobile: triangle clip on bottom-right
-  @include triangle-clip($triangle-clip-mobile);
-
-  // BEM: Modifier - expanded
-  &.expanded {
+  // Element: text box container
+  &__textBox {
+    width: 100%;
+    // Mobile: use auto height to prevent clipping the READ MORE button
+    // The fixed 20vh was too small to fit header + description + button
     height: auto;
     min-height: $hero-textbox-height-mobile;
+    background-color: $color-black;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    @include safe-animation(height 0.4s $ease-in-out);
+
+    // Mobile: triangle clip on bottom-right
     @include triangle-clip($triangle-clip-mobile);
-  }
 
-  // Tablet: side-by-side layout
-  @include md {
-    width: calc(100% - #{$hero-tablet-box-size});
-    height: $hero-tablet-box-size;
-    padding: 0; // No padding - content will handle spacing
-    order: 2;
-    justify-content: flex-start;
-    @include triangle-clip($triangle-clip-tablet);
-
-    &.expanded {
-      height: auto;
-      min-height: $hero-tablet-box-size;
+    // Tablet: side-by-side layout, restore fixed height
+    @include md {
+      width: calc(100% - #{$hero-tablet-box-size});
+      height: $hero-tablet-box-size;
+      padding: 0; // No padding - content will handle spacing
+      order: 2;
+      justify-content: flex-start;
       @include triangle-clip($triangle-clip-tablet);
     }
-  }
 
-  // Desktop: full width black box spanning edge to edge
-  @include lg {
-    width: 100%; // Full width, edge to edge
-    height: $hero-image-height-desktop; // 320px height
-    padding: 0; // No padding - content will handle spacing
-    background-color: $color-black; // Ensure black background
-    position: relative;
-    z-index: 0; // Behind the image
-    @include triangle-clip($triangle-clip-desktop);
-
-    &.expanded {
-      height: auto;
-      min-height: $hero-image-height-desktop;
+    // Desktop: full width black box spanning edge to edge, restore fixed height
+    @include lg {
+      width: 100%; // Full width, edge to edge
+      height: $hero-image-height-desktop; // 320px height
+      padding: 0; // No padding - content will handle spacing
+      background-color: $color-black; // Ensure black background
+      position: relative;
+      z-index: 0; // Behind the image
       @include triangle-clip($triangle-clip-desktop);
     }
-  }
-}
 
-// BEM: Element - content
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 100%;
+    // Modifier: expanded state
+    &--expanded {
+      height: auto;
+      min-height: $hero-textbox-height-mobile;
+      @include triangle-clip($triangle-clip-mobile);
 
-  // Tablet: 47px from left and right edges, specific gap
-  @include md {
-    padding: 47px; // 47px from left and right edges
-    gap: 35px;
-  }
+      @include md {
+        height: auto;
+        min-height: $hero-tablet-box-size;
+        @include triangle-clip($triangle-clip-tablet);
+      }
 
-  // Desktop: Dynamic padding based on image size and position
-  @include lg {
-    padding: 103px $hero-desktop-padding-x 51px
-      $hero-desktop-content-left-padding; // Calculated from image offset + width + gap
-    gap: 28px;
-  }
-}
-
-// BEM: Element - header
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  flex-shrink: 0;
-
-  // Tablet: ensure heart icon is 24px
-  @include md {
-    // Target the favorite button's icon
-    button svg {
-      width: 24px;
-      height: 24px;
+      @include lg {
+        height: auto;
+        min-height: $hero-image-height-desktop;
+        @include triangle-clip($triangle-clip-desktop);
+      }
     }
   }
 
-  // Desktop: restore default size
-  @include lg {
-    button svg {
-      width: 20px;
-      height: 20px;
+  // Element: content wrapper
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    // Remove height: 100% on mobile to prevent clipping of the READ MORE button
+    // The fixed textBox height (20vh) is too small to fit header + description + button
+
+    // Tablet: restore height constraint and add padding
+    @include md {
+      height: 100%;
+      padding: 47px; // 47px from left and right edges
+      gap: 35px;
+    }
+
+    // Desktop: Dynamic padding based on image size and position
+    @include lg {
+      padding: 103px $hero-desktop-padding-x 51px
+        $hero-desktop-content-left-padding; // Calculated from image offset + width + gap
+      gap: 28px;
     }
   }
-}
 
-// BEM: Element - characterName
-.characterName {
-  font-size: 24px;
-  font-family: $font-family-condensed;
-  font-weight: $font-weight-bold;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: $letter-spacing-normal;
-  color: $color-white;
-  line-height: 1.2;
-  flex: 1;
+  // Element: header with name and favorite button
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-shrink: 0;
 
-  // Tablet: 32px Bold
-  @include md {
-    font-size: 32px;
+    // Tablet: ensure heart icon is 24px
+    @include md {
+      // Target the favorite button's icon
+      button svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    // Desktop: restore default size
+    @include lg {
+      button svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  // Element: character name heading
+  &__name {
+    font-size: 24px;
+    font-family: $font-family-condensed;
     font-weight: $font-weight-bold;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-normal;
+    color: $color-white;
+    line-height: 1.2;
+    flex: 1;
+
+    // Tablet: 32px Bold
+    @include md {
+      font-size: 32px;
+      font-weight: $font-weight-bold;
+    }
+
+    // Desktop: larger size
+    @include lg {
+      font-size: 40px;
+    }
   }
 
-  // Desktop: larger size
-  @include lg {
-    font-size: 40px;
+  // Element: description wrapper
+  &__descriptionWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
   }
-}
 
-// BEM: Element - descriptionWrapper
-.descriptionWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1;
-}
-
-// BEM: Element - description
-.description {
-  font-size: 14px;
-  font-family: $font-family-condensed;
-  font-weight: $font-weight-regular;
-  letter-spacing: $letter-spacing-normal;
-  line-height: 1.5;
-  color: $color-white;
-  margin: 0;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  // Note: -webkit-line-clamp is now set dynamically via useAdaptiveLineClamp hook
-
-  // Tablet
-  @include md {
+  // Element: description text
+  &__description {
     font-size: 14px;
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-regular;
+    letter-spacing: $letter-spacing-normal;
+    line-height: 1.5;
+    color: $color-white;
+    margin: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    // Note: -webkit-line-clamp is now set dynamically via useAdaptiveLineClamp hook
+
+    // Tablet
+    @include md {
+      font-size: 14px;
+    }
+
+    // Desktop
+    @include lg {
+      font-size: 16px;
+    }
+
+    // Modifier: expanded state
+    &--expanded {
+      display: block;
+      -webkit-line-clamp: unset;
+      line-clamp: unset;
+      max-height: none;
+    }
   }
 
-  // Desktop
-  @include lg {
-    font-size: 16px;
-  }
-
-  // BEM: Modifier - expanded
-  &.descriptionExpanded {
-    display: block;
-    -webkit-line-clamp: unset;
-    max-height: none;
-  }
-}
-
-// BEM: Element - toggleButton
-.toggleButton {
-  @include button-interactive($color-primary);
-  color: $color-primary;
-  font-size: 12px;
-  font-family: $font-family-condensed;
-  font-weight: $font-weight-bold;
-  letter-spacing: $letter-spacing-normal;
-  text-transform: uppercase;
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  flex-shrink: 0;
-
-  // Tablet: same size
-  @include md {
+  // Element: toggle button for expanding/collapsing
+  &__button {
+    @include button-interactive($color-primary);
+    color: $color-primary;
     font-size: 12px;
-  }
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-normal;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    flex-shrink: 0;
 
-  // Desktop: slightly larger
-  @include lg {
-    font-size: 14px;
+    // Tablet: same size
+    @include md {
+      font-size: 12px;
+    }
+
+    // Desktop: slightly larger
+    @include lg {
+      font-size: 14px;
+    }
   }
 }

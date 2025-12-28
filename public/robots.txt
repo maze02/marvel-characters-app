@@ -1,0 +1,15 @@
+# Robots.txt
+# 
+# This file gives instructions to search engine crawlers (like Google's bots)
+# about which pages they can and cannot access on your website.
+# 
+# "User-agent: *" means these rules apply to all search engines
+# "Allow: /" means search engines can access all pages
+# "Sitemap:" tells search engines where to find your sitemap (a map of all your pages)
+
+User-agent: *
+Allow: /
+
+# Tell search engines where to find your sitemap (helps them discover all your pages)
+Sitemap: https://marvel-characters-app-five.vercel.app/sitemap.xml
+

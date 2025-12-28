@@ -1,3 +1,4 @@
+// Block: logo
 .logo {
   text-decoration: none;
   display: flex;
@@ -15,22 +16,23 @@
     outline-offset: 4px;
     border-radius: 2px;
   }
-}
 
-.logoSvg {
-  display: block;
-  width: 130px;
-  height: 52px;
-  
-  // Responsive sizing for mobile - maintain aspect ratio
-  @include mobile {
+  // Element: SVG graphic
+  &__svg {
+    display: block;
     width: 130px;
     height: 52px;
-  }
-  
-  // For very small screens
-  @media (max-width: 360px) {
-    width: 110px;
-    height: auto;
+
+    // Responsive sizing for mobile - maintain aspect ratio
+    @include mobile {
+      width: 130px;
+      height: 52px;
+    }
+
+    // For very small screens
+    @media (max-width: 360px) {
+      width: 110px;
+      height: auto;
+    }
   }
 }

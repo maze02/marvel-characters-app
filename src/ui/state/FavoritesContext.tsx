@@ -1,10 +1,14 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import { LocalStorageFavoritesRepository } from '@infrastructure/repositories/LocalStorageFavoritesRepository';
-import { ToggleFavorite } from '@application/character/useCases/ToggleFavorite';
-import { ListFavorites } from '@application/character/useCases/ListFavorites';
-import { ComicVineCharacterRepository } from '@infrastructure/repositories/ComicVineCharacterRepository';
-import { Character } from '@domain/character/entities/Character';
-import { logger } from '@infrastructure/logging/Logger';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
+import { Character } from "@domain/character/entities/Character";
+import { logger } from "@infrastructure/logging/Logger";
+import { useDependencyContainer } from "./DependenciesContext";
 
 interface FavoritesContextValue {
   favoritesCount: number;
@@ -14,43 +18,46 @@ interface FavoritesContextValue {
   getFavoriteCharacters: (characters: Character[]) => Character[];
 }
 
-const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefined);
+const FavoritesContext = createContext<FavoritesContextValue | undefined>(
+  undefined,
+);
 
 /**
  * Favorites Provider
- * 
+ *
  * Manages favorite characters state and persistence.
- * Uses Comic Vine API for character data.
+ *
  */
-export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
 
-  // Initialize repositories and use cases
-  const favoritesRepository = useMemo(() => new LocalStorageFavoritesRepository(), []);
-  const characterRepository = useMemo(() => new ComicVineCharacterRepository(), []);
-  const toggleFavoriteUseCase = useMemo(
-    () => new ToggleFavorite(favoritesRepository),
-    [favoritesRepository]
-  );
-  const listFavoritesUseCase = useMemo(
-    () => new ListFavorites(characterRepository, favoritesRepository),
-    [characterRepository, favoritesRepository]
-  );
+  // Inject dependencies from shared container (Dependency Injection)
+  // This ensures we use the SAME repository instances with SHARED cache
+  const container = useDependencyContainer();
+  const { repositories, useCases } = container;
+
+  // Access use cases from shared container (no local instantiation)
+  const toggleFavoriteUseCase = useCases.toggleFavorite;
+  const listFavoritesUseCase = useCases.listFavorites;
+  const favoritesRepository = repositories.favorites;
 
   // Load favorites count on mount
   const refreshCount = useCallback(async () => {
     try {
       const count = await listFavoritesUseCase.getCount();
       setFavoritesCount(count);
-      
+
       // Load favorite IDs
       const ids = await favoritesRepository.findAll();
       setFavoriteIds(new Set(ids.map((id) => id.value)));
     } catch (error) {
-      logger.error('Failed to load favorites count', error);
+      logger.error("Failed to load favorites count", error);
     }
-  }, [listFavoritesUseCase, favoritesRepository]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     void refreshCount();
@@ -58,14 +65,14 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const isFavorite = useCallback(
     (characterId: number) => favoriteIds.has(characterId),
-    [favoriteIds]
+    [favoriteIds],
   );
 
   const toggleFavorite = useCallback(
     async (characterId: number) => {
       try {
         const newState = await toggleFavoriteUseCase.execute(characterId);
-        
+
         // Update local state
         setFavoriteIds((prev) => {
           const next = new Set(prev);
@@ -76,13 +83,14 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           }
           return next;
         });
-        
+
         setFavoritesCount((prev) => (newState ? prev + 1 : prev - 1));
       } catch (error) {
-        logger.error('Failed to toggle favorite', error, { characterId });
+        logger.error("Failed to toggle favorite", error, { characterId });
       }
     },
-    [toggleFavoriteUseCase]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   /**
@@ -90,9 +98,9 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
    */
   const getFavoriteCharacters = useCallback(
     (characters: Character[]) => {
-      return characters.filter(char => favoriteIds.has(char.id.value));
+      return characters.filter((char) => favoriteIds.has(char.id.value));
     },
-    [favoriteIds]
+    [favoriteIds],
   );
 
   const value = useMemo(
@@ -103,19 +111,30 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       refreshCount,
       getFavoriteCharacters,
     }),
-    [favoritesCount, isFavorite, toggleFavorite, refreshCount, getFavoriteCharacters]
+    [
+      favoritesCount,
+      isFavorite,
+      toggleFavorite,
+      refreshCount,
+      getFavoriteCharacters,
+    ],
   );
 
-  return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
+  return (
+    <FavoritesContext.Provider value={value}>
+      {children}
+    </FavoritesContext.Provider>
+  );
 };
 
 /**
  * Hook to access favorites context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFavorites() {
   const context = useContext(FavoritesContext);
   if (!context) {
-    throw new Error('useFavorites must be used within FavoritesProvider');
+    throw new Error("useFavorites must be used within FavoritesProvider");
   }
   return context;
 }

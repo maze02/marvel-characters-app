@@ -17,6 +17,7 @@ import { ComicVineCharacterMapper } from "@application/character/mappers/ComicVi
 import { ComicVineComicMapper } from "@application/character/mappers/ComicVineComicMapper";
 import { API } from "@config/constants";
 import { logger } from "@infrastructure/logging/Logger";
+import { isApiErrorWithStatus, isCancellationError } from "../http/types";
 
 /**
  * Comic Vine Character Repository
@@ -120,18 +121,14 @@ export class ComicVineCharacterRepository implements CharacterRepository {
       }
 
       return ComicVineCharacterMapper.toDomain(response.results);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Return null for 404 errors (character not found)
-      if (error.statusCode === 404) {
+      if (isApiErrorWithStatus(error) && error.statusCode === 404) {
         return null;
       }
 
       // Don't log cancellation errors as they're expected during navigation/cleanup
-      if (
-        error?.message?.includes("cancelled") ||
-        error?.message?.includes("canceled") ||
-        error?.name === "CanceledError"
-      ) {
+      if (isCancellationError(error)) {
         logger.debug("Request cancelled (expected during navigation)", {
           characterId: id.value,
         });
@@ -147,13 +144,16 @@ export class ComicVineCharacterRepository implements CharacterRepository {
 
   /**
    * Search characters by name
-   * Uses Comic Vine's filter syntax: "publisher:31,name:query"
+   * Uses Comic Vine's filter syntax to find Marvel characters only
    *
-   * @param query - Search query (name filter)
+   * @param query - What to search for (e.g., "Spider")
+   * @param signal - Can cancel the search if needed (optional)
    * @returns List of matching Marvel characters
-   * @throws {ApiError} When the API request fails
    */
-  async searchByName(query: string): Promise<Character[]> {
+  async searchByName(
+    query: string,
+    signal?: AbortSignal,
+  ): Promise<Character[]> {
     try {
       if (!query || query.trim().length === 0) {
         return [];
@@ -177,6 +177,7 @@ export class ComicVineCharacterRepository implements CharacterRepository {
         },
         {
           useCache: true,
+          ...(signal && { signal }),
         },
       );
 
@@ -187,12 +188,9 @@ export class ComicVineCharacterRepository implements CharacterRepository {
       });
 
       return ComicVineCharacterMapper.toDomainList(response.results);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Don't log cancelled requests as errors (expected behavior from debouncing)
-      if (
-        error?.message?.includes("cancel") ||
-        error?.code === "ERR_CANCELED"
-      ) {
+      if (isCancellationError(error)) {
         logger.debug("Search request cancelled (debouncing)", { query });
       } else {
         logger.error("Failed to search characters", error, { query });

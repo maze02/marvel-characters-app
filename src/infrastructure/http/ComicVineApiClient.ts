@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import { config } from "../config/env";
 import { API } from "@config/constants";
 import { logger } from "@infrastructure/logging/Logger";
+import { isCancellationError, isTimeoutError, getErrorMessage } from "./types";
 
 /**
  * Check if running in development mode
@@ -183,7 +184,7 @@ export class ComicVineApiClient {
    */
   async get<T>(
     endpoint: string,
-    params?: Record<string, any>,
+    params?: Record<string, string | number | boolean>,
     options?: {
       useCache?: boolean;
       signal?: AbortSignal;
@@ -225,32 +226,30 @@ export class ComicVineApiClient {
 
       logger.debug("API request", { endpoint, params, fullUrl });
 
-      const response = await this.axios.get<T>(endpoint, {
+      // Execute request with retry logic
+      const response = await this.requestWithRetry<T>(
+        endpoint,
         params,
-        signal: options?.signal || controller.signal,
-      });
+        options?.signal || controller.signal,
+      );
 
       // Record request for rate limiting
       this.rateLimiter.recordRequest();
 
       // Cache response
       if (options?.useCache !== false) {
-        this.setInCache(cacheKey, response.data);
+        this.setInCache(cacheKey, response);
       }
 
       // Clean up controller
       this.abortControllers.delete(cacheKey);
 
-      return response.data;
-    } catch (error: any) {
+      return response;
+    } catch (error: unknown) {
       this.abortControllers.delete(cacheKey);
 
       // Handle both axios.isCancel and CanceledError
-      if (
-        axios.isCancel(error) ||
-        error?.name === "CanceledError" ||
-        error?.code === "ERR_CANCELED"
-      ) {
+      if (axios.isCancel(error) || isCancellationError(error)) {
         logger.debug("Request cancelled", { endpoint });
         throw new ApiError("Request was cancelled");
       }
@@ -260,9 +259,113 @@ export class ComicVineApiClient {
   }
 
   /**
+   * Execute request with automatic retry and exponential backoff
+   * Retries on timeout (ECONNABORTED) and 5xx server errors
+   *
+   * Strategy:
+   * - Attempt 1: Immediate (0ms delay)
+   * - Attempt 2: 1 second delay
+   * - Attempt 3: 2 second delay
+   * - Attempt 4: 4 second delay
+   *
+   * @param endpoint - API endpoint
+   * @param params - Query parameters
+   * @param signal - Abort signal for cancellation
+   * @returns API response data
+   * @throws {ApiError} When all retries exhausted or non-retryable error
+   */
+  private async requestWithRetry<T>(
+    endpoint: string,
+    params: Record<string, string | number | boolean> | undefined,
+    signal: AbortSignal,
+  ): Promise<T> {
+    const MAX_RETRIES = 3;
+    const BASE_DELAY_MS = 1000; // Start with 1 second
+
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const response = await this.axios.get<T>(endpoint, {
+          params,
+          signal,
+        });
+
+        // Success - log if this was a retry
+        if (attempt > 0) {
+          logger.info("Request succeeded after retry", {
+            endpoint,
+            attempt,
+            totalAttempts: attempt + 1,
+          });
+        }
+
+        return response.data;
+      } catch (error: unknown) {
+        lastError = error;
+
+        // Don't retry if request was cancelled
+        if (axios.isCancel(error) || isCancellationError(error)) {
+          throw error;
+        }
+
+        // Check if error is retryable
+        const isTimeout = isTimeoutError(error);
+        const isServerError =
+          axios.isAxiosError(error) &&
+          error.response?.status !== undefined &&
+          error.response.status >= 500 &&
+          error.response.status < 600;
+        const shouldRetry =
+          (isTimeout || isServerError) && attempt < MAX_RETRIES;
+
+        if (!shouldRetry) {
+          // Not retryable or max retries reached
+          throw error;
+        }
+
+        // Calculate exponential backoff delay: 1s, 2s, 4s
+        const delayMs = BASE_DELAY_MS * Math.pow(2, attempt);
+
+        logger.warn("Request failed, retrying with exponential backoff...", {
+          endpoint,
+          attempt: attempt + 1,
+          maxRetries: MAX_RETRIES + 1,
+          nextRetryIn: `${delayMs}ms`,
+          errorType: isTimeout ? "timeout" : "server_error",
+          errorMessage: getErrorMessage(lastError),
+        });
+
+        // Wait before retry (exponential backoff)
+        await this.sleep(delayMs);
+      }
+    }
+
+    // All retries exhausted
+    logger.error("All retry attempts exhausted", {
+      endpoint,
+      totalAttempts: MAX_RETRIES + 1,
+    });
+    throw lastError;
+  }
+
+  /**
+   * Sleep utility for implementing retry delays
+   *
+   * @param ms - Milliseconds to sleep
+   * @returns Promise that resolves after delay
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
    * Cancel a specific request
    */
-  cancelRequest(endpoint: string, params?: Record<string, any>): void {
+  cancelRequest(
+    endpoint: string,
+    params?: Record<string, string | number | boolean>,
+  ): void {
     const cacheKey = this.getCacheKey(endpoint, params);
     const controller = this.abortControllers.get(cacheKey);
     if (controller) {
@@ -296,7 +399,10 @@ export class ComicVineApiClient {
   /**
    * Generate cache key from endpoint and params
    */
-  private getCacheKey(endpoint: string, params?: Record<string, any>): string {
+  private getCacheKey(
+    endpoint: string,
+    params?: Record<string, string | number | boolean>,
+  ): string {
     const sortedParams = params
       ? Object.keys(params)
           .sort()
@@ -354,11 +460,7 @@ export class ComicVineApiClient {
     }
 
     // Check for cancellation errors first (don't log these as errors)
-    if (
-      (error as any)?.name === "CanceledError" ||
-      (error as any)?.code === "ERR_CANCELED" ||
-      (error as any)?.message?.includes("canceled")
-    ) {
+    if (isCancellationError(error)) {
       logger.debug("Request was canceled (expected behavior)");
       return new ApiError("Request was cancelled");
     }
@@ -366,7 +468,7 @@ export class ComicVineApiClient {
     if (axios.isAxiosError(error)) {
       if (error.code === "ECONNABORTED") {
         return new ApiError(
-          "Request timeout - Comic Vine API is slow or unreachable",
+          "Request timeout - The Comic Vine API took too long to respond. This request was automatically retried but still failed. Please try again or check back later.",
           408,
           error,
         );

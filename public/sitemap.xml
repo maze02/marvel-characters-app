@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap.xml
+  
+  This file is like a map of your website for search engines.
+  It tells Google and other search engines:
+  - What pages exist on your site
+  - How important each page is
+  - How often the page content changes
+  - When the page was last updated
+  
+  This helps search engines find and index all your pages faster.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Home page - Main character listing -->
+  <url>
+    <loc>https://marvel-characters-app-five.vercel.app/</loc>
+    <lastmod>2024-12-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Favorites page -->
+  <url>
+    <loc>https://marvel-characters-app-five.vercel.app/favorites</loc>
+    <lastmod>2024-12-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Note: Character detail pages are dynamic and would be added here -->
+  <!-- if you implement dynamic sitemap generation based on your character database -->
+</urlset>
+

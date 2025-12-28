@@ -10,31 +10,31 @@
   @include md {
     padding: $spacing-4 $padding-desktop; // 16px vertical, 48px horizontal on tablet+
   }
-}
 
-.content {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-}
+  &__content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+  }
 
-.favoritesButton {
-  @include button-reset;
-  color: $color-primary;
-  @include flex-center-vertical;
-  position: relative;
-  flex-shrink: 0;
-  @include hover-scale(1.05);
-  @include focus-outline($color-white, 4px);
-}
+  &__favoritesButton {
+    @include button-reset;
+    color: $color-primary;
+    @include flex-center-vertical;
+    position: relative;
+    flex-shrink: 0;
+    @include hover-scale(1.05);
+    @include focus-outline($color-white, 4px);
+  }
 
-.favoritesCount {
-  font-size: 18px;
-  font-weight: $font-weight-bold;
-  color: $color-white;
-  min-width: 20px;
-  text-align: left;
-  margin-left: $spacing-1;
+  &__favoritesCount {
+    font-size: 18px;
+    font-weight: $font-weight-bold;
+    color: $color-white;
+    min-width: 20px;
+    text-align: left;
+    margin-left: $spacing-1;
+  }
 }
