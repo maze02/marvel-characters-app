@@ -398,7 +398,9 @@ describe("Logger", () => {
 
     it("should return silent for unknown log level", () => {
       // Arrange
-      mockedLog.getLevel.mockReturnValue(999 as any); // Unknown level
+      mockedLog.getLevel.mockReturnValue(
+        999 as unknown as ReturnType<typeof mockedLog.getLevel>,
+      ); // Unknown level
 
       // Act
       const level = logger.getLevel();

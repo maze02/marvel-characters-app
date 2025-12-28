@@ -278,7 +278,7 @@ describe("ComicVineCharacterMapper", () => {
       it("handles missing issue_credits", () => {
         // Arrange
         const apiResponse = createValidApiResponse();
-        delete (apiResponse as any).issue_credits;
+        delete apiResponse.issue_credits;
 
         // Act
         const character = ComicVineCharacterMapper.toDomain(apiResponse);

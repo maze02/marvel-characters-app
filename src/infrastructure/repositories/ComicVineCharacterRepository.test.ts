@@ -79,8 +79,8 @@ describe("ComicVineCharacterRepository", () => {
   beforeEach(() => {
     mockApiClient = {
       get: jest.fn(),
-    } as any;
-    repository = new ComicVineCharacterRepository(mockApiClient as any);
+    } as unknown as jest.Mocked<ComicVineApiClient>;
+    repository = new ComicVineCharacterRepository(mockApiClient);
   });
 
   afterEach(() => {
@@ -149,8 +149,11 @@ describe("ComicVineCharacterRepository", () => {
 
     it("returns null when API returns 404 error", async () => {
       // Arrange
-      const error = new Error("Not Found");
-      (error as any).statusCode = 404;
+      interface ErrorWithStatusCode extends Error {
+        statusCode: number;
+      }
+      const error = new Error("Not Found") as ErrorWithStatusCode;
+      error.statusCode = 404;
       (mockApiClient.get as jest.Mock).mockRejectedValue(error);
 
       const characterId = new CharacterId(1699);

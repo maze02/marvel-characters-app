@@ -274,7 +274,7 @@ describe("ComicVineComicMapper", () => {
       it("handles null cover_date", () => {
         // Arrange
         const issueResponse = createValidIssueResponse({
-          cover_date: null as any,
+          cover_date: null as unknown as string,
         });
 
         // Act

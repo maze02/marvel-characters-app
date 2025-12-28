@@ -1,20 +1,21 @@
 /**
  * LocalStorageFavoritesRepository Tests
- * 
+ *
  * Comprehensive tests for LocalStorage-based favorites repository covering
  * CRUD operations, validation, migration, error handling, and edge cases.
  */
 
-import { LocalStorageFavoritesRepository } from './LocalStorageFavoritesRepository';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
-import { StorageAdapter } from '../storage/StorageAdapter';
-import { logger } from '@infrastructure/logging/Logger';
+import { LocalStorageFavoritesRepository } from "./LocalStorageFavoritesRepository";
+import { CharacterId } from "@domain/character/valueObjects/CharacterId";
+import { StorageAdapter } from "../storage/StorageAdapter";
+import { logger } from "@infrastructure/logging/Logger";
+import { FavoritesData } from "../storage/StorageSchema";
 
 // Mock dependencies
-jest.mock('../storage/StorageAdapter');
-jest.mock('@infrastructure/logging/Logger');
+jest.mock("../storage/StorageAdapter");
+jest.mock("@infrastructure/logging/Logger");
 
-describe('LocalStorageFavoritesRepository', () => {
+describe("LocalStorageFavoritesRepository", () => {
   let repository: LocalStorageFavoritesRepository;
   let mockStorage: jest.Mocked<StorageAdapter>;
 
@@ -36,13 +37,13 @@ describe('LocalStorageFavoritesRepository', () => {
     jest.clearAllMocks();
   });
 
-  describe('add', () => {
-    it('should add a new favorite', async () => {
+  describe("add", () => {
+    it("should add a new favorite", async () => {
       // Arrange: Empty favorites
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const characterId = new CharacterId(1011334);
@@ -52,20 +53,20 @@ describe('LocalStorageFavoritesRepository', () => {
 
       // Assert
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           version: 1,
           favorites: [1011334],
-        })
+        }),
       );
     });
 
-    it('should not add duplicate favorites', async () => {
+    it("should not add duplicate favorites", async () => {
       // Arrange: Already favorited
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const characterId = new CharacterId(1011334);
@@ -77,37 +78,37 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(mockStorage.set).not.toHaveBeenCalled();
     });
 
-    it('should add multiple favorites', async () => {
+    it("should add multiple favorites", async () => {
       // Start with one favorite
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       await repository.add(new CharacterId(1009610)); // Spider-Man
 
       // Should now have two favorites
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           favorites: [1011334, 1009610],
-        })
+        }),
       );
     });
 
-    it('should update lastModified when adding', async () => {
+    it("should update lastModified when adding", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const before = Date.now();
       await repository.add(new CharacterId(1011334));
       const after = Date.now();
 
-      const savedData = mockStorage.set.mock.calls[0]?.[1] as any;
+      const savedData = mockStorage.set.mock.calls[0]?.[1] as FavoritesData;
       const lastModified = new Date(savedData?.lastModified).getTime();
 
       expect(lastModified).toBeGreaterThanOrEqual(before);
@@ -115,13 +116,13 @@ describe('LocalStorageFavoritesRepository', () => {
     });
   });
 
-  describe('remove', () => {
-    it('should remove a favorite', async () => {
+  describe("remove", () => {
+    it("should remove a favorite", async () => {
       // Arrange
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334, 1009610],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       // Act
@@ -129,73 +130,73 @@ describe('LocalStorageFavoritesRepository', () => {
 
       // Assert
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           favorites: [1009610],
-        })
+        }),
       );
     });
 
-    it('should handle removing non-existent favorite', async () => {
+    it("should handle removing non-existent favorite", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       await repository.remove(new CharacterId(9999));
 
       // Should still save (with no changes to favorites array)
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           favorites: [1011334],
-        })
+        }),
       );
     });
 
-    it('should update lastModified when removing', async () => {
+    it("should update lastModified when removing", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const before = Date.now();
       await repository.remove(new CharacterId(1011334));
       const after = Date.now();
 
-      const savedData = mockStorage.set.mock.calls[0]?.[1] as any;
+      const savedData = mockStorage.set.mock.calls[0]?.[1] as FavoritesData;
       const lastModified = new Date(savedData?.lastModified).getTime();
 
       expect(lastModified).toBeGreaterThanOrEqual(before);
       expect(lastModified).toBeLessThanOrEqual(after);
     });
 
-    it('should handle removing from empty list', async () => {
+    it("should handle removing from empty list", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       await repository.remove(new CharacterId(1011334));
 
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           favorites: [],
-        })
+        }),
       );
     });
   });
 
-  describe('findAll', () => {
-    it('should return all favorites as CharacterIds', async () => {
+  describe("findAll", () => {
+    it("should return all favorites as CharacterIds", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334, 1009610, 1009368],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.findAll();
@@ -207,11 +208,11 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(result[2]?.value).toBe(1009368);
     });
 
-    it('should return empty array when no favorites', async () => {
+    it("should return empty array when no favorites", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.findAll();
@@ -219,7 +220,7 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(result).toEqual([]);
     });
 
-    it('should return empty array when storage is null', async () => {
+    it("should return empty array when storage is null", async () => {
       mockStorage.get.mockReturnValue(null);
 
       const result = await repository.findAll();
@@ -228,12 +229,12 @@ describe('LocalStorageFavoritesRepository', () => {
     });
   });
 
-  describe('contains', () => {
-    it('should return true if favorite exists', async () => {
+  describe("contains", () => {
+    it("should return true if favorite exists", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334, 1009610],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.contains(new CharacterId(1011334));
@@ -241,11 +242,11 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false if favorite does not exist', async () => {
+    it("should return false if favorite does not exist", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.contains(new CharacterId(9999));
@@ -253,11 +254,11 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false when storage is empty', async () => {
+    it("should return false when storage is empty", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.contains(new CharacterId(1011334));
@@ -266,12 +267,12 @@ describe('LocalStorageFavoritesRepository', () => {
     });
   });
 
-  describe('count', () => {
-    it('should return the number of favorites', async () => {
+  describe("count", () => {
+    it("should return the number of favorites", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334, 1009610, 1009368],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.count();
@@ -279,11 +280,11 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(result).toBe(3);
     });
 
-    it('should return 0 when no favorites', async () => {
+    it("should return 0 when no favorites", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.count();
@@ -291,7 +292,7 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(result).toBe(0);
     });
 
-    it('should return 0 when storage is null', async () => {
+    it("should return 0 when storage is null", async () => {
       mockStorage.get.mockReturnValue(null);
 
       const result = await repository.count();
@@ -300,40 +301,40 @@ describe('LocalStorageFavoritesRepository', () => {
     });
   });
 
-  describe('clear', () => {
-    it('should clear all favorites', async () => {
+  describe("clear", () => {
+    it("should clear all favorites", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334, 1009610],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       await repository.clear();
 
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           version: 1,
           favorites: [],
-        })
+        }),
       );
     });
 
-    it('should create default data structure when clearing', async () => {
+    it("should create default data structure when clearing", async () => {
       await repository.clear();
 
-      const savedData = mockStorage.set.mock.calls[0]?.[1] as any;
-      expect(savedData).toHaveProperty('version');
-      expect(savedData).toHaveProperty('favorites');
-      expect(savedData).toHaveProperty('lastModified');
+      const savedData = mockStorage.set.mock.calls[0]?.[1] as FavoritesData;
+      expect(savedData).toHaveProperty("version");
+      expect(savedData).toHaveProperty("favorites");
+      expect(savedData).toHaveProperty("lastModified");
       expect(savedData?.favorites).toEqual([]);
     });
   });
 
-  describe('Error handling', () => {
-    it('should handle storage errors gracefully', async () => {
+  describe("Error handling", () => {
+    it("should handle storage errors gracefully", async () => {
       mockStorage.get.mockImplementation(() => {
-        throw new Error('Storage error');
+        throw new Error("Storage error");
       });
 
       // Should not throw, should return default data
@@ -341,12 +342,12 @@ describe('LocalStorageFavoritesRepository', () => {
 
       expect(result).toEqual([]);
       expect(logger.error).toHaveBeenCalledWith(
-        'Failed to load favorites',
-        expect.any(Error)
+        "Failed to load favorites",
+        expect.any(Error),
       );
     });
 
-    it('should handle invalid data structure', async () => {
+    it("should handle invalid data structure", async () => {
       mockStorage.get.mockReturnValue({
         // Invalid structure (missing version)
         favorites: [1011334],
@@ -356,12 +357,12 @@ describe('LocalStorageFavoritesRepository', () => {
 
       expect(result).toEqual([]);
       expect(logger.warn).toHaveBeenCalledWith(
-        'Invalid favorites data structure, resetting to default'
+        "Invalid favorites data structure, resetting to default",
       );
     });
 
-    it('should handle corrupted JSON', async () => {
-      mockStorage.get.mockReturnValue('not an object');
+    it("should handle corrupted JSON", async () => {
+      mockStorage.get.mockReturnValue("not an object");
 
       const result = await repository.findAll();
 
@@ -369,30 +370,30 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(logger.warn).toHaveBeenCalled();
     });
 
-    it('should recover from storage errors and continue operations', async () => {
+    it("should recover from storage errors and continue operations", async () => {
       // First call throws error
       mockStorage.get.mockImplementationOnce(() => {
-        throw new Error('Storage error');
+        throw new Error("Storage error");
       });
 
       // Should still allow adding favorites
       await repository.add(new CharacterId(1011334));
 
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           favorites: [1011334],
-        })
+        }),
       );
     });
   });
 
-  describe('Data validation and migration', () => {
-    it('should validate data structure before using', async () => {
+  describe("Data validation and migration", () => {
+    it("should validate data structure before using", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       await repository.findAll();
@@ -401,12 +402,12 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(logger.warn).not.toHaveBeenCalled();
     });
 
-    it('should migrate old data format if needed', async () => {
+    it("should migrate old data format if needed", async () => {
       // Simulate old data format that needs migration
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [1011334, 1009610],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.findAll();
@@ -414,28 +415,28 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(result).toHaveLength(2);
     });
 
-    it('should create default data when storage is null', async () => {
+    it("should create default data when storage is null", async () => {
       mockStorage.get.mockReturnValue(null);
 
       await repository.add(new CharacterId(1011334));
 
       expect(mockStorage.set).toHaveBeenCalledWith(
-        'marvel_favorites',
+        "marvel_favorites",
         expect.objectContaining({
           version: 1,
           favorites: [1011334],
-        })
+        }),
       );
     });
   });
 
-  describe('Integration scenarios', () => {
-    it('should handle add-remove-add cycle', async () => {
+  describe("Integration scenarios", () => {
+    it("should handle add-remove-add cycle", async () => {
       // Start empty
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const characterId = new CharacterId(1011334);
@@ -467,11 +468,11 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(mockStorage.set).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle rapid operations', async () => {
+    it("should handle rapid operations", async () => {
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: [],
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       // Add multiple favorites rapidly
@@ -485,13 +486,13 @@ describe('LocalStorageFavoritesRepository', () => {
       expect(mockStorage.set).toHaveBeenCalled();
     });
 
-    it('should handle large favorite lists', async () => {
+    it("should handle large favorite lists", async () => {
       const largeFavoritesList = Array.from({ length: 1000 }, (_, i) => i + 1);
 
       mockStorage.get.mockReturnValue({
         version: 1,
         favorites: largeFavoritesList,
-        lastModified: '2024-01-01T00:00:00.000Z',
+        lastModified: "2024-01-01T00:00:00.000Z",
       });
 
       const result = await repository.findAll();
@@ -502,14 +503,14 @@ describe('LocalStorageFavoritesRepository', () => {
     });
   });
 
-  describe('Constructor', () => {
-    it('should create repository with default storage adapter', () => {
+  describe("Constructor", () => {
+    it("should create repository with default storage adapter", () => {
       const repo = new LocalStorageFavoritesRepository();
 
       expect(repo).toBeInstanceOf(LocalStorageFavoritesRepository);
     });
 
-    it('should use provided storage adapter', () => {
+    it("should use provided storage adapter", () => {
       const customStorage = new StorageAdapter();
       const repo = new LocalStorageFavoritesRepository(customStorage);
 
