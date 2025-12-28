@@ -21,8 +21,8 @@ export const PAGINATION = {
  * API Configuration
  */
 export const API = {
-  /** HTTP request timeout in milliseconds (15 seconds) */
-  REQUEST_TIMEOUT: 15000,
+  /** HTTP request timeout in milliseconds (20 seconds) - increased for slower Comic Vine API responses */
+  REQUEST_TIMEOUT: 20000,
   /** Cache time-to-live in milliseconds (5 minutes) */
   CACHE_TTL: 5 * 60 * 1000,
   /** Default limit for search results */

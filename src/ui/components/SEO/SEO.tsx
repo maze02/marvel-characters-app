@@ -68,9 +68,10 @@ export const SEO: React.FC<SEOProps> = ({ structuredData, ...metadata }) => {
   // Note: We list individual properties instead of the whole `metadata` object
   // to avoid infinite re-renders (objects are compared by reference, not value).
   // This is intentional and correct behavior.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     seo.updateMetadata(metadata);
+    // metadata object is intentionally excluded to avoid infinite re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     seo,
     metadata.title,

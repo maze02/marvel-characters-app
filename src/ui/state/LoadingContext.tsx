@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -14,11 +20,13 @@ export interface LoadingProviderProps {
 
 /**
  * LoadingProvider
- * 
+ *
  * Provides global loading state management for the application.
  * Used to control the navigation loading bar visibility.
  */
-export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
+export const LoadingProvider: React.FC<LoadingProviderProps> = ({
+  children,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const startLoading = useCallback(() => {
@@ -39,10 +47,11 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
 /**
  * Hook to access loading state and controls
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLoading = (): LoadingContextType => {
   const context = useContext(LoadingContext);
   if (!context) {
-    throw new Error('useLoading must be used within a LoadingProvider');
+    throw new Error("useLoading must be used within a LoadingProvider");
   }
   return context;
 };

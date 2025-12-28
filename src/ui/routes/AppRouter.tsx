@@ -70,8 +70,10 @@ const NavigationTracker: React.FC = () => {
  *
  * Contains routes and navigation tracking.
  * Suspense wrapper shows a loading indicator while page code is downloading.
+ *
+ * EXPORTED for testing purposes - tests can wrap this in MemoryRouter
  */
-const RouterContent: React.FC = () => {
+export const RouterContent: React.FC = () => {
   const { isLoading } = useLoading();
 
   return (

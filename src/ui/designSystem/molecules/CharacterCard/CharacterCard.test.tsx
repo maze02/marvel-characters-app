@@ -1,34 +1,35 @@
 /**
  * CharacterCard Tests
- * 
+ *
  * Tests character card rendering, navigation, and favorite interactions.
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { CharacterCard } from './CharacterCard';
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { BrowserRouter } from "react-router-dom";
+import { CharacterCard } from "./CharacterCard";
 
 // Mock child components
-jest.mock('../FavoriteButton/FavoriteButton', () => ({
+jest.mock("../FavoriteButton/FavoriteButton", () => ({
   FavoriteButton: ({ onToggle, isFavorite, characterName }: any) => (
     <button
       onClick={onToggle}
       data-testid="favorite-button"
-      aria-label={`${isFavorite ? 'Remove' : 'Add'} ${characterName} to favorites`}
+      aria-label={`${isFavorite ? "Remove" : "Add"} ${characterName} to favorites`}
     >
-      {isFavorite ? 'Favorited' : 'Not Favorited'}
+      {isFavorite ? "Favorited" : "Not Favorited"}
     </button>
   ),
 }));
 
-describe('CharacterCard', () => {
+describe("CharacterCard", () => {
   /**
    * Default props for testing
    */
   const defaultProps = {
     id: 123,
-    name: 'Spider-Man',
-    imageUrl: 'https://example.com/spiderman.jpg',
+    name: "Spider-Man",
+    imageUrl: "https://example.com/spiderman.jpg",
     isFavorite: false,
     onToggleFavorite: jest.fn(),
   };
@@ -38,9 +39,11 @@ describe('CharacterCard', () => {
    */
   const renderCard = (props = {}) => {
     return render(
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <CharacterCard {...defaultProps} {...props} />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
   };
 
@@ -48,99 +51,103 @@ describe('CharacterCard', () => {
     jest.clearAllMocks();
   });
 
-  describe('Rendering', () => {
-    it('should render character name', () => {
+  describe("Rendering", () => {
+    it("should render character name", () => {
       renderCard();
 
-      expect(screen.getByText('Spider-Man')).toBeInTheDocument();
+      expect(screen.getByText("Spider-Man")).toBeInTheDocument();
     });
 
-    it('should render character image with correct src', () => {
+    it("should render character image with correct src", () => {
       renderCard();
 
-      const image = screen.getByRole('img');
-      expect(image).toHaveAttribute('src', 'https://example.com/spiderman.jpg');
+      const image = screen.getByRole("img");
+      expect(image).toHaveAttribute("src", "https://example.com/spiderman.jpg");
     });
 
-    it('should render image with lazy loading', () => {
+    it("should render image with lazy loading", () => {
       renderCard();
 
-      const image = screen.getByRole('img');
-      expect(image).toHaveAttribute('loading', 'lazy');
+      const image = screen.getByRole("img");
+      expect(image).toHaveAttribute("loading", "lazy");
     });
 
-    it('should render as article element', () => {
+    it("should render as article element", () => {
       const { container } = renderCard();
 
-      expect(container.querySelector('article')).toBeInTheDocument();
+      expect(container.querySelector("article")).toBeInTheDocument();
     });
   });
 
-  describe('Navigation', () => {
-    it('should render link to character detail page', () => {
+  describe("Navigation", () => {
+    it("should render link to character detail page", () => {
       renderCard();
 
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/character/123');
+      const link = screen.getByRole("link");
+      expect(link).toHaveAttribute("href", "/character/123");
     });
 
-    it('should render correct link for different character IDs', () => {
+    it("should render correct link for different character IDs", () => {
       renderCard({ id: 456 });
 
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/character/456');
+      const link = screen.getByRole("link");
+      expect(link).toHaveAttribute("href", "/character/456");
     });
   });
 
-  describe('Favorite functionality', () => {
-    it('should render favorite button', () => {
+  describe("Favorite functionality", () => {
+    it("renders favorite button", () => {
       renderCard();
 
-      expect(screen.getByTestId('favorite-button')).toBeInTheDocument();
+      expect(screen.getByTestId("favorite-button")).toBeInTheDocument();
     });
 
-    it('should show not favorited state by default', () => {
+    it("shows not favorited state by default", () => {
       renderCard({ isFavorite: false });
 
-      expect(screen.getByText('Not Favorited')).toBeInTheDocument();
+      expect(screen.getByText("Not Favorited")).toBeInTheDocument();
     });
 
-    it('should show favorited state when isFavorite is true', () => {
+    it("shows favorited state when isFavorite is true", () => {
       renderCard({ isFavorite: true });
 
-      expect(screen.getByText('Favorited')).toBeInTheDocument();
+      expect(screen.getByText("Favorited")).toBeInTheDocument();
     });
 
-    it('should call onToggleFavorite when favorite button clicked', () => {
+    it("calls onToggleFavorite when user clicks favorite button", async () => {
+      const user = userEvent.setup();
       const mockToggle = jest.fn();
       renderCard({ onToggleFavorite: mockToggle });
 
-      fireEvent.click(screen.getByTestId('favorite-button'));
+      await user.click(screen.getByTestId("favorite-button"));
 
       expect(mockToggle).toHaveBeenCalledTimes(1);
     });
 
-    it('should include character name in favorite button aria-label', () => {
-      renderCard({ name: 'Iron Man' });
+    it("includes character name in favorite button aria-label", () => {
+      renderCard({ name: "Iron Man" });
 
-      const button = screen.getByTestId('favorite-button');
-      expect(button).toHaveAttribute('aria-label', expect.stringContaining('Iron Man'));
+      const button = screen.getByTestId("favorite-button");
+      expect(button).toHaveAttribute(
+        "aria-label",
+        expect.stringContaining("Iron Man"),
+      );
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have descriptive heading for character name', () => {
+  describe("Accessibility", () => {
+    it("should have descriptive heading for character name", () => {
       renderCard();
 
-      const heading = screen.getByRole('heading', { name: 'Spider-Man' });
+      const heading = screen.getByRole("heading", { name: "Spider-Man" });
       expect(heading).toBeInTheDocument();
     });
 
-    it('should have empty alt text for decorative image', () => {
+    it("should have empty alt text for decorative image", () => {
       renderCard();
 
-      const image = screen.getByRole('img');
-      expect(image).toHaveAttribute('alt', '');
+      const image = screen.getByRole("img");
+      expect(image).toHaveAttribute("alt", "");
     });
   });
 });

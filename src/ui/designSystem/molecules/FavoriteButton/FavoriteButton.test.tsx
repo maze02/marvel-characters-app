@@ -1,25 +1,28 @@
 /**
  * FavoriteButton Tests
- * 
+ *
  * Tests favorite button rendering, toggle interaction, and accessibility.
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
-import { FavoriteButton } from './FavoriteButton';
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { FavoriteButton } from "./FavoriteButton";
 
 // Mock Icon component
-jest.mock('@ui/designSystem/atoms/Icon/Icon', () => ({
-  Icon: ({ name }: { name: string }) => <span data-testid={`icon-${name}`}>{name}</span>,
+jest.mock("@ui/designSystem/atoms/Icon/Icon", () => ({
+  Icon: ({ name }: { name: string }) => (
+    <span data-testid={`icon-${name}`}>{name}</span>
+  ),
 }));
 
-describe('FavoriteButton', () => {
+describe("FavoriteButton", () => {
   /**
    * Default props for testing
    */
   const defaultProps = {
     isFavorite: false,
     onToggle: jest.fn(),
-    characterName: 'Spider-Man',
+    characterName: "Spider-Man",
   };
 
   /**
@@ -33,119 +36,135 @@ describe('FavoriteButton', () => {
     jest.clearAllMocks();
   });
 
-  describe('Rendering', () => {
-    it('should render button element', () => {
+  describe("Rendering", () => {
+    it("should render button element", () => {
       renderButton();
 
-      expect(screen.getByRole('button')).toBeInTheDocument();
+      expect(screen.getByRole("button")).toBeInTheDocument();
     });
 
-    it('should render unfilled heart when not favorite', () => {
+    it("should render unfilled heart when not favorite", () => {
       renderButton({ isFavorite: false });
 
-      expect(screen.getByTestId('icon-heart')).toBeInTheDocument();
+      expect(screen.getByTestId("icon-heart")).toBeInTheDocument();
     });
 
-    it('should render filled heart when favorite', () => {
+    it("should render filled heart when favorite", () => {
       renderButton({ isFavorite: true });
 
-      expect(screen.getByTestId('icon-heart-filled')).toBeInTheDocument();
+      expect(screen.getByTestId("icon-heart-filled")).toBeInTheDocument();
     });
   });
 
-  describe('Size variants', () => {
-    it('should render with small size', () => {
-      renderButton({ size: 'small' });
+  describe("Size variants", () => {
+    it("should render with small size", () => {
+      renderButton({ size: "small" });
 
-      expect(screen.getByRole('button')).toBeInTheDocument();
+      expect(screen.getByRole("button")).toBeInTheDocument();
     });
 
-    it('should render with medium size (default)', () => {
-      renderButton({ size: 'medium' });
+    it("should render with medium size (default)", () => {
+      renderButton({ size: "medium" });
 
-      expect(screen.getByRole('button')).toBeInTheDocument();
+      expect(screen.getByRole("button")).toBeInTheDocument();
     });
 
-    it('should render without size prop', () => {
+    it("should render without size prop", () => {
       render(<FavoriteButton {...defaultProps} />);
 
-      expect(screen.getByRole('button')).toBeInTheDocument();
+      expect(screen.getByRole("button")).toBeInTheDocument();
     });
   });
 
-  describe('Toggle interaction', () => {
-    it('should call onToggle when clicked', () => {
+  describe("Toggle interaction", () => {
+    it("calls onToggle when user clicks button", async () => {
+      const user = userEvent.setup();
       const mockToggle = jest.fn();
       renderButton({ onToggle: mockToggle });
 
-      fireEvent.click(screen.getByRole('button'));
+      await user.click(screen.getByRole("button"));
 
       expect(mockToggle).toHaveBeenCalledTimes(1);
     });
 
-    it('should call onToggle when already favorited', () => {
+    it("calls onToggle when character is already favorited", async () => {
+      const user = userEvent.setup();
       const mockToggle = jest.fn();
       renderButton({ isFavorite: true, onToggle: mockToggle });
 
-      fireEvent.click(screen.getByRole('button'));
+      await user.click(screen.getByRole("button"));
 
       expect(mockToggle).toHaveBeenCalledTimes(1);
     });
 
-    it('should stop event propagation', () => {
+    it("stops event propagation to parent elements", async () => {
+      const user = userEvent.setup();
       const mockParentClick = jest.fn();
       const mockToggle = jest.fn();
 
       render(
-        <div onClick={mockParentClick}>
+        <button
+          type="button"
+          onClick={mockParentClick}
+          style={{ padding: "20px" }}
+        >
           <FavoriteButton {...defaultProps} onToggle={mockToggle} />
-        </div>
+        </button>,
       );
 
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
+      const favoriteButton = screen.getAllByRole("button")[1]!; // Get the FavoriteButton (second button)
+      await user.click(favoriteButton);
 
       expect(mockToggle).toHaveBeenCalledTimes(1);
       // Button should stop propagation to prevent card navigation
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have descriptive aria-label when not favorite', () => {
-      renderButton({ isFavorite: false, characterName: 'Iron Man' });
+  describe("Accessibility", () => {
+    it("should have descriptive aria-label when not favorite", () => {
+      renderButton({ isFavorite: false, characterName: "Iron Man" });
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('aria-label', 'Add Iron Man to favorites');
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-label", "Add Iron Man to favorites");
     });
 
-    it('should have descriptive aria-label when favorite', () => {
-      renderButton({ isFavorite: true, characterName: 'Thor' });
+    it("should have descriptive aria-label when favorite", () => {
+      renderButton({ isFavorite: true, characterName: "Thor" });
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('aria-label', 'Remove Thor from favorites');
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute(
+        "aria-label",
+        "Remove Thor from favorites",
+      );
     });
 
-    it('should have button type', () => {
+    it("should have button type", () => {
       renderButton();
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('type', 'button');
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("type", "button");
     });
   });
 
-  describe('Character name handling', () => {
-    it('should handle long character names', () => {
-      renderButton({ characterName: 'Spider-Man (Peter Parker)' });
+  describe("Character name handling", () => {
+    it("should handle long character names", () => {
+      renderButton({ characterName: "Spider-Man (Peter Parker)" });
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('aria-label', expect.stringContaining('Spider-Man (Peter Parker)'));
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute(
+        "aria-label",
+        expect.stringContaining("Spider-Man (Peter Parker)"),
+      );
     });
 
-    it('should handle special characters in name', () => {
+    it("should handle special characters in name", () => {
       renderButton({ characterName: "T'Challa" });
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('aria-label', expect.stringContaining("T'Challa"));
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute(
+        "aria-label",
+        expect.stringContaining("T'Challa"),
+      );
     });
   });
 });

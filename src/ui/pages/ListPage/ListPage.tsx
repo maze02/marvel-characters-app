@@ -11,6 +11,10 @@ import { Character } from "@domain/character/entities/Character";
 import { PAGINATION, UI } from "@config/constants";
 import { config } from "@infrastructure/config/env";
 import { logger } from "@infrastructure/logging/Logger";
+import {
+  isCancellationError,
+  getErrorMessage,
+} from "@infrastructure/http/types";
 import { routes } from "@ui/routes/routes";
 import styles from "./ListPage.module.scss";
 
@@ -53,12 +57,15 @@ export const ListPage: React.FC = () => {
   );
 
   // Sync infinite scroll loading state with global loading bar
+  // Sync loading state from infinite scroll
   useEffect(() => {
     if (isInfiniteScrollLoading && !searchQuery) {
       startLoading();
     } else if (!searchQuery) {
       stopLoading();
     }
+    // startLoading/stopLoading are stable context functions
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInfiniteScrollLoading, searchQuery]);
 
   // Handle search - only runs when debouncedQuery changes (not on every keystroke!)
@@ -106,13 +113,9 @@ export const ListPage: React.FC = () => {
             requestId,
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Ignore errors from aborted requests (expected behavior)
-        if (
-          abortController.signal.aborted ||
-          error?.name === "AbortError" ||
-          error?.message?.includes("abort")
-        ) {
+        if (abortController.signal.aborted || isCancellationError(error)) {
           logger.debug("Search aborted (expected)", {
             query: debouncedQuery,
             requestId,
@@ -121,10 +124,7 @@ export const ListPage: React.FC = () => {
         }
 
         // Don't log cancelled requests as errors (expected behavior from debouncing)
-        if (
-          error?.message?.includes("cancel") ||
-          error?.code === "ERR_CANCELED"
-        ) {
+        if (isCancellationError(error)) {
           logger.debug("Search request cancelled (debouncing)", {
             query: debouncedQuery,
             requestId,
@@ -140,11 +140,12 @@ export const ListPage: React.FC = () => {
           });
 
           // Set user-friendly error message
-          if (error?.message?.includes("timeout")) {
+          const errorMessage = getErrorMessage(error);
+          if (errorMessage.includes("timeout")) {
             setSearchError(
               "The search is taking too long. The Comic Vine API might be slow right now. Please try again.",
             );
-          } else if (error?.message?.includes("rate limit")) {
+          } else if (errorMessage.includes("rate limit")) {
             setSearchError(
               "Too many requests. Please wait a moment and try again.",
             );

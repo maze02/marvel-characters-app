@@ -152,6 +152,30 @@ export const DetailPage: React.FC = () => {
     COMICS_PAGE_SIZE,
   ]);
 
+  /**
+   * Deduplicates comics array by ID
+   * Ensures React keys remain unique even if API returns duplicates
+   *
+   * @param existingComics - Current comics in state
+   * @param newComics - Newly fetched comics to append
+   * @returns Deduplicated array maintaining original order
+   */
+  const deduplicateComics = (
+    existingComics: Comic[],
+    newComics: Comic[],
+  ): Comic[] => {
+    // Create a Set of existing IDs for O(1) lookup
+    const existingIds = new Set(existingComics.map((comic) => comic.id));
+
+    // Filter out duplicates from new comics
+    const uniqueNewComics = newComics.filter(
+      (comic) => !existingIds.has(comic.id),
+    );
+
+    // Append only unique comics
+    return [...existingComics, ...uniqueNewComics];
+  };
+
   // Load more comics handler (true pagination - fetches from API)
   const loadMoreComics = async () => {
     if (loadingMoreComics || !hasMoreComics || !id) return;
@@ -165,8 +189,8 @@ export const DetailPage: React.FC = () => {
         limit: COMICS_PAGE_SIZE,
       });
 
-      // Append to existing comics
-      setComics((prev) => [...prev, ...nextPage]);
+      // Append to existing comics with deduplication to prevent React key warnings
+      setComics((prev) => deduplicateComics(prev, nextPage));
       setComicsOffset((prev) => prev + COMICS_PAGE_SIZE);
 
       // Check if there are more

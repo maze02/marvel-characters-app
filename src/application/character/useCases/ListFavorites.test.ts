@@ -1,20 +1,19 @@
-// @ts-nocheck - Test file with mock data
 /**
  * ListFavorites Tests
- * 
+ *
  * Tests for listing favorited characters, covering empty states,
  * multiple favorites, error handling, and count/check operations.
  */
 
-import { ListFavorites } from './ListFavorites';
-import { CharacterRepository } from '@domain/character/ports/CharacterRepository';
-import { FavoritesRepository } from '@domain/character/ports/FavoritesRepository';
-import { Character } from '@domain/character/entities/Character';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
-import { CharacterName } from '@domain/character/valueObjects/CharacterName';
-import { ImageUrl } from '@domain/character/valueObjects/ImageUrl';
+import { ListFavorites } from "./ListFavorites";
+import { CharacterRepository } from "@domain/character/ports/CharacterRepository";
+import { FavoritesRepository } from "@domain/character/ports/FavoritesRepository";
+import { Character } from "@domain/character/entities/Character";
+import { CharacterId } from "@domain/character/valueObjects/CharacterId";
+import { CharacterName } from "@domain/character/valueObjects/CharacterName";
+import { ImageUrl } from "@domain/character/valueObjects/ImageUrl";
 
-describe('ListFavorites', () => {
+describe("ListFavorites", () => {
   let useCase: ListFavorites;
   let mockCharacterRepository: jest.Mocked<CharacterRepository>;
   let mockFavoritesRepository: jest.Mocked<FavoritesRepository>;
@@ -25,24 +24,24 @@ describe('ListFavorites', () => {
     mockCharacters = [
       new Character({
         id: new CharacterId(1009610),
-        name: new CharacterName('Spider-Man'),
-        description: 'Friendly neighborhood Spider-Man',
-        thumbnail: new ImageUrl('http://example.com/spiderman', 'jpg'),
-        modifiedDate: new Date('2024-01-01'),
+        name: new CharacterName("Spider-Man"),
+        description: "Friendly neighborhood Spider-Man",
+        thumbnail: new ImageUrl("http://example.com/spiderman", "jpg"),
+        modifiedDate: new Date("2024-01-01"),
       }),
       new Character({
         id: new CharacterId(1009368),
-        name: new CharacterName('Iron Man'),
-        description: 'Genius billionaire',
-        thumbnail: new ImageUrl('http://example.com/ironman', 'jpg'),
-        modifiedDate: new Date('2024-01-01'),
+        name: new CharacterName("Iron Man"),
+        description: "Genius billionaire",
+        thumbnail: new ImageUrl("http://example.com/ironman", "jpg"),
+        modifiedDate: new Date("2024-01-01"),
       }),
       new Character({
         id: new CharacterId(1009220),
-        name: new CharacterName('Captain America'),
-        description: 'Super soldier',
-        thumbnail: new ImageUrl('http://example.com/cap', 'jpg'),
-        modifiedDate: new Date('2024-01-01'),
+        name: new CharacterName("Captain America"),
+        description: "Super soldier",
+        thumbnail: new ImageUrl("http://example.com/cap", "jpg"),
+        modifiedDate: new Date("2024-01-01"),
       }),
     ];
 
@@ -64,12 +63,15 @@ describe('ListFavorites', () => {
       clear: jest.fn(),
     } as jest.Mocked<FavoritesRepository>;
 
-    useCase = new ListFavorites(mockCharacterRepository, mockFavoritesRepository);
+    useCase = new ListFavorites(
+      mockCharacterRepository,
+      mockFavoritesRepository,
+    );
   });
 
-  describe('execute', () => {
-    describe('Empty favorites', () => {
-      it('should return empty array when no favorites', async () => {
+  describe("execute", () => {
+    describe("Empty favorites", () => {
+      it("should return empty array when no favorites", async () => {
         mockFavoritesRepository.findAll.mockResolvedValue([]);
 
         const result = await useCase.execute();
@@ -78,7 +80,7 @@ describe('ListFavorites', () => {
         expect(mockCharacterRepository.findById).not.toHaveBeenCalled();
       });
 
-      it('should call favoritesRepository.findAll', async () => {
+      it("should call favoritesRepository.findAll", async () => {
         mockFavoritesRepository.findAll.mockResolvedValue([]);
 
         await useCase.execute();
@@ -86,7 +88,7 @@ describe('ListFavorites', () => {
         expect(mockFavoritesRepository.findAll).toHaveBeenCalledTimes(1);
       });
 
-      it('should not fetch characters when favorites are empty', async () => {
+      it("should not fetch characters when favorites are empty", async () => {
         mockFavoritesRepository.findAll.mockResolvedValue([]);
 
         await useCase.execute();
@@ -95,11 +97,11 @@ describe('ListFavorites', () => {
       });
     });
 
-    describe('Single favorite', () => {
-      it('should return single character when one favorite', async () => {
+    describe("Single favorite", () => {
+      it("should return single character when one favorite", async () => {
         const favoriteId = new CharacterId(1009610);
         mockFavoritesRepository.findAll.mockResolvedValue([favoriteId]);
-        mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]);
+        mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]!);
 
         const result = await useCase.execute();
 
@@ -107,19 +109,21 @@ describe('ListFavorites', () => {
         expect(result[0]).toBe(mockCharacters[0]);
       });
 
-      it('should fetch character by ID', async () => {
+      it("should fetch character by ID", async () => {
         const favoriteId = new CharacterId(1009610);
         mockFavoritesRepository.findAll.mockResolvedValue([favoriteId]);
-        mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]);
+        mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]!);
 
         await useCase.execute();
 
-        expect(mockCharacterRepository.findById).toHaveBeenCalledWith(favoriteId);
+        expect(mockCharacterRepository.findById).toHaveBeenCalledWith(
+          favoriteId,
+        );
       });
     });
 
-    describe('Multiple favorites', () => {
-      it('should return all favorited characters', async () => {
+    describe("Multiple favorites", () => {
+      it("should return all favorited characters", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(1009368),
@@ -139,20 +143,20 @@ describe('ListFavorites', () => {
         expect(result[2]).toBe(mockCharacters[2]);
       });
 
-      it('should fetch all characters in parallel', async () => {
+      it("should fetch all characters in parallel", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(1009368),
         ];
         mockFavoritesRepository.findAll.mockResolvedValue(favoriteIds);
-        mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]);
+        mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]!);
 
         await useCase.execute();
 
         expect(mockCharacterRepository.findById).toHaveBeenCalledTimes(2);
       });
 
-      it('should call findById for each favorite ID', async () => {
+      it("should call findById for each favorite ID", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(1009368),
@@ -164,13 +168,17 @@ describe('ListFavorites', () => {
 
         await useCase.execute();
 
-        expect(mockCharacterRepository.findById).toHaveBeenCalledWith(favoriteIds[0]);
-        expect(mockCharacterRepository.findById).toHaveBeenCalledWith(favoriteIds[1]);
+        expect(mockCharacterRepository.findById).toHaveBeenCalledWith(
+          favoriteIds[0],
+        );
+        expect(mockCharacterRepository.findById).toHaveBeenCalledWith(
+          favoriteIds[1],
+        );
       });
     });
 
-    describe('Error handling', () => {
-      it('should handle character not found', async () => {
+    describe("Error handling", () => {
+      it("should handle character not found", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(999999), // Doesn't exist
@@ -186,7 +194,7 @@ describe('ListFavorites', () => {
         expect(result[0]).toBe(mockCharacters[0]);
       });
 
-      it('should handle fetch errors gracefully', async () => {
+      it("should handle fetch errors gracefully", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(1009368),
@@ -194,7 +202,7 @@ describe('ListFavorites', () => {
         mockFavoritesRepository.findAll.mockResolvedValue(favoriteIds);
         mockCharacterRepository.findById
           .mockResolvedValueOnce(mockCharacters[0]!)
-          .mockRejectedValueOnce(new Error('API Error'));
+          .mockRejectedValueOnce(new Error("API Error"));
 
         const result = await useCase.execute();
 
@@ -202,17 +210,19 @@ describe('ListFavorites', () => {
         expect(result[0]).toBe(mockCharacters[0]);
       });
 
-      it('should handle all characters failing to fetch', async () => {
+      it("should handle all characters failing to fetch", async () => {
         const favoriteIds = [new CharacterId(1009610)];
         mockFavoritesRepository.findAll.mockResolvedValue(favoriteIds);
-        mockCharacterRepository.findById.mockRejectedValue(new Error('API Error'));
+        mockCharacterRepository.findById.mockRejectedValue(
+          new Error("API Error"),
+        );
 
         const result = await useCase.execute();
 
         expect(result).toEqual([]);
       });
 
-      it('should handle mix of success and failure', async () => {
+      it("should handle mix of success and failure", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(1009368),
@@ -221,7 +231,7 @@ describe('ListFavorites', () => {
         mockFavoritesRepository.findAll.mockResolvedValue(favoriteIds);
         mockCharacterRepository.findById
           .mockResolvedValueOnce(mockCharacters[0]!)
-          .mockRejectedValueOnce(new Error('Network error'))
+          .mockRejectedValueOnce(new Error("Network error"))
           .mockResolvedValueOnce(mockCharacters[2]!);
 
         const result = await useCase.execute();
@@ -231,13 +241,15 @@ describe('ListFavorites', () => {
         expect(result[1]).toBe(mockCharacters[2]);
       });
 
-      it('should propagate favoritesRepository errors', async () => {
-        mockFavoritesRepository.findAll.mockRejectedValue(new Error('Storage error'));
+      it("should propagate favoritesRepository errors", async () => {
+        mockFavoritesRepository.findAll.mockRejectedValue(
+          new Error("Storage error"),
+        );
 
-        await expect(useCase.execute()).rejects.toThrow('Storage error');
+        await expect(useCase.execute()).rejects.toThrow("Storage error");
       });
 
-      it('should handle null characters in results', async () => {
+      it("should handle null characters in results", async () => {
         const favoriteIds = [new CharacterId(1009610)];
         mockFavoritesRepository.findAll.mockResolvedValue(favoriteIds);
         mockCharacterRepository.findById.mockResolvedValue(null);
@@ -248,8 +260,8 @@ describe('ListFavorites', () => {
       });
     });
 
-    describe('Filtering', () => {
-      it('should filter out null results', async () => {
+    describe("Filtering", () => {
+      it("should filter out null results", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(999999),
@@ -264,10 +276,10 @@ describe('ListFavorites', () => {
         const result = await useCase.execute();
 
         expect(result).toHaveLength(2);
-        expect(result.every(char => char !== null)).toBe(true);
+        expect(result.every((char) => char !== null)).toBe(true);
       });
 
-      it('should maintain order of valid characters', async () => {
+      it("should maintain order of valid characters", async () => {
         const favoriteIds = [
           new CharacterId(1009610),
           new CharacterId(1009368),
@@ -279,14 +291,14 @@ describe('ListFavorites', () => {
 
         const result = await useCase.execute();
 
-        expect(result[0]?.name.value).toBe('Spider-Man');
-        expect(result[1]?.name.value).toBe('Iron Man');
+        expect(result[0]?.name.value).toBe("Spider-Man");
+        expect(result[1]?.name.value).toBe("Iron Man");
       });
     });
   });
 
-  describe('getCount', () => {
-    it('should return count from repository', async () => {
+  describe("getCount", () => {
+    it("should return count from repository", async () => {
       mockFavoritesRepository.count.mockResolvedValue(5);
 
       const result = await useCase.getCount();
@@ -294,7 +306,7 @@ describe('ListFavorites', () => {
       expect(result).toBe(5);
     });
 
-    it('should call favoritesRepository.count', async () => {
+    it("should call favoritesRepository.count", async () => {
       mockFavoritesRepository.count.mockResolvedValue(3);
 
       await useCase.getCount();
@@ -302,7 +314,7 @@ describe('ListFavorites', () => {
       expect(mockFavoritesRepository.count).toHaveBeenCalledTimes(1);
     });
 
-    it('should return 0 when no favorites', async () => {
+    it("should return 0 when no favorites", async () => {
       mockFavoritesRepository.count.mockResolvedValue(0);
 
       const result = await useCase.getCount();
@@ -310,7 +322,7 @@ describe('ListFavorites', () => {
       expect(result).toBe(0);
     });
 
-    it('should handle different counts', async () => {
+    it("should handle different counts", async () => {
       mockFavoritesRepository.count.mockResolvedValue(10);
 
       const result = await useCase.getCount();
@@ -318,15 +330,17 @@ describe('ListFavorites', () => {
       expect(result).toBe(10);
     });
 
-    it('should propagate repository errors', async () => {
-      mockFavoritesRepository.count.mockRejectedValue(new Error('Storage error'));
+    it("should propagate repository errors", async () => {
+      mockFavoritesRepository.count.mockRejectedValue(
+        new Error("Storage error"),
+      );
 
-      await expect(useCase.getCount()).rejects.toThrow('Storage error');
+      await expect(useCase.getCount()).rejects.toThrow("Storage error");
     });
   });
 
-  describe('isFavorite', () => {
-    it('should return true when character is favorited', async () => {
+  describe("isFavorite", () => {
+    it("should return true when character is favorited", async () => {
       mockFavoritesRepository.contains.mockResolvedValue(true);
 
       const result = await useCase.isFavorite(1009610);
@@ -334,7 +348,7 @@ describe('ListFavorites', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false when character is not favorited', async () => {
+    it("should return false when character is not favorited", async () => {
       mockFavoritesRepository.contains.mockResolvedValue(false);
 
       const result = await useCase.isFavorite(999999);
@@ -342,17 +356,19 @@ describe('ListFavorites', () => {
       expect(result).toBe(false);
     });
 
-    it('should call contains with CharacterId', async () => {
+    it("should call contains with CharacterId", async () => {
       mockFavoritesRepository.contains.mockResolvedValue(true);
 
       await useCase.isFavorite(1009610);
 
-      expect(mockFavoritesRepository.contains).toHaveBeenCalledWith(expect.any(CharacterId));
+      expect(mockFavoritesRepository.contains).toHaveBeenCalledWith(
+        expect.any(CharacterId),
+      );
       const receivedId = mockFavoritesRepository.contains.mock.calls[0]?.[0];
       expect(receivedId?.value).toBe(1009610);
     });
 
-    it('should handle different character IDs', async () => {
+    it("should handle different character IDs", async () => {
       mockFavoritesRepository.contains.mockResolvedValue(true);
 
       await useCase.isFavorite(123);
@@ -361,29 +377,34 @@ describe('ListFavorites', () => {
       expect(receivedId?.value).toBe(123);
     });
 
-    it('should propagate repository errors', async () => {
-      mockFavoritesRepository.contains.mockRejectedValue(new Error('Storage error'));
+    it("should propagate repository errors", async () => {
+      mockFavoritesRepository.contains.mockRejectedValue(
+        new Error("Storage error"),
+      );
 
-      await expect(useCase.isFavorite(1009610)).rejects.toThrow('Storage error');
+      await expect(useCase.isFavorite(1009610)).rejects.toThrow(
+        "Storage error",
+      );
     });
 
-    it('should handle invalid character IDs', async () => {
+    it("should handle invalid character IDs", async () => {
       // CharacterId validates, so invalid IDs should throw
-      await expect(useCase.isFavorite(0)).rejects.toThrow('Invalid character ID');
+      await expect(useCase.isFavorite(0)).rejects.toThrow(
+        "Invalid character ID",
+      );
     });
 
-    it('should handle negative character IDs', async () => {
-      await expect(useCase.isFavorite(-1)).rejects.toThrow('Invalid character ID');
+    it("should handle negative character IDs", async () => {
+      await expect(useCase.isFavorite(-1)).rejects.toThrow(
+        "Invalid character ID",
+      );
     });
   });
 
-  describe('Integration scenarios', () => {
-    it('should work with real-world favorite flow', async () => {
+  describe("Integration scenarios", () => {
+    it("should work with real-world favorite flow", async () => {
       // User has 2 favorites
-      const favoriteIds = [
-        new CharacterId(1009610),
-        new CharacterId(1009368),
-      ];
+      const favoriteIds = [new CharacterId(1009610), new CharacterId(1009368)];
       mockFavoritesRepository.findAll.mockResolvedValue(favoriteIds);
       mockFavoritesRepository.count.mockResolvedValue(2);
       mockFavoritesRepository.contains.mockResolvedValue(true);
@@ -400,11 +421,13 @@ describe('ListFavorites', () => {
       expect(isFav).toBe(true);
     });
 
-    it('should handle concurrent operations', async () => {
+    it("should handle concurrent operations", async () => {
       mockFavoritesRepository.count.mockResolvedValue(1);
-      mockFavoritesRepository.findAll.mockResolvedValue([new CharacterId(1009610)]);
-        // @ts-expect-error - Test code, mockCharacters elements are guaranteed to exist
-        mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]);
+      mockFavoritesRepository.findAll.mockResolvedValue([
+        new CharacterId(1009610),
+      ]);
+      // @ts-expect-error - Test code, mockCharacters elements are guaranteed to exist
+      mockCharacterRepository.findById.mockResolvedValue(mockCharacters[0]);
 
       const [count, favorites] = await Promise.all([
         useCase.getCount(),

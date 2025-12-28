@@ -4,7 +4,8 @@
  * Tests hero banner with character image, name, description, and favorite button.
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { CharacterHero } from "./CharacterHero";
 
 // Mock child components
@@ -81,7 +82,7 @@ describe("CharacterHero", () => {
   });
 
   describe("Description expansion", () => {
-    it("should show READ MORE button for long descriptions", () => {
+    it("shows READ MORE button for long descriptions", () => {
       // Mock scrollHeight > clientHeight to simulate truncation
       Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
         configurable: true,
@@ -101,7 +102,8 @@ describe("CharacterHero", () => {
       ).toBeInTheDocument();
     });
 
-    it("should expand description when READ MORE clicked", () => {
+    it("expands description when user clicks READ MORE", async () => {
+      const user = userEvent.setup();
       Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
         configurable: true,
         value: 200,
@@ -114,12 +116,13 @@ describe("CharacterHero", () => {
       renderHero({ description: "Long description..." });
 
       const button = screen.getByRole("button", { name: /READ MORE/i });
-      fireEvent.click(button);
+      await user.click(button);
 
       expect(screen.getByRole("button", { name: /HIDE/i })).toBeInTheDocument();
     });
 
-    it("should collapse description when HIDE clicked", () => {
+    it("collapses description when user clicks HIDE", async () => {
+      const user = userEvent.setup();
       Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
         configurable: true,
         value: 200,
@@ -132,17 +135,18 @@ describe("CharacterHero", () => {
       renderHero({ description: "Long description..." });
 
       const readMoreButton = screen.getByRole("button", { name: /READ MORE/i });
-      fireEvent.click(readMoreButton);
+      await user.click(readMoreButton);
 
       const hideButton = screen.getByRole("button", { name: /HIDE/i });
-      fireEvent.click(hideButton);
+      await user.click(hideButton);
 
       expect(
         screen.getByRole("button", { name: /READ MORE/i }),
       ).toBeInTheDocument();
     });
 
-    it("should keep button visible after expansion (regression test)", () => {
+    it("keeps button visible after expansion (regression test)", async () => {
+      const user = userEvent.setup();
       // Mock scrollHeight > clientHeight to simulate truncation
       Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
         configurable: true,
@@ -160,7 +164,7 @@ describe("CharacterHero", () => {
       expect(readMoreButton).toBeInTheDocument();
 
       // Click to expand
-      fireEvent.click(readMoreButton);
+      await user.click(readMoreButton);
 
       // CRITICAL: Button should still be visible after expansion (now showing HIDE)
       // This tests the fix where we added `if (isExpanded) return;`
@@ -190,16 +194,17 @@ describe("CharacterHero", () => {
   });
 
   describe("Favorite interaction", () => {
-    it("should call onToggleFavorite when favorite button clicked", () => {
+    it("calls onToggleFavorite when user clicks favorite button", async () => {
+      const user = userEvent.setup();
       const mockToggle = jest.fn();
       renderHero({ onToggleFavorite: mockToggle });
 
-      fireEvent.click(screen.getByTestId("favorite-button"));
+      await user.click(screen.getByTestId("favorite-button"));
 
       expect(mockToggle).toHaveBeenCalledTimes(1);
     });
 
-    it("should show favorite state", () => {
+    it("shows favorite state", () => {
       renderHero({ isFavorite: true });
 
       expect(screen.getByText("Favorited")).toBeInTheDocument();

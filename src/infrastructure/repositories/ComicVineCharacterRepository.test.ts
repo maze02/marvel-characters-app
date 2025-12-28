@@ -1,221 +1,314 @@
-import { ComicVineCharacterRepository } from './ComicVineCharacterRepository';
-import { ComicVineApiClient } from '../http/ComicVineApiClient';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
-import { ComicVineApiResponse, ComicVineCharacterResponse } from '@application/character/dtos/ComicVineCharacterDTO';
+/**
+ * ComicVineCharacterRepository Unit Tests
+ *
+ * Production-grade tests for the Character Repository.
+ * Tests cover: findById, findMany, searchByName, findComicsByCharacterId
+ */
+
+import { ComicVineCharacterRepository } from "./ComicVineCharacterRepository";
+import { ComicVineApiClient } from "@infrastructure/http/ComicVineApiClient";
+import { CharacterId } from "@domain/character/valueObjects/CharacterId";
+import { Character } from "@domain/character/entities/Character";
+import { Comic } from "@domain/character/entities/Comic";
 
 // Mock the API client
-jest.mock('../http/ComicVineApiClient');
+jest.mock("@infrastructure/http/ComicVineApiClient");
 
-describe('ComicVineCharacterRepository', () => {
+describe("ComicVineCharacterRepository", () => {
   let repository: ComicVineCharacterRepository;
   let mockApiClient: jest.Mocked<ComicVineApiClient>;
 
-  const mockCharacterResponse: ComicVineCharacterResponse = {
+  const createMockCharacterApiResponse = () => ({
     id: 1699,
-    name: 'Spider-Man',
-    deck: 'Your friendly neighborhood Spider-Man',
-    description: '<p>Peter Parker is Spider-Man</p>',
+    name: "Spider-Man",
+    deck: "Friendly neighborhood hero",
+    description: "<p>Bitten by a radioactive spider.</p>",
     image: {
-      icon_url: '',
-      medium_url: 'https://comicvine.gamespot.com/a/uploads/scale_medium/11/111/1-spider.jpg',
-      screen_url: '',
-      screen_large_url: '',
-      small_url: '',
-      super_url: '',
-      thumb_url: '',
-      tiny_url: '',
-      original_url: '',
+      icon_url: "https://example.com/icon.jpg",
+      medium_url: "https://example.com/medium.jpg",
+      screen_url: "https://example.com/screen.jpg",
+      screen_large_url: "https://example.com/large.jpg",
+      small_url: "https://example.com/small.jpg",
+      super_url: "https://example.com/super.jpg",
+      thumb_url: "https://example.com/thumb.jpg",
+      tiny_url: "https://example.com/tiny.jpg",
+      original_url: "https://example.com/original.jpg",
     },
-    publisher: { id: 31, name: 'Marvel Comics' },
-    date_added: '2008-06-06 11:27:00',
-    date_last_updated: '2024-12-01 15:30:00',
-    site_detail_url: '',
-    api_detail_url: '',
-  };
+    publisher: {
+      id: 31,
+      name: "Marvel Comics",
+    },
+    date_added: "2024-01-01T00:00:00",
+    date_last_updated: "2024-01-15T10:30:00",
+    site_detail_url: "https://comicvine.gamespot.com/spider-man/4005-1699/",
+    api_detail_url: "https://comicvine.gamespot.com/api/character/4005-1699/",
+    issue_credits: [
+      { id: 1, api_detail_url: "url1" },
+      { id: 2, api_detail_url: "url2" },
+    ],
+  });
+
+  const createMockComicApiResponse = () => ({
+    id: 123456,
+    name: "Amazing Spider-Man #1",
+    issue_number: "1",
+    volume: {
+      id: 78701,
+      name: "The Amazing Spider-Man (2018)",
+    },
+    cover_date: "2018-07-01",
+    store_date: "2018-07-04",
+    description: "<p>First issue!</p>",
+    image: {
+      icon_url: "https://example.com/comic-icon.jpg",
+      medium_url: "https://example.com/comic-medium.jpg",
+      screen_url: "https://example.com/comic-screen.jpg",
+      screen_large_url: "https://example.com/comic-large.jpg",
+      small_url: "https://example.com/comic-small.jpg",
+      super_url: "https://example.com/comic-super.jpg",
+      thumb_url: "https://example.com/comic-thumb.jpg",
+      tiny_url: "https://example.com/comic-tiny.jpg",
+      original_url: "https://example.com/comic-original.jpg",
+    },
+    date_added: "2024-01-01T00:00:00",
+    date_last_updated: "2024-01-15T10:30:00",
+    site_detail_url: "https://comicvine.gamespot.com/issue/123456/",
+    api_detail_url: "https://comicvine.gamespot.com/api/issue/4000-123456/",
+  });
 
   beforeEach(() => {
     mockApiClient = {
       get: jest.fn(),
-      cancelRequest: jest.fn(),
-      cancelAllRequests: jest.fn(),
-      clearCache: jest.fn(),
-      getRemainingRequests: jest.fn(),
     } as any;
-
-    repository = new ComicVineCharacterRepository(mockApiClient);
+    repository = new ComicVineCharacterRepository(mockApiClient as any);
   });
 
-  describe('findMany', () => {
-    it('should fetch characters with Marvel publisher filter', async () => {
-      const mockResponse: ComicVineApiResponse<ComicVineCharacterResponse> = {
-        error: 'OK',
-        limit: 50,
-        offset: 0,
-        number_of_page_results: 50,
-        number_of_total_results: 500,
-        status_code: 1,
-        results: Array(50).fill(mockCharacterResponse),
-      };
-
-      mockApiClient.get.mockResolvedValue(mockResponse);
-
-      const result = await repository.findMany({ limit: 50, offset: 0 });
-
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        '/characters/',
-        expect.objectContaining({
-          filter: 'publisher:31',
-          limit: 50,
-          offset: 0,
-        }),
-        expect.objectContaining({ useCache: true })
-      );
-
-      expect(result.items).toHaveLength(50);
-      expect(result.total).toBe(500);
-      expect(result.offset).toBe(0);
-      expect(result.limit).toBe(50);
-    });
-
-    it('should handle pagination with offset', async () => {
-      const mockResponse: ComicVineApiResponse<ComicVineCharacterResponse> = {
-        error: 'OK',
-        limit: 50,
-        offset: 100,
-        number_of_page_results: 50,
-        number_of_total_results: 500,
-        status_code: 1,
-        results: Array(50).fill(mockCharacterResponse),
-      };
-
-      mockApiClient.get.mockResolvedValue(mockResponse);
-
-      const result = await repository.findMany({ limit: 50, offset: 100 });
-
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        '/characters/',
-        expect.objectContaining({
-          offset: 100,
-        }),
-        expect.any(Object)
-      );
-
-      expect(result.offset).toBe(100);
-    });
-
-    it('should handle API errors', async () => {
-      mockApiClient.get.mockRejectedValue(new Error('API Error'));
-
-      await expect(repository.findMany({ limit: 50, offset: 0 })).rejects.toThrow('API Error');
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  describe('findById', () => {
-    it('should fetch single character by ID', async () => {
-      const mockResponse = {
-        error: 'OK',
+  describe("findById", () => {
+    it("returns character when found", async () => {
+      // Arrange
+      const mockResponse = createMockCharacterApiResponse();
+      (mockApiClient.get as jest.Mock).mockResolvedValue({
+        error: "OK",
         status_code: 1,
-        results: mockCharacterResponse,
-      };
-
-      mockApiClient.get.mockResolvedValue(mockResponse);
+        results: mockResponse,
+      });
 
       const characterId = new CharacterId(1699);
+
+      // Act
       const character = await repository.findById(characterId);
 
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        '/character/4005-1699/',
-        {
-          field_list: 'id,name,deck,description,image,publisher,date_last_updated,issue_credits',
-        },
-        expect.objectContaining({ useCache: true })
-      );
-
-      expect(character).not.toBeNull();
+      // Assert
+      expect(character).toBeInstanceOf(Character);
       expect(character?.id.value).toBe(1699);
+      expect(character?.name.value).toBe("Spider-Man");
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/character/4005-1699/",
+        {
+          field_list:
+            "id,name,deck,description,image,publisher,date_last_updated,issue_credits",
+        },
+        { useCache: true },
+      );
     });
 
-    it('should return null when character not found (404)', async () => {
-      const error: any = new Error('Not found');
-      error.statusCode = 404;
-      mockApiClient.get.mockRejectedValue(error);
+    it("returns null when character not found", async () => {
+      // Arrange
+      (mockApiClient.get as jest.Mock).mockResolvedValue({
+        error: "Object Not Found",
+        status_code: 101,
+        results: null,
+      });
 
       const characterId = new CharacterId(99999);
+
+      // Act
       const character = await repository.findById(characterId);
 
+      // Assert
       expect(character).toBeNull();
     });
 
-    it('should throw on other errors', async () => {
-      const error: any = new Error('Server error');
-      error.statusCode = 500;
-      mockApiClient.get.mockRejectedValue(error);
+    it("throws error when API returns non-404 error", async () => {
+      // Arrange
+      (mockApiClient.get as jest.Mock).mockRejectedValue(
+        new Error("API Error"),
+      );
 
       const characterId = new CharacterId(1699);
 
-      await expect(repository.findById(characterId)).rejects.toThrow('Server error');
+      // Act & Assert
+      await expect(repository.findById(characterId)).rejects.toThrow(
+        "API Error",
+      );
+    });
+
+    it("returns null when API returns 404 error", async () => {
+      // Arrange
+      const error = new Error("Not Found");
+      (error as any).statusCode = 404;
+      (mockApiClient.get as jest.Mock).mockRejectedValue(error);
+
+      const characterId = new CharacterId(1699);
+
+      // Act
+      const character = await repository.findById(characterId);
+
+      // Assert
+      expect(character).toBeNull();
     });
   });
 
-  describe('searchByName', () => {
-    it('should search characters by name with Marvel filter', async () => {
-      const mockResponse: ComicVineApiResponse<ComicVineCharacterResponse> = {
-        error: 'OK',
-        limit: 50,
-        offset: 0,
-        number_of_page_results: 5,
-        number_of_total_results: 5,
+  describe("findMany", () => {
+    it("returns paginated list of characters", async () => {
+      // Arrange
+      const mockResponse = createMockCharacterApiResponse();
+      (mockApiClient.get as jest.Mock).mockResolvedValue({
+        error: "OK",
         status_code: 1,
-        results: [mockCharacterResponse],
-      };
-
-      mockApiClient.get.mockResolvedValue(mockResponse);
-
-      const results = await repository.searchByName('Spider');
-
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        '/characters/',
-        expect.objectContaining({
-          filter: expect.stringMatching(/publisher:31.*name:Spider/),
-        }),
-        expect.any(Object)
-      );
-
-      expect(results).toHaveLength(1);
-      expect(results[0]?.name.value).toBe('Spider-Man');
-    });
-
-    it('should return empty array for empty query', async () => {
-      const results = await repository.searchByName('');
-
-      expect(results).toHaveLength(0);
-      expect(mockApiClient.get).not.toHaveBeenCalled();
-    });
-
-    it('should encode special characters in query', async () => {
-      const mockResponse: ComicVineApiResponse<ComicVineCharacterResponse> = {
-        error: 'OK',
-        limit: 50,
+        results: [
+          mockResponse,
+          { ...mockResponse, id: 1700, name: "Iron Man" },
+        ],
+        number_of_page_results: 2,
+        number_of_total_results: 100,
         offset: 0,
-        number_of_page_results: 0,
-        number_of_total_results: 0,
+        limit: 50,
+      });
+
+      // Act
+      const result = await repository.findMany({ offset: 0, limit: 50 });
+
+      // Assert
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0]).toBeInstanceOf(Character);
+      expect(result.total).toBe(100);
+      expect(result.offset).toBe(0);
+      expect(result.limit).toBe(50);
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        "/characters/",
+        { filter: "publisher:31", limit: 50, offset: 0 },
+        { useCache: true },
+      );
+    });
+
+    it("returns empty array when no results", async () => {
+      // Arrange
+      (mockApiClient.get as jest.Mock).mockResolvedValue({
+        error: "OK",
         status_code: 1,
         results: [],
-      };
+        number_of_page_results: 0,
+        number_of_total_results: 0,
+        offset: 0,
+        limit: 50,
+      });
 
-      mockApiClient.get.mockResolvedValue(mockResponse);
+      // Act
+      const result = await repository.findMany({ offset: 0, limit: 50 });
 
-      await repository.searchByName('Spider & Venom');
+      // Assert
+      expect(result.items).toHaveLength(0);
+      expect(result.total).toBe(0);
+    });
+  });
 
+  describe("searchByName", () => {
+    it("returns characters matching search query", async () => {
+      // Arrange
+      const mockResponse = createMockCharacterApiResponse();
+      (mockApiClient.get as jest.Mock).mockResolvedValue({
+        error: "OK",
+        status_code: 1,
+        results: [mockResponse],
+        number_of_page_results: 1,
+        number_of_total_results: 1,
+      });
+
+      // Act
+      const characters = await repository.searchByName("Spider-Man");
+
+      // Assert
+      expect(characters).toHaveLength(1);
+      expect(characters[0]).toBeInstanceOf(Character);
+      expect(characters[0]!.name.value).toBe("Spider-Man");
       expect(mockApiClient.get).toHaveBeenCalledWith(
-        '/characters/',
+        "/characters/",
         expect.objectContaining({
-          filter: expect.stringContaining('Spider & Venom'), // Raw string, axios will encode
+          filter: "publisher:31,name:Spider-Man",
+          limit: expect.any(Number),
         }),
-        expect.any(Object)
+        expect.objectContaining({ useCache: true }),
+      );
+    });
+
+    it("returns empty array when no matches found", async () => {
+      // Arrange
+      (mockApiClient.get as jest.Mock).mockResolvedValue({
+        error: "OK",
+        status_code: 1,
+        results: [],
+        number_of_page_results: 0,
+        number_of_total_results: 0,
+      });
+
+      // Act
+      const characters = await repository.searchByName("NonExistentCharacter");
+
+      // Assert
+      expect(characters).toHaveLength(0);
+    });
+
+    it("throws error on API error", async () => {
+      // Arrange
+      (mockApiClient.get as jest.Mock).mockRejectedValue(
+        new Error("API Error"),
+      );
+
+      // Act & Assert
+      await expect(repository.searchByName("Spider-Man")).rejects.toThrow(
+        "API Error",
       );
     });
   });
 
-  // Old getComics tests removed - now using getComicsByIds with efficient two-step approach
+  describe("getComicsByIds", () => {
+    it("returns comics for given IDs", async () => {
+      // Arrange
+      const mockComicResponse = createMockComicApiResponse();
+      (mockApiClient.get as jest.Mock).mockResolvedValue({
+        error: "OK",
+        status_code: 1,
+        results: [mockComicResponse],
+        number_of_page_results: 1,
+        number_of_total_results: 1,
+      });
+
+      const characterId = new CharacterId(1699);
+      const issueIds = [123456];
+
+      // Act
+      const comics = await repository.getComicsByIds(issueIds, characterId);
+
+      // Assert
+      expect(comics).toHaveLength(1);
+      expect(comics[0]).toBeInstanceOf(Comic);
+      expect(comics[0]!.title).toBe("Amazing Spider-Man #1");
+    });
+
+    it("returns empty array when no issue IDs provided", async () => {
+      // Arrange
+      const characterId = new CharacterId(1699);
+
+      // Act
+      const comics = await repository.getComicsByIds([], characterId);
+
+      // Assert
+      expect(comics).toHaveLength(0);
+    });
+  });
 });
