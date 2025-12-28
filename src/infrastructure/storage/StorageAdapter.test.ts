@@ -214,7 +214,7 @@ describe("StorageAdapter", () => {
     });
 
     it("should throw StorageError on JSON stringify failure", () => {
-      const circular: any = {};
+      const circular: Record<string, unknown> = {};
       circular.self = circular; // Circular reference
 
       expect(() => adapter.set("circular", circular)).toThrow(StorageError);

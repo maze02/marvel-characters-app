@@ -29,7 +29,9 @@ jest.mock("../designSystem/atoms/LoadingBar/LoadingBar", () => ({
 
 // Mock LoadingContext
 jest.mock("../state/LoadingContext", () => ({
-  LoadingProvider: ({ children }: any) => <div>{children}</div>,
+  LoadingProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   useLoading: () => ({
     isLoading: false,
     startLoading: jest.fn(),

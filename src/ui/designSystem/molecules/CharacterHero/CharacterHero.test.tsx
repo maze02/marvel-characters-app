@@ -9,8 +9,13 @@ import userEvent from "@testing-library/user-event";
 import { CharacterHero } from "./CharacterHero";
 
 // Mock child components
+interface MockFavoriteButtonProps {
+  onToggle: (e: React.MouseEvent) => void;
+  isFavorite: boolean;
+}
+
 jest.mock("@ui/designSystem/molecules/FavoriteButton/FavoriteButton", () => ({
-  FavoriteButton: ({ onToggle, isFavorite }: any) => (
+  FavoriteButton: ({ onToggle, isFavorite }: MockFavoriteButtonProps) => (
     <button onClick={onToggle} data-testid="favorite-button">
       {isFavorite ? "Favorited" : "Not Favorited"}
     </button>

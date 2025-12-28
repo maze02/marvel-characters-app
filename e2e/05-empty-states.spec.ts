@@ -188,7 +188,8 @@ test.describe("Empty States", () => {
 
     // Search for something that doesn't match
     const searchInput = getSearchInput(page);
-    await searchInput.fill("ZZZNoMatchXXX");
+    await searchInput.click();
+    await searchInput.pressSequentially("ZZZNoMatchXXX", { delay: 50 });
 
     // Wait for debounce and empty state using condition-based waiting
     // Should show empty state for search

@@ -10,8 +10,18 @@ import { BrowserRouter } from "react-router-dom";
 import { CharacterCard } from "./CharacterCard";
 
 // Mock child components
+interface MockFavoriteButtonProps {
+  onToggle: (e: React.MouseEvent) => void;
+  isFavorite: boolean;
+  characterName?: string;
+}
+
 jest.mock("../FavoriteButton/FavoriteButton", () => ({
-  FavoriteButton: ({ onToggle, isFavorite, characterName }: any) => (
+  FavoriteButton: ({
+    onToggle,
+    isFavorite,
+    characterName,
+  }: MockFavoriteButtonProps) => (
     <button
       onClick={onToggle}
       data-testid="favorite-button"

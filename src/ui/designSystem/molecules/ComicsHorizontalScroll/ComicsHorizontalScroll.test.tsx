@@ -127,7 +127,8 @@ describe("ComicsHorizontalScroll", () => {
 
     it("should handle null comics array", () => {
       const { container } = render(
-        <ComicsHorizontalScroll comics={null as any} showEmptyState={false} />,
+        // @ts-expect-error - Testing edge case with invalid prop type
+        <ComicsHorizontalScroll comics={null} showEmptyState={false} />,
       );
 
       expect(container.firstChild).toBeNull();

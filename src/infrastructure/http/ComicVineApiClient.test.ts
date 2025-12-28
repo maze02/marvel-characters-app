@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import { ComicVineApiClient } from "./ComicVineApiClient";
 
 jest.mock("axios");
@@ -12,27 +12,40 @@ jest.mock("../config/env", () => ({
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
+type MockAxiosInstance = Pick<AxiosInstance, "get" | "interceptors">;
+
 describe("ComicVineApiClient", () => {
   let client: ComicVineApiClient;
-  let mockAxiosInstance: any;
+  let mockAxiosInstance: jest.Mocked<MockAxiosInstance>;
 
   beforeEach(() => {
     mockAxiosInstance = {
       get: jest.fn(),
       interceptors: {
-        request: { use: jest.fn() },
-        response: { use: jest.fn() },
-      },
+        request: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+        response: { use: jest.fn(), eject: jest.fn(), clear: jest.fn() },
+      } as AxiosInstance["interceptors"],
     };
 
-    mockedAxios.create.mockReturnValue(mockAxiosInstance);
+    mockedAxios.create.mockReturnValue(
+      mockAxiosInstance as unknown as AxiosInstance,
+    );
 
-    // Mock axios.isAxiosError with proper type predicate
-    (mockedAxios.isAxiosError as any) = (error: any): error is any =>
-      error?.isAxiosError === true;
+    // Mock axios.isAxiosError - checks for isAxiosError property
+    (mockedAxios.isAxiosError as jest.MockedFunction<
+      typeof mockedAxios.isAxiosError
+    >) = jest.fn((error: unknown) => {
+      return Boolean(
+        error &&
+        typeof error === "object" &&
+        "isAxiosError" in error &&
+        error.isAxiosError,
+      );
+    }) as unknown as typeof mockedAxios.isAxiosError;
 
-    // Mock axios.isCancel with proper type predicate
-    (mockedAxios.isCancel as any) = (_value: any): _value is any => false;
+    // Mock axios.isCancel - returns false by default
+    (mockedAxios.isCancel as jest.MockedFunction<typeof mockedAxios.isCancel>) =
+      jest.fn(() => false) as unknown as typeof mockedAxios.isCancel;
 
     client = new ComicVineApiClient();
 

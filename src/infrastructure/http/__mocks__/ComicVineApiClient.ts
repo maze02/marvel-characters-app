@@ -5,8 +5,37 @@
  * This ensures all integration tests use mocked data instead of making real API calls.
  */
 
+interface MockCharacter {
+  id: number;
+  name: string;
+  description: string;
+  thumbnail: { path: string; extension: string };
+  modified: string;
+  comics: { available: number };
+}
+
+interface MockComic {
+  id: number;
+  title: string;
+  thumbnail: { path: string; extension: string };
+  dates: Array<{ type: string; date: string }>;
+}
+
+interface PaginatedResponse<T> {
+  results: T[];
+  total: number;
+  offset?: number;
+  limit?: number;
+}
+
+interface RequestParams {
+  offset?: number;
+  limit?: number;
+  [key: string]: string | number | boolean | undefined;
+}
+
 // Mock data that can be used in tests
-export const mockCharactersData = [
+export const mockCharactersData: MockCharacter[] = [
   {
     id: 1,
     name: "Spider-Man",
@@ -49,7 +78,7 @@ export const mockCharactersData = [
   },
 ];
 
-export const mockComicsData = [
+export const mockComicsData: MockComic[] = [
   {
     id: 1,
     title: "Amazing Spider-Man #1",
@@ -66,7 +95,9 @@ export const mockComicsData = [
 
 // Mock implementation of ComicVineApiClient
 export class ComicVineApiClient {
-  async getCharacters(params?: any): Promise<any> {
+  async getCharacters(
+    params?: RequestParams,
+  ): Promise<PaginatedResponse<MockCharacter>> {
     return Promise.resolve({
       results: mockCharactersData,
       total: 100,
@@ -75,7 +106,7 @@ export class ComicVineApiClient {
     });
   }
 
-  async getCharacter(id: number): Promise<any> {
+  async getCharacter(id: number): Promise<MockCharacter> {
     const character = mockCharactersData.find((c) => c.id === id);
     if (!character) {
       return Promise.reject(new Error("Character not found"));
@@ -83,7 +114,10 @@ export class ComicVineApiClient {
     return Promise.resolve(character);
   }
 
-  async getCharacterComics(_characterId: number, params?: any): Promise<any> {
+  async getCharacterComics(
+    _characterId: number,
+    params?: RequestParams,
+  ): Promise<PaginatedResponse<MockComic>> {
     return Promise.resolve({
       results: mockComicsData,
       total: mockComicsData.length,
@@ -92,7 +126,9 @@ export class ComicVineApiClient {
     });
   }
 
-  async searchCharacters(query: string): Promise<any> {
+  async searchCharacters(
+    query: string,
+  ): Promise<PaginatedResponse<MockCharacter>> {
     const filtered = mockCharactersData.filter((char) =>
       char.name.toLowerCase().includes(query.toLowerCase()),
     );

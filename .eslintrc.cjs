@@ -37,16 +37,6 @@ module.exports = {
       { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
     ],
   },
-  overrides: [
-    {
-      // Allow more relaxed rules in test and story files
-      files: ['**/*.test.ts', '**/*.test.tsx', '**/*.stories.tsx', '**/__mocks__/**/*.ts'],
-      rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-unused-vars': 'off',
-      },
-    },
-  ],
   settings: {
     react: {
       version: 'detect',

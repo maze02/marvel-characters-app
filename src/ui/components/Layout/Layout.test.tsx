@@ -10,8 +10,13 @@ import { BrowserRouter } from "react-router-dom";
 import { Layout } from "./Layout";
 
 // Mock child components
+interface MockNavbarProps {
+  onLogoClick?: () => void;
+  onFavoritesClick?: () => void;
+}
+
 jest.mock("../Navbar/Navbar", () => ({
-  Navbar: ({ onLogoClick, onFavoritesClick }: any) => (
+  Navbar: ({ onLogoClick, onFavoritesClick }: MockNavbarProps) => (
     <div data-testid="navbar">
       <button onClick={onLogoClick}>Logo</button>
       <button onClick={onFavoritesClick}>Favorites</button>

@@ -177,7 +177,8 @@ test.describe("Favorites Page Search and Management", () => {
 
     // Search for something that doesn't exist
     const searchInput = getSearchInput(page);
-    await searchInput.fill("ZZZNoMatchXXX123");
+    await searchInput.click();
+    await searchInput.pressSequentially("ZZZNoMatchXXX123", { delay: 50 });
 
     // Wait for debounce (400ms) plus buffer
     await page.waitForTimeout(600);

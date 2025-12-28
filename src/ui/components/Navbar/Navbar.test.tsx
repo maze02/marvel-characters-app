@@ -17,7 +17,7 @@ jest.mock("@ui/state/FavoritesContext", () => ({
 }));
 
 jest.mock("@ui/designSystem/atoms/Logo/Logo", () => ({
-  Logo: ({ onClick }: any) => (
+  Logo: ({ onClick }: { onClick?: () => void }) => (
     <button onClick={onClick} data-testid="logo">
       Logo
     </button>

@@ -296,8 +296,8 @@ describe("DetailPage", () => {
     });
 
     it("should handle error when character is null", async () => {
-      // Arrange
-      mockGetCharacterDetail.mockResolvedValue(null as any);
+      // Arrange - testing edge case where use case returns null
+      mockGetCharacterDetail.mockResolvedValue(null as unknown as Character);
 
       // Act
       await renderPage();
@@ -309,8 +309,8 @@ describe("DetailPage", () => {
     });
 
     it("should show error when ID is missing", async () => {
-      // Arrange: Set params to undefined
-      mockParams.id = undefined as any;
+      // Arrange: Set params to undefined - testing edge case
+      mockParams.id = undefined as unknown as string;
 
       // Act
       await renderPage();
