@@ -54,6 +54,7 @@ export const ListPage: React.FC = () => {
     (offset) =>
       listCharacters.execute({ limit: PAGINATION.DEFAULT_LIMIT, offset }),
     PAGINATION.DEFAULT_LIMIT,
+    (character) => character.id.value, // Extract unique ID for deduplication
   );
 
   // Sync infinite scroll loading state with global loading bar

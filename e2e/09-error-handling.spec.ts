@@ -81,33 +81,24 @@ test.describe("Error Handling", () => {
     await page.goto("/");
     await waitForAppLoad(page);
 
-    // Wait for error state to render and check for retry button
+    // Wait for error state to render - retry button should appear
     const retryButton = page.getByRole("button", { name: /retry/i });
 
-    // Use toPass() to wait for retry button to appear
-    let hasRetry = false;
-    await expect(async () => {
-      hasRetry = await retryButton.isVisible().catch(() => false);
-      expect(hasRetry).toBeDefined(); // Just wait for check to complete
-    }).toPass({ timeout: 10000 });
+    // Assert that retry button appears after error
+    await expect(retryButton).toBeVisible({ timeout: 10000 });
 
-    if (hasRetry) {
-      // Click retry
-      await retryButton.click();
+    // Click retry button
+    await retryButton.click();
 
-      // Wait for characters to load successfully
-      await page.waitForSelector('[data-testid="character-card"]', {
-        timeout: 10000,
-      });
+    // Wait for characters to load successfully after retry
+    await page.waitForSelector('[data-testid="character-card"]', {
+      timeout: 10000,
+    });
 
-      // Should now show characters
-      const characterCards = page.locator('[data-testid="character-card"]');
-      const count = await characterCards.count();
-      expect(count).toBeGreaterThan(0);
-    } else {
-      // If no retry button visible, test passes (error handling works differently)
-      test.skip();
-    }
+    // Verify characters are now displayed
+    const characterCards = page.locator('[data-testid="character-card"]');
+    const count = await characterCards.count();
+    expect(count).toBeGreaterThan(0);
   });
 
   test("should show error message for invalid character detail", async ({

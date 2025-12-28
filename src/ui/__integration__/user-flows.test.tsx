@@ -395,11 +395,13 @@ describe("Cross-Page User Flow Integration Tests", () => {
         expect(screen.queryByText("Spider-Man")).not.toBeInTheDocument();
       });
 
-      // Iron Man should remain
-      expect(screen.getByText("Iron Man")).toBeInTheDocument();
-
-      // Should show 1 result
-      expect(screen.getByText("1 RESULTS")).toBeInTheDocument();
+      // Wait for the favorites page to fully update and show remaining favorite
+      await waitFor(() => {
+        // Iron Man should remain
+        expect(screen.getByText("Iron Man")).toBeInTheDocument();
+        // Should show 1 result
+        expect(screen.getByText("1 RESULTS")).toBeInTheDocument();
+      });
     }, 15000);
   });
 

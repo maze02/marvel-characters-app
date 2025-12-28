@@ -31,36 +31,23 @@ const DetailPage = lazy(() =>
 /**
  * Navigation Tracker
  *
- * Monitors route changes, controls the loading bar, and scrolls to top on navigation.
+ * Monitors route changes and scrolls to top on navigation.
+ *
+ * Note: Loading state is managed by individual pages, not here.
+ * This ensures proper coordination between navigation and data loading.
  */
 const NavigationTracker: React.FC = () => {
   const location = useLocation();
-  const { startLoading, stopLoading } = useLoading();
   const [prevLocation, setPrevLocation] = useState(location.pathname);
 
   useEffect(() => {
-    // If location changes, show loading bar briefly and scroll to top
+    // If location changes, scroll to top
     if (location.pathname !== prevLocation) {
       // Scroll to top of the page
       window.scrollTo(0, 0);
-
-      startLoading();
-
-      // Stop loading after a short delay to ensure smooth animation
-      const timer = setTimeout(() => {
-        stopLoading();
-      }, 500);
-
       setPrevLocation(location.pathname);
-
-      return () => {
-        clearTimeout(timer);
-      };
     }
-
-    // Return undefined for the else case (when location hasn't changed)
-    return undefined;
-  }, [location, prevLocation, startLoading, stopLoading]);
+  }, [location, prevLocation]);
 
   return null;
 };

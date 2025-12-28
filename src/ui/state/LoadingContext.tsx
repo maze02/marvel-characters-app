@@ -24,6 +24,14 @@ export interface LoadingProviderProps {
  *
  * Provides global loading state management for the application.
  * Used to control the navigation loading bar visibility.
+ *
+ * React 18 Compatibility:
+ * - Components should wrap startLoading() calls in flushSync for immediate visibility
+ * - This ensures loading bar is immediately visible before async operations
+ * - Prevents automatic batching from hiding loading indicators
+ *
+ * Important: Each component is responsible for calling startLoading() and
+ * stopLoading() in balanced pairs (e.g., in try/finally blocks)
  */
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({
   children,

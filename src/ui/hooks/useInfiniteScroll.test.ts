@@ -206,4 +206,105 @@ describe("useInfiniteScroll", () => {
     // Should have no more items to load
     expect(result.current.hasMore).toBe(false);
   });
+
+  it("should deduplicate items when getItemKey is provided", async () => {
+    // Create a mock that returns overlapping data (simulating duplicate IDs from API)
+    type TestItem = { id: number; name: string };
+
+    const fetchMore = jest
+      .fn()
+      .mockResolvedValueOnce({
+        items: [
+          { id: 1, name: "Item 1" },
+          { id: 2, name: "Item 2" },
+          { id: 3, name: "Item 3" },
+        ],
+        total: 6,
+        offset: 0,
+        limit: 3,
+      })
+      .mockResolvedValueOnce({
+        items: [
+          { id: 3, name: "Item 3" }, // Duplicate
+          { id: 4, name: "Item 4" },
+          { id: 5, name: "Item 5" },
+        ],
+        total: 6,
+        offset: 3,
+        limit: 3,
+      });
+
+    const { result } = renderHook(() =>
+      useInfiniteScroll<TestItem>(fetchMore, 3, (item) => item.id),
+    );
+
+    // Wait for initial load
+    await waitFor(() => {
+      expect(result.current.items).toHaveLength(3);
+    });
+
+    expect(result.current.items.map((i) => i.id)).toEqual([1, 2, 3]);
+
+    // Simulate intersection observer callback to load more
+    const entries = [{ isIntersecting: true }] as IntersectionObserverEntry[];
+    act(() => {
+      observeCallback(entries, {} as IntersectionObserver);
+    });
+
+    // Wait for second load - should have 5 items (not 6, because ID 3 is deduplicated)
+    await waitFor(() => {
+      expect(result.current.items).toHaveLength(5);
+    });
+
+    expect(result.current.items.map((i) => i.id)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("should not deduplicate when getItemKey is not provided", async () => {
+    // Create a mock that returns overlapping data
+    type TestItem = { id: number; name: string };
+
+    const fetchMore = jest
+      .fn()
+      .mockResolvedValueOnce({
+        items: [
+          { id: 1, name: "Item 1" },
+          { id: 2, name: "Item 2" },
+        ],
+        total: 4,
+        offset: 0,
+        limit: 2,
+      })
+      .mockResolvedValueOnce({
+        items: [
+          { id: 2, name: "Item 2" }, // Duplicate
+          { id: 3, name: "Item 3" },
+        ],
+        total: 4,
+        offset: 2,
+        limit: 2,
+      });
+
+    const { result } = renderHook(
+      () => useInfiniteScroll<TestItem>(fetchMore, 2),
+      // No getItemKey provided
+    );
+
+    // Wait for initial load
+    await waitFor(() => {
+      expect(result.current.items).toHaveLength(2);
+    });
+
+    // Simulate intersection observer callback to load more
+    const entries = [{ isIntersecting: true }] as IntersectionObserverEntry[];
+    act(() => {
+      observeCallback(entries, {} as IntersectionObserver);
+    });
+
+    // Wait for second load - should have 4 items (including duplicate)
+    await waitFor(() => {
+      expect(result.current.items).toHaveLength(4);
+    });
+
+    expect(result.current.items.map((i) => i.id)).toEqual([1, 2, 2, 3]);
+  });
 });
