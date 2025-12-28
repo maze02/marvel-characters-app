@@ -140,8 +140,8 @@ describe("ComicVineApiClient", () => {
       const abortSpy = jest.fn();
       global.AbortController = jest.fn().mockImplementation(() => ({
         abort: abortSpy,
-        signal: {},
-      })) as any;
+        signal: {} as AbortSignal,
+      })) as unknown as typeof AbortController;
 
       mockAxiosInstance.get
         .mockImplementationOnce(() => new Promise(() => {})) // Never resolves
@@ -310,8 +310,8 @@ describe("ComicVineApiClient", () => {
       const abortSpy = jest.fn();
       global.AbortController = jest.fn().mockImplementation(() => ({
         abort: abortSpy,
-        signal: {},
-      })) as any;
+        signal: {} as AbortSignal,
+      })) as unknown as typeof AbortController;
 
       mockAxiosInstance.get.mockImplementation(() => new Promise(() => {}));
 
@@ -329,8 +329,8 @@ describe("ComicVineApiClient", () => {
       const abortSpy = jest.fn();
       global.AbortController = jest.fn().mockImplementation(() => ({
         abort: abortSpy,
-        signal: {},
-      })) as any;
+        signal: {} as AbortSignal,
+      })) as unknown as typeof AbortController;
 
       mockAxiosInstance.get.mockImplementation(() => new Promise(() => {}));
 

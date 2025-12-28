@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -37,10 +38,13 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     setIsLoading(false);
   }, []);
 
+  const value = useMemo(
+    () => ({ isLoading, startLoading, stopLoading }),
+    [isLoading, startLoading, stopLoading],
+  );
+
   return (
-    <LoadingContext.Provider value={{ isLoading, startLoading, stopLoading }}>
-      {children}
-    </LoadingContext.Provider>
+    <LoadingContext.Provider value={value}>{children}</LoadingContext.Provider>
   );
 };
 

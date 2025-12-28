@@ -1,8 +1,8 @@
-import { renderHook, waitFor, act } from '@testing-library/react';
-import { useInfiniteScroll } from './useInfiniteScroll';
-import { PaginatedResult } from '@domain/character/ports/CharacterRepository';
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { useInfiniteScroll } from "./useInfiniteScroll";
+import { PaginatedResult } from "@domain/character/ports/CharacterRepository";
 
-describe('useInfiniteScroll', () => {
+describe("useInfiniteScroll", () => {
   let observeCallback: IntersectionObserverCallback;
 
   beforeEach(() => {
@@ -16,11 +16,11 @@ describe('useInfiniteScroll', () => {
         unobserve: jest.fn(),
         disconnect: jest.fn(),
         root: null,
-        rootMargin: '',
+        rootMargin: "",
         thresholds: [],
         takeRecords: jest.fn(),
       };
-    }) as any;
+    }) as unknown as typeof IntersectionObserver;
   });
 
   afterEach(() => {
@@ -28,23 +28,28 @@ describe('useInfiniteScroll', () => {
   });
 
   const createMockFetchMore = (totalItems: number = 150) => {
-    let callCount = 0;
-    return jest.fn().mockImplementation(async (offset: number): Promise<PaginatedResult<{ id: number }>> => {
-      callCount++;
-      const items = Array.from({ length: Math.min(50, totalItems - offset) }, (_, i) => ({
-        id: offset + i,
-      }));
+    return jest
+      .fn()
+      .mockImplementation(
+        async (offset: number): Promise<PaginatedResult<{ id: number }>> => {
+          const items = Array.from(
+            { length: Math.min(50, totalItems - offset) },
+            (_, i) => ({
+              id: offset + i,
+            }),
+          );
 
-      return {
-        items,
-        total: totalItems,
-        offset,
-        limit: 50,
-      };
-    });
+          return {
+            items,
+            total: totalItems,
+            offset,
+            limit: 50,
+          };
+        },
+      );
   };
 
-  it('should load initial data on mount', async () => {
+  it("should load initial data on mount", async () => {
     const fetchMore = createMockFetchMore(150);
 
     const { result } = renderHook(() => useInfiniteScroll(fetchMore, 50));
@@ -60,7 +65,7 @@ describe('useInfiniteScroll', () => {
     expect(fetchMore).toHaveBeenCalledWith(0);
   });
 
-  it('should set hasMore to false when all items loaded', async () => {
+  it("should set hasMore to false when all items loaded", async () => {
     const fetchMore = createMockFetchMore(50); // Only 50 total items
 
     const { result } = renderHook(() => useInfiniteScroll(fetchMore, 50));
@@ -72,7 +77,7 @@ describe('useInfiniteScroll', () => {
     expect(result.current.hasMore).toBe(false);
   });
 
-  it('should load more items when triggered', async () => {
+  it("should load more items when triggered", async () => {
     const fetchMore = createMockFetchMore(150);
 
     const { result } = renderHook(() => useInfiniteScroll(fetchMore, 50));
@@ -96,8 +101,8 @@ describe('useInfiniteScroll', () => {
     expect(fetchMore).toHaveBeenNthCalledWith(2, 50);
   });
 
-  it('should handle errors gracefully', async () => {
-    const fetchMore = jest.fn().mockRejectedValue(new Error('API Error'));
+  it("should handle errors gracefully", async () => {
+    const fetchMore = jest.fn().mockRejectedValue(new Error("API Error"));
 
     const { result } = renderHook(() => useInfiniteScroll(fetchMore, 50));
 
@@ -109,8 +114,8 @@ describe('useInfiniteScroll', () => {
     expect(result.current.hasMore).toBe(false);
   });
 
-  it('should provide retry function after error', async () => {
-    const fetchMore = jest.fn().mockRejectedValue(new Error('API Error'));
+  it("should provide retry function after error", async () => {
+    const fetchMore = jest.fn().mockRejectedValue(new Error("API Error"));
 
     const { result } = renderHook(() => useInfiniteScroll(fetchMore, 50));
 
@@ -120,10 +125,10 @@ describe('useInfiniteScroll', () => {
     });
 
     // Verify retry function is provided
-    expect(typeof result.current.retry).toBe('function');
+    expect(typeof result.current.retry).toBe("function");
   });
 
-  it('should reset state when reset is called', async () => {
+  it("should reset state when reset is called", async () => {
     const fetchMore = createMockFetchMore(150);
 
     const { result } = renderHook(() => useInfiniteScroll(fetchMore, 50));
@@ -141,16 +146,19 @@ describe('useInfiniteScroll', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('should not load more when already loading', async () => {
+  it("should not load more when already loading", async () => {
     let resolveFirst: () => void;
-    const firstCall = new Promise<any>((resolve) => {
-      resolveFirst = () => resolve({
-        items: Array.from({ length: 50 }, (_, i) => ({ id: i })),
-        total: 100,
-        offset: 0,
-        limit: 50,
-      });
-    });
+    const firstCall = new Promise<PaginatedResult<{ id: number }>>(
+      (resolve) => {
+        resolveFirst = () =>
+          resolve({
+            items: Array.from({ length: 50 }, (_, i) => ({ id: i })),
+            total: 100,
+            offset: 0,
+            limit: 50,
+          });
+      },
+    );
 
     const fetchMore = jest.fn().mockReturnValueOnce(firstCall);
 
@@ -169,7 +177,7 @@ describe('useInfiniteScroll', () => {
     });
 
     // Wait a bit
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // Should still only have been called once
     expect(fetchMore).toHaveBeenCalledTimes(1);
@@ -184,7 +192,7 @@ describe('useInfiniteScroll', () => {
     });
   });
 
-  it('should correctly calculate hasMore based on total items', async () => {
+  it("should correctly calculate hasMore based on total items", async () => {
     // Test with exact page match (50 items, 50 per page)
     const fetchMore = createMockFetchMore(50);
 

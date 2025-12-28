@@ -38,11 +38,3 @@ export const UI = {
   /** Debounce delay for search input in milliseconds */
   SEARCH_DEBOUNCE_MS: 400,
 } as const;
-
-/**
- * Comics Configuration
- */
-export const COMICS = {
-  /** Default number of comics to fetch for a character */
-  DEFAULT_DETAIL_PAGE_LIMIT: 20,
-} as const;

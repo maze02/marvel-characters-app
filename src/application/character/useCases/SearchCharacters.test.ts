@@ -317,7 +317,8 @@ describe("SearchCharacters", () => {
       });
 
       it("should handle repository returning null", async () => {
-        mockRepository.searchByName.mockResolvedValue(null as any);
+        // @ts-expect-error - Intentionally testing invalid return value
+        mockRepository.searchByName.mockResolvedValue(null);
 
         await expect(useCase.execute("Spider")).rejects.toThrow();
       });

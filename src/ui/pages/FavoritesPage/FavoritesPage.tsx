@@ -67,7 +67,8 @@ export const FavoritesPage: React.FC = () => {
     };
 
     void loadFavorites();
-  }, [favoritesCount, listFavorites, hasFavorites, startLoading, stopLoading]); // Reload when favorites count changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [favoritesCount]); // Only reload when favorites count changes
 
   // Filter characters based on search query using use case (business logic)
   const displayedCharacters = filterCharacters.execute(

@@ -7,6 +7,7 @@ export interface SearchBarProps {
   onChange: (value: string) => void;
   placeholder?: string;
   ariaLabel?: string;
+  testId?: string;
 }
 
 /**
@@ -28,6 +29,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onChange,
   placeholder = "SEARCH A CHARACTER...",
   ariaLabel = "Search Marvel characters",
+  testId = "search-input",
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -38,10 +40,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <Icon name="search" size={16} className={styles.searchBar__icon} />
       <input
         type="search"
+        role="searchbox"
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
         aria-label={ariaLabel}
+        data-testid={testId}
         className={styles.searchBar__input}
       />
     </div>
