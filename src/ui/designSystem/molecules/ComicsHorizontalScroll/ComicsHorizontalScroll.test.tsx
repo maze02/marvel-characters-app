@@ -1,6 +1,7 @@
 /**
  * ComicsHorizontalScroll Tests
  *
+ *
  * Tests comics horizontal scroll display and empty state handling.
  */
 
