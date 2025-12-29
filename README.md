@@ -187,17 +187,6 @@ Centralized design tokens for consistency and maintainability:
 - **E2E Best Practices**: Stable selectors, behavior testing, independent tests, condition-based waits
 - **Production Quality**: Comprehensive edge cases, error handling, and documentation
 
-## 🔄 UX Improvements
-
-Recent UX enhancements for better user experience:
-
-- **Loading States**: Separate loading indicators for character and comics data
-- **Empty States**: Clear messaging when no data is available
-- **Error Handling**: Graceful fallbacks with user-friendly error messages
-- **Retry Logic**: Automatic retry with exponential backoff for API timeouts (up to 4 attempts)
-- **Optimistic Updates**: Instant feedback for favorite toggles
-- **Debounced Search**: Reduced API calls with 400ms debounce
-- **Timeout Resilience**: Increased timeout to 20s with smart retry on transient failures
 
 ## 🛠️ Technology Stack
 
