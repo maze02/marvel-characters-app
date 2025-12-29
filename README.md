@@ -11,14 +11,10 @@ A modern, production-ready React application for browsing Marvel characters usin
 
 - 🦸 **Browse Characters**: Load 50 characters initially with infinite scroll
 - 🔍 **Real-time Search**: Debounced search (300ms) with API filtering
-- 🦸 **Browse Characters**: Load 50 characters initially with infinite scroll
-- 🔍 **Real-time Search**: Debounced search (300ms) with API filtering
 - ❤️ **Favorites System**: Save favorite characters with localStorage persistence
-- 📚 **Character Details**: View character information and first 20 comics
 - 📚 **Character Details**: View character information and first 20 comics
 - 📱 **Fully Responsive**: Optimized for mobile, tablet, and desktop
 - ♿ **Accessibility First**: WCAG compliant with ARIA labels and semantic HTML
-- 🎨 **Design System**: Atomic design pattern with reusable components and design tokens
 - 🎨 **Design System**: Atomic design pattern with reusable components and design tokens
 - 🏗️ **Clean Architecture**: Separation of concerns with DDD principles
 - ✅ **Production-Grade Testing**: 830 unit/integration tests + 51 E2E tests with 81.81% coverage
@@ -351,5 +347,3 @@ main (production)
 
 
 ---
-
-**Built with Clean Architecture, Domain-Driven Design, and modern React best practices.**
