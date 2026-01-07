@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { CharacterHero } from "@ui/designSystem/molecules/CharacterHero/CharacterHero";
+import { Button } from "@ui/designSystem/atoms/Button/Button";
 import { ComicsHorizontalScroll } from "@ui/designSystem/molecules/ComicsHorizontalScroll/ComicsHorizontalScroll";
 import { SEO } from "@ui/components/SEO";
+
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
 import { useUseCases } from "@ui/state/DependenciesContext";
 import { routes } from "@ui/routes/routes";
+
 import { Character } from "@domain/character/entities/Character";
 import { Comic } from "@domain/character/entities/Comic";
 import { config } from "@infrastructure/config/env";
@@ -23,6 +26,7 @@ type LoadingState = "idle" | "loading" | "success" | "error";
  */
 export const DetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [character, setCharacter] = useState<Character | null>(null);
   const [comics, setComics] = useState<Comic[]>([]); // Loaded comics (cumulative)
   const [loadingState, setLoadingState] = useState<LoadingState>("loading");
@@ -35,14 +39,29 @@ export const DetailPage: React.FC = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { startLoading, stopLoading } = useLoading();
 
-  // Inject use cases via DI container
+  // Access use cases from dependencies context that connects to infrastructure layer
   const { getCharacterDetail, listCharacterComics } = useUseCases();
+
+  // Sync loadingState with global loading context
+  // Shows loading bar for: character loading, initial comics loading, AND loading more comics
+  useEffect(() => {
+    if (loadingState === "loading" || comicsLoading || loadingMoreComics) {
+      startLoading();
+    } else {
+      stopLoading();
+    }
+  }, [
+    loadingState,
+    comicsLoading,
+    loadingMoreComics,
+    startLoading,
+    stopLoading,
+  ]);
 
   useEffect(() => {
     // Validate ID exists
     if (!id) {
       setLoadingState("error");
-      stopLoading();
       return;
     }
 
@@ -55,10 +74,9 @@ export const DetailPage: React.FC = () => {
     setComics([]);
     setComicsOffset(0);
     setHasMoreComics(false);
-    startLoading();
 
     // Defer async operation to next event loop iteration
-    // This ensures React renders the loading bar before fetching data
+    // Ensures React renders the loading bar before fetching data
     const timeoutId = setTimeout(() => {
       const loadData = async () => {
         try {
@@ -133,10 +151,6 @@ export const DetailPage: React.FC = () => {
           setCharacter(null);
           setComics([]);
           setHasMoreComics(false);
-        } finally {
-          if (!isCancelled) {
-            stopLoading();
-          }
         }
       };
 
@@ -148,14 +162,7 @@ export const DetailPage: React.FC = () => {
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [
-    id,
-    getCharacterDetail,
-    listCharacterComics,
-    startLoading,
-    stopLoading,
-    COMICS_PAGE_SIZE,
-  ]);
+  }, [id, getCharacterDetail, listCharacterComics, COMICS_PAGE_SIZE]);
 
   /**
    * Deduplicates comics array by ID
@@ -233,9 +240,14 @@ export const DetailPage: React.FC = () => {
             Unable to load character details. This may be due to an API error or
             the character may not exist.
           </p>
-          <Link to={routes.home} className={styles.detailPage__action}>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => navigate(routes.home)}
+            aria-label="Return to home page"
+          >
             Return to Home
-          </Link>
+          </Button>
         </div>
       </div>
     );

@@ -120,9 +120,9 @@ test.describe("Error Handling", () => {
     });
     await expect(errorHeading).toBeVisible({ timeout: 10000 });
 
-    // Should provide way to go back home (use specific text to avoid matching logo)
-    const homeLink = page.getByRole("link", { name: /return to home/i });
-    await expect(homeLink).toBeVisible();
+    // Should provide way to go back home (button for error state navigation)
+    const homeButton = page.getByRole("button", { name: /return to home/i });
+    await expect(homeButton).toBeVisible();
   });
 
   test("should show user-friendly error messages (not technical jargon)", async ({
@@ -163,7 +163,7 @@ test.describe("Error Handling", () => {
      * Users need feedback, not a frozen page.
      */
     // Mock API to timeout (delay forever)
-    await page.route("**/characters/?**", (route) => {
+    await page.route("**/characters/?**", (_route) => {
       // Never resolve - simulate timeout
       // Playwright will eventually timeout after default timeout period
     });

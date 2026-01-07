@@ -1,7 +1,7 @@
 /**
  * BrowserSEOService Tests
  *
- * Comprehensive tests for the browser-based SEO service.
+ * Tests for the browser-based SEO service.
  * Tests cover meta tag manipulation, structured data injection, and DOM operations.
  *
  * Why these tests matter:

@@ -8,11 +8,11 @@
  * - How it should look when shared on social media (Facebook, Twitter, etc.)
  * - Information about characters (for character detail pages)
  *
- * This makes your site appear better in search results and look nicer when shared.
+ * This makes the site appear better in search results and look nicer when shared.
  *
  * Implementation Details:
  * - Uses Dependency Injection to get the SEO service
- * - Follows Clean Architecture / Hexagonal Architecture principles
+ * - Follows Hexagonal Architecture principles
  * - No direct DOM manipulation - delegates to SEOService
  */
 
@@ -45,10 +45,6 @@ export interface SEOProps extends SEOMetadata {
  * - Uses SEOService via Dependency Injection
  * - Follows Dependency Inversion Principle
  *
- * Clean Code Principles:
- * - Single Responsibility: Only manages SEO metadata lifecycle
- * - Dependency Injection: Gets SEO service from DI container
- * - No direct DOM manipulation: Delegates to SEOService
  *
  * @example
  * ```tsx
@@ -67,7 +63,6 @@ export const SEO: React.FC<SEOProps> = ({ structuredData, ...metadata }) => {
   // Update metadata when props change
   // Note: We list individual properties instead of the whole `metadata` object
   // to avoid infinite re-renders (objects are compared by reference, not value).
-  // This is intentional and correct behavior.
   useEffect(() => {
     seo.updateMetadata(metadata);
     // metadata object is intentionally excluded to avoid infinite re-renders

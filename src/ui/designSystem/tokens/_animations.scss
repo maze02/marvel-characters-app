@@ -31,7 +31,7 @@ $ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
  */
 @mixin safe-animation($properties...) {
   transition: $properties;
-  
+
   @include reduced-motion {
     transition: none;
   }
@@ -42,7 +42,7 @@ $ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --duration-fast: #{$duration-fast};
   --duration-base: #{$duration-base};
   --duration-slow: #{$duration-slow};
-  
+
   --ease-in: #{$ease-in};
   --ease-out: #{$ease-out};
   --ease-in-out: #{$ease-in-out};

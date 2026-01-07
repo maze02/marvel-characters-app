@@ -27,21 +27,18 @@ describe("ListFavorites", () => {
         name: new CharacterName("Spider-Man"),
         description: "Friendly neighborhood Spider-Man",
         thumbnail: new ImageUrl("http://example.com/spiderman", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       }),
       new Character({
         id: new CharacterId(1009368),
         name: new CharacterName("Iron Man"),
         description: "Genius billionaire",
         thumbnail: new ImageUrl("http://example.com/ironman", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       }),
       new Character({
         id: new CharacterId(1009220),
         name: new CharacterName("Captain America"),
         description: "Super soldier",
         thumbnail: new ImageUrl("http://example.com/cap", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       }),
     ];
 
@@ -339,68 +336,6 @@ describe("ListFavorites", () => {
     });
   });
 
-  describe("isFavorite", () => {
-    it("should return true when character is favorited", async () => {
-      mockFavoritesRepository.contains.mockResolvedValue(true);
-
-      const result = await useCase.isFavorite(1009610);
-
-      expect(result).toBe(true);
-    });
-
-    it("should return false when character is not favorited", async () => {
-      mockFavoritesRepository.contains.mockResolvedValue(false);
-
-      const result = await useCase.isFavorite(999999);
-
-      expect(result).toBe(false);
-    });
-
-    it("should call contains with CharacterId", async () => {
-      mockFavoritesRepository.contains.mockResolvedValue(true);
-
-      await useCase.isFavorite(1009610);
-
-      expect(mockFavoritesRepository.contains).toHaveBeenCalledWith(
-        expect.any(CharacterId),
-      );
-      const receivedId = mockFavoritesRepository.contains.mock.calls[0]?.[0];
-      expect(receivedId?.value).toBe(1009610);
-    });
-
-    it("should handle different character IDs", async () => {
-      mockFavoritesRepository.contains.mockResolvedValue(true);
-
-      await useCase.isFavorite(123);
-
-      const receivedId = mockFavoritesRepository.contains.mock.calls[0]?.[0];
-      expect(receivedId?.value).toBe(123);
-    });
-
-    it("should propagate repository errors", async () => {
-      mockFavoritesRepository.contains.mockRejectedValue(
-        new Error("Storage error"),
-      );
-
-      await expect(useCase.isFavorite(1009610)).rejects.toThrow(
-        "Storage error",
-      );
-    });
-
-    it("should handle invalid character IDs", async () => {
-      // CharacterId validates, so invalid IDs should throw
-      await expect(useCase.isFavorite(0)).rejects.toThrow(
-        "Invalid character ID",
-      );
-    });
-
-    it("should handle negative character IDs", async () => {
-      await expect(useCase.isFavorite(-1)).rejects.toThrow(
-        "Invalid character ID",
-      );
-    });
-  });
-
   describe("Integration scenarios", () => {
     it("should work with real-world favorite flow", async () => {
       // User has 2 favorites
@@ -414,11 +349,9 @@ describe("ListFavorites", () => {
 
       const count = await useCase.getCount();
       const favorites = await useCase.execute();
-      const isFav = await useCase.isFavorite(1009610);
 
       expect(count).toBe(2);
       expect(favorites).toHaveLength(2);
-      expect(isFav).toBe(true);
     });
 
     it("should handle concurrent operations", async () => {

@@ -2,7 +2,7 @@
  * Cross-Page User Flow Integration Tests
  *
  * Tests complete user journeys that span multiple pages and components.
- * These are the most comprehensive integration tests, simulating real user behavior.
+ * Contains the most comprehensive integration tests, simulating real user behavior.
  *
  * Only external boundaries (APIs, Web APIs, Logger) are mocked.
  * All components, contexts, and providers are real.
@@ -26,7 +26,6 @@ const createMockCharacter = (id: number, name: string, description: string) => {
       `https://example.com/${name.toLowerCase().replace(" ", "")}`,
       "jpg",
     ),
-    modifiedDate: new Date("2024-01-01"),
   });
 };
 
@@ -381,8 +380,8 @@ describe("Cross-Page User Flow Integration Tests", () => {
         expect(screen.getByText("Iron Man")).toBeInTheDocument();
       });
 
-      // Should show 2 results
-      expect(screen.getByText("2 RESULTS")).toBeInTheDocument();
+      // Should show 2 results (text may have whitespace between number and word)
+      expect(screen.getByText(/2\s+RESULTS/i)).toBeInTheDocument();
 
       // Remove one favorite
       const removeButton = screen.getByRole("button", {

@@ -142,7 +142,7 @@ export class ComicVineComicMapper {
     const url = image.medium_url;
 
     // Comic Vine returns complete URLs: https://comicvine.gamespot.com/a/uploads/scale_medium/11/11111/123456-file.jpg
-    // We need to store the complete URL minus the extension, since ImageUrl adds it back
+    // Store below the complete URL minus the extension, since ImageUrl adds it back
     const lastDotIndex = url.lastIndexOf(".");
     const extension = url.substring(lastDotIndex + 1) || "jpg";
     const pathWithoutExtension = url.substring(0, lastDotIndex);

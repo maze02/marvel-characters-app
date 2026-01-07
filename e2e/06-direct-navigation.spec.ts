@@ -142,12 +142,12 @@ test.describe("Direct URL Navigation", () => {
       page.getByText(/Unable to load character details/i),
     ).toBeVisible();
 
-    // Should provide "Return to Home" link
-    const homeLink = page.getByRole("link", { name: /Return to Home/i });
-    await expect(homeLink).toBeVisible();
+    // Should provide "Return to Home" button
+    const homeButton = page.getByRole("button", { name: /Return to Home/i });
+    await expect(homeButton).toBeVisible();
 
     // Click "Return to Home" should work
-    await homeLink.click();
+    await homeButton.click();
     await waitForCharacters(page);
     await expect(getFirstCharacterCard(page)).toBeVisible();
   });

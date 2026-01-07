@@ -11,7 +11,6 @@ import { DependencyContainer } from "@infrastructure/dependencies/DependencyCont
  * - Components don't create their own dependencies
  * - Easy to test - can inject mock dependencies via context
  * - Single instance shared across all components
- * - Follows React best practices
  *
  * @example
  * ```typescript
@@ -113,13 +112,4 @@ export const useUseCases = () => {
 export const useServices = () => {
   const container = useDependencyContainer();
   return container.services;
-};
-
-/**
- * Hook to access repositories directly (rarely needed, mostly for advanced use cases)
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export const useRepositories = () => {
-  const container = useDependencyContainer();
-  return container.repositories;
 };

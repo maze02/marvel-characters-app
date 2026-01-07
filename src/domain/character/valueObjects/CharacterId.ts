@@ -1,9 +1,9 @@
 /**
  * CharacterId Value Object
- * 
+ *
  * Represents a unique identifier for a Marvel character.
  * Ensures the ID is always a valid positive integer.
- * 
+ *
  * @example
  * ```typescript
  * const id = new CharacterId(1011334); // Spider-Man's ID
@@ -15,7 +15,9 @@ export class CharacterId {
 
   constructor(value: number) {
     if (!Number.isInteger(value) || value <= 0) {
-      throw new Error(`Invalid character ID: ${value}. Must be a positive integer.`);
+      throw new Error(
+        `Invalid character ID: ${value}. Must be a positive integer.`,
+      );
     }
     this._value = value;
   }

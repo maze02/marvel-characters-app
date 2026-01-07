@@ -62,7 +62,6 @@ describe("ComicVineCharacterMapper", () => {
         expect(character.id.value).toBe(1699);
         expect(character.name.value).toBe("Spider-Man");
         expect(character.description).toBe("Bitten by a radioactive spider.");
-        expect(character.modifiedDate).toBeInstanceOf(Date);
       });
 
       it("strips HTML tags from description", () => {

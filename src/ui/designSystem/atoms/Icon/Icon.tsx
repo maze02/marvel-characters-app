@@ -10,10 +10,7 @@ export interface IconProps {
 /**
  * Icon Component
  *
- * SVG icon library matching exact Figma mockup specifications.
- * Empty heart uses stroke outline (strokeWidth: 2).
- * Filled heart uses Heart icon.svg design (24x22).
- * Uses inline SVG for optimal performance.
+ * SVG icon library.
  */
 export const Icon: React.FC<IconProps> = ({
   name,

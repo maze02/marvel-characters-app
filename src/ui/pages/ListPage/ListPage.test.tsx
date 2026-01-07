@@ -25,7 +25,6 @@ const mockCharacter = new Character({
   name: new CharacterName("Spider-Man"),
   description: "Friendly neighborhood Spider-Man",
   thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
-  modifiedDate: new Date("2024-01-01"),
 });
 
 // Create stable mock functions

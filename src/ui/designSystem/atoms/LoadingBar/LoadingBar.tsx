@@ -13,7 +13,6 @@ export interface LoadingBarProps {
  * Animates from left to right with a smooth indeterminate progress animation.
  *
  * Features:
- * - Fixed positioning at top of viewport
  * - Marvel red (#EC1D24) color
  * - Smooth CSS animation
  * - Automatically hides when loading completes
