@@ -8,81 +8,48 @@
   }
 
   &__label {
+    @include input-text-base;
     font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
     color: $color-text-primary;
   }
 
   &__wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+    @include input-field-container;
   }
 
   &__icon {
-    position: absolute;
-    left: $spacing-3;
-    display: flex;
-    align-items: center;
-    color: $color-text-secondary;
-    pointer-events: none;
-    z-index: 1;
+    color: $color-text-primary;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
   }
 
   &__input {
-    width: 100%;
-    padding: $spacing-2 $spacing-3;
-    font-family: $font-family-base;
-    font-size: $font-size-base;
-    color: $color-text-primary;
-    background-color: $color-surface;
-    border: 1px solid $color-border;
-    border-radius: $border-radius-base;
-    @include safe-animation(
-      border-color $duration-base $ease-out,
-      box-shadow $duration-base $ease-out
-    );
-
-    &:hover:not(:disabled) {
-      border-color: $color-border-light;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: $color-border-focus;
-      box-shadow: 0 0 0 3px rgba($color-primary, 0.2);
-    }
+    @include input-field-base;
 
     &:disabled {
       cursor: not-allowed;
       opacity: 0.6;
-      background-color: rgba($color-surface, 0.5);
-    }
-
-    &::placeholder {
-      color: $color-text-secondary;
     }
 
     &--error {
-      border-color: $color-error;
+      // Keep error state minimal - can add border color or other indicator if needed
+      color: $color-error;
 
-      &:focus {
-        border-color: $color-error;
-        box-shadow: 0 0 0 3px rgba($color-error, 0.2);
+      &::placeholder {
+        color: rgba($color-error, 0.6);
       }
-    }
-
-    &--with-icon {
-      padding-left: calc($spacing-3 + 24px + $spacing-2);
     }
   }
 
   &__error {
+    @include input-text-base;
     font-size: $font-size-sm;
     color: $color-error;
   }
 
   &__helperText {
+    @include input-text-base;
     font-size: $font-size-sm;
     color: $color-text-secondary;
   }

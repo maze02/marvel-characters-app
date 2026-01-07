@@ -1,22 +1,22 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Icon } from './Icon';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Icon } from "./Icon";
 
 /**
  * Icon component for displaying SVG icons.
  */
 const meta: Meta<typeof Icon> = {
-  title: 'Design System/Atoms/Icon',
+  title: "Design System/Atoms/Icon",
   component: Icon,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     name: {
-      control: 'select',
-      options: ['heart', 'heart-filled', 'search'],
-      description: 'Icon name',
+      control: "select",
+      options: ["heart", "heart-filled", "search"],
+      description: "Icon name",
     },
     size: {
-      control: 'number',
-      description: 'Icon size in pixels',
+      control: "number",
+      description: "Icon size in pixels",
     },
   },
 };
@@ -29,7 +29,7 @@ type Story = StoryObj<typeof Icon>;
  */
 export const Heart: Story = {
   args: {
-    name: 'heart',
+    name: "heart",
     size: 24,
   },
 };
@@ -39,7 +39,7 @@ export const Heart: Story = {
  */
 export const HeartFilled: Story = {
   args: {
-    name: 'heart-filled',
+    name: "heart-filled",
     size: 24,
   },
 };
@@ -49,7 +49,7 @@ export const HeartFilled: Story = {
  */
 export const Search: Story = {
   args: {
-    name: 'search',
+    name: "search",
     size: 24,
   },
 };
@@ -59,7 +59,7 @@ export const Search: Story = {
  */
 export const SmallSize: Story = {
   args: {
-    name: 'heart',
+    name: "heart",
     size: 16,
   },
 };
@@ -69,7 +69,7 @@ export const SmallSize: Story = {
  */
 export const LargeSize: Story = {
   args: {
-    name: 'heart',
+    name: "heart",
     size: 48,
   },
 };
@@ -79,18 +79,27 @@ export const LargeSize: Story = {
  */
 export const AllIcons: Story = {
   render: () => (
-    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
+    <div
+      style={{
+        display: "flex",
+        gap: "2rem",
+        flexWrap: "wrap",
+        alignItems: "center",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
         <Icon name="heart" size={32} />
-        <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>heart</div>
+        <div style={{ marginTop: "0.5rem", fontSize: "12px" }}>heart</div>
       </div>
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: "center" }}>
         <Icon name="heart-filled" size={32} />
-        <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>heart-filled</div>
+        <div style={{ marginTop: "0.5rem", fontSize: "12px" }}>
+          heart-filled
+        </div>
       </div>
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: "center" }}>
         <Icon name="search" size={32} />
-        <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>search</div>
+        <div style={{ marginTop: "0.5rem", fontSize: "12px" }}>search</div>
       </div>
     </div>
   ),

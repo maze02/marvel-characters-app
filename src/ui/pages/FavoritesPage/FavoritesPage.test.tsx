@@ -71,7 +71,6 @@ const createMockCharacter = (
       `https://example.com/${name.toLowerCase().replace(" ", "")}`,
       "jpg",
     ),
-    modifiedDate: new Date(),
   });
 };
 

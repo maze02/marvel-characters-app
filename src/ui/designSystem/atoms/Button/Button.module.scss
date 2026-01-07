@@ -2,10 +2,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: $font-family-base;
-  font-weight: $font-weight-semibold;
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-normal;
   border: none;
-  border-radius: $border-radius-base;
+  border-radius: 2px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -25,8 +27,12 @@
     opacity: 0.6;
   }
 
+  &:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
   &:not(:disabled):active {
-    transform: scale(0.98);
+    transform: translateY(0);
   }
 
   // Variants
@@ -73,8 +79,8 @@
   }
 
   &--lg {
-    padding: $spacing-3 $spacing-6;
-    font-size: $font-size-md;
+    padding: $spacing-3 $spacing-5;
+    font-size: 14px;
     min-height: 48px;
   }
 

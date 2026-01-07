@@ -1,10 +1,10 @@
 /**
  * Test Setup
- * 
+ *
  * Configures Jest and Testing Library for all tests.
  */
 
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Mock ResizeObserver which is not available in jsdom
 global.ResizeObserver = class ResizeObserver {
@@ -14,7 +14,7 @@ global.ResizeObserver = class ResizeObserver {
 };
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: jest.fn().mockImplementation((query: string) => ({
     matches: false,

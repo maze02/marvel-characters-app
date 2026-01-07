@@ -1,8 +1,8 @@
 /**
  * Comic Vine Character DTOs
- * 
- * Data Transfer Objects for Comic Vine API character responses.
- * Maps external API structure to application layer.
+ *
+ * Data Transfer Object Interfaces for Comic Vine API character responses.
+ * Defines Interfaces for Mapping external API structure to application layer.
  */
 
 /**
@@ -12,7 +12,7 @@
 export interface ComicVineIssueCredit {
   id: number;
   api_detail_url: string;
-  name?: string; // Optional, not always included
+  name?: string;
 }
 
 /**
@@ -73,16 +73,4 @@ export interface ComicVineSingleCharacterResponse {
   number_of_total_results: number;
   status_code: number;
   results: ComicVineCharacterResponse;
-}
-
-/**
- * Character DTO for Application Layer
- * Simplified structure for internal use
- */
-export interface CharacterDTO {
-  id: number;
-  name: string;
-  description: string;
-  thumbnailUrl: string;
-  modifiedDate: string;
 }

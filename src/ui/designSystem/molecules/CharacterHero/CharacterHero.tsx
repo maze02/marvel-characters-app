@@ -19,11 +19,6 @@ interface CharacterHeroProps {
  * Description can be expanded/collapsed with smooth animation.
  * Uses adaptive line clamping to fit description text within available space.
  *
- * Specifications:
- * - Total height: 607.89px
- * - Overlay height: 280px (collapsed), expands when "Read more" is clicked
- * - Bottom-right corner: Clipped triangle effect
- * - Dynamic line clamping based on container size
  */
 export const CharacterHero: React.FC<CharacterHeroProps> = ({
   imageUrl,

@@ -1,20 +1,20 @@
-import { FavoritesRepository } from '@domain/character/ports/FavoritesRepository';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
-import { StorageAdapter } from '../storage/StorageAdapter';
+import { FavoritesRepository } from "@domain/character/ports/FavoritesRepository";
+import { CharacterId } from "@domain/character/valueObjects/CharacterId";
+import { StorageAdapter } from "../storage/StorageAdapter";
 import {
   FavoritesData,
   createDefaultFavoritesData,
   validateFavoritesData,
   migrateFavoritesData,
-} from '../storage/StorageSchema';
-import { logger } from '@infrastructure/logging/Logger';
+} from "../storage/StorageSchema";
+import { logger } from "@infrastructure/logging/Logger";
 
 /**
  * LocalStorage Favorites Repository
- * 
+ *
  * Implements FavoritesRepository using browser localStorage.
  * Provides safe storage with validation and migration support.
- * 
+ *
  * @example
  * ```typescript
  * const repository = new LocalStorageFavoritesRepository();
@@ -22,7 +22,7 @@ import { logger } from '@infrastructure/logging/Logger';
  * ```
  */
 export class LocalStorageFavoritesRepository implements FavoritesRepository {
-  private readonly STORAGE_KEY = 'marvel_favorites';
+  private readonly STORAGE_KEY = "marvel_favorites";
   private readonly storage: StorageAdapter;
 
   constructor(storage?: StorageAdapter) {
@@ -31,7 +31,7 @@ export class LocalStorageFavoritesRepository implements FavoritesRepository {
 
   async add(id: CharacterId): Promise<void> {
     const data = this.load();
-    
+
     // Avoid duplicates
     if (!data.favorites.includes(id.value)) {
       data.favorites.push(id.value);
@@ -80,14 +80,14 @@ export class LocalStorageFavoritesRepository implements FavoritesRepository {
 
       // Validate structure
       if (!validateFavoritesData(stored)) {
-        logger.warn('Invalid favorites data structure, resetting to default');
+        logger.warn("Invalid favorites data structure, resetting to default");
         return createDefaultFavoritesData();
       }
 
       // Migrate if needed
       return migrateFavoritesData(stored);
     } catch (error) {
-      logger.error('Failed to load favorites', error);
+      logger.error("Failed to load favorites", error);
       return createDefaultFavoritesData();
     }
   }

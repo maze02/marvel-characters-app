@@ -53,7 +53,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputClasses = [
       styles.inputContainer__input,
       error && styles["inputContainer__input--error"],
-      icon && styles["inputContainer__input--with-icon"],
     ]
       .filter(Boolean)
       .join(" ");

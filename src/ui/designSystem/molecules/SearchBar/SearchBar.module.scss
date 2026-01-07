@@ -1,11 +1,6 @@
 // Block: searchBar
 .searchBar {
-  position: relative;
-  width: 100%;
-  @include flex-center-vertical;
-  border-bottom: 1px solid $color-text-primary;
-  padding: 12px 0;
-  gap: 12px;
+  @include input-field-container;
 
   // Element: search icon
   &__icon {
@@ -17,38 +12,6 @@
 
   // Element: search input field
   &__input {
-    flex: 1;
-    background: none;
-    border: none;
-    color: $color-text-primary;
-    font-size: $font-size-base; // 16px (mockup spec)
-    font-family: $font-family-condensed; // Roboto Condensed
-    font-weight: $font-weight-regular; // 400 (Regular)
-    letter-spacing: $letter-spacing-normal; // 0% (mockup spec)
-    text-transform: uppercase;
-    outline: none;
-    padding: 0;
-
-    &::placeholder {
-      color: $color-text-secondary;
-      text-transform: uppercase;
-      font-size: $font-size-base; // 16px (mockup spec)
-      font-family: $font-family-condensed; // Roboto Condensed
-      font-weight: $font-weight-regular; // Regular
-      letter-spacing: $letter-spacing-normal; // 0% (mockup spec)
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    // Remove default search input styling
-    &::-webkit-search-cancel-button {
-      display: none;
-    }
-
-    &::-webkit-search-decoration {
-      display: none;
-    }
+    @include input-field-base;
   }
 }

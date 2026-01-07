@@ -34,7 +34,6 @@ export class ComicVineCharacterMapper {
         response.description || response.deck,
       ),
       thumbnail: this.createImageUrl(response.image),
-      modifiedDate: new Date(response.date_last_updated),
       issueIds, // Include issue IDs for efficient comic fetching
     });
   }

@@ -5,13 +5,15 @@
  */
 
 // Font Families
-$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+$font-family-base:
+  -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+  "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
-$font-family-condensed: 'Roboto Condensed', sans-serif; // For search input
+$font-family-condensed: "Roboto Condensed", sans-serif; // For search input
 
-$font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono',
-  'Droid Sans Mono', 'Source Code Pro', monospace;
+$font-family-mono:
+  "SF Mono", "Monaco", "Inconsolata", "Fira Mono", "Droid Sans Mono",
+  "Source Code Pro", monospace;
 
 // Font Sizes (using modular scale)
 $font-size-xs: 0.75rem; // 12px
@@ -37,7 +39,7 @@ $line-height-relaxed: 1.75;
 
 // Letter Spacing
 $letter-spacing-tight: -0.025em;
-$letter-spacing-normal: 0;        // 0% letter spacing (mockup spec)
+$letter-spacing-normal: 0; // 0% letter spacing (mockup spec)
 $letter-spacing-wide: 0.025em;
 
 // Export as CSS custom properties
@@ -45,7 +47,7 @@ $letter-spacing-wide: 0.025em;
   --font-family-base: #{$font-family-base};
   --font-family-condensed: #{$font-family-condensed};
   --font-family-mono: #{$font-family-mono};
-  
+
   --font-size-xs: #{$font-size-xs};
   --font-size-sm: #{$font-size-sm};
   --font-size-base: #{$font-size-base};
@@ -54,12 +56,12 @@ $letter-spacing-wide: 0.025em;
   --font-size-xl: #{$font-size-xl};
   --font-size-2xl: #{$font-size-2xl};
   --font-size-3xl: #{$font-size-3xl};
-  
+
   --font-weight-regular: #{$font-weight-regular};
   --font-weight-medium: #{$font-weight-medium};
   --font-weight-semibold: #{$font-weight-semibold};
   --font-weight-bold: #{$font-weight-bold};
-  
+
   --line-height-tight: #{$line-height-tight};
   --line-height-normal: #{$line-height-normal};
   --line-height-relaxed: #{$line-height-relaxed};

@@ -1,7 +1,7 @@
 /**
  * ComicVineComicMapper Unit Tests
  *
- * Production-grade tests for Comic Vine Issue API to domain entity mapping.
+ * Tests for Comic Vine Issue API to domain entity mapping.
  * Tests cover: happy paths, edge cases, title formatting, and HTML cleaning.
  */
 

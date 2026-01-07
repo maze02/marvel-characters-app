@@ -1,18 +1,21 @@
-import { CharacterRepository, PaginatedResult } from '@domain/character/ports/CharacterRepository';
-import { Character } from '@domain/character/entities/Character';
-import { PAGINATION } from '@config/constants';
+import {
+  CharacterRepository,
+  PaginatedResult,
+} from "@domain/character/ports/CharacterRepository";
+import { Character } from "@domain/character/entities/Character";
+import { PAGINATION } from "@config/constants";
 
 /**
  * List Characters Use Case
- * 
+ *
  * Retrieves a paginated list of Marvel characters.
  * Default: first 50 characters.
- * 
+ *
  * Business rules:
  * - Returns maximum 50 characters per request
  * - Results are cached for performance
  * - Includes total count for pagination UI
- * 
+ *
  * @example
  * ```typescript
  * const useCase = new ListCharacters(repository);
@@ -26,7 +29,7 @@ export class ListCharacters {
 
   /**
    * Execute the use case
-   * 
+   *
    * @param params - Pagination parameters (optional)
    * @returns Paginated result containing characters and metadata
    * @throws {ApiError} When the Marvel API request fails
@@ -44,7 +47,7 @@ export class ListCharacters {
     }
 
     if (offset < 0) {
-      throw new Error('Offset must be non-negative');
+      throw new Error("Offset must be non-negative");
     }
 
     return await this.characterRepository.findMany({ limit, offset });
