@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { config } from '@infrastructure/config/env';
-import styles from './ApiKeyBanner.module.scss';
+import React, { useState } from "react";
+import { config } from "@infrastructure/config/env";
+import styles from "./ApiKeyBanner.module.scss";
 
 /**
  * API Key Banner Component
- * 
+ *
  * Shows a dismissible banner when API keys are not configured.
  */
 export const ApiKeyBanner: React.FC = () => {
@@ -19,7 +19,7 @@ export const ApiKeyBanner: React.FC = () => {
       <div className={styles.content}>
         <span className={styles.icon}>⚠️</span>
         <p className={styles.message}>
-          Comic Vine API key not configured. Using demo mode with empty states.{' '}
+          Comic Vine API key not configured. Using demo mode with empty states.{" "}
           <a
             href="https://comicvine.gamespot.com/api/"
             target="_blank"

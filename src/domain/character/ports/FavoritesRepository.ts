@@ -1,11 +1,11 @@
-import { CharacterId } from '../valueObjects/CharacterId';
+import { CharacterId } from "../valueObjects/CharacterId";
 
 /**
  * Favorites Repository Port
- * 
+ *
  * Defines the contract for managing favorite characters.
  * Infrastructure layer provides concrete implementation (e.g., LocalStorage).
- * 
+ *
  * @example
  * ```typescript
  * const repository: FavoritesRepository = new LocalStorageFavoritesRepository();
@@ -16,7 +16,7 @@ import { CharacterId } from '../valueObjects/CharacterId';
 export interface FavoritesRepository {
   /**
    * Add a character to favorites
-   * 
+   *
    * @param id - Character identifier
    * @throws {StorageError} When storage operation fails
    */
@@ -24,7 +24,7 @@ export interface FavoritesRepository {
 
   /**
    * Remove a character from favorites
-   * 
+   *
    * @param id - Character identifier
    * @throws {StorageError} When storage operation fails
    */
@@ -32,7 +32,7 @@ export interface FavoritesRepository {
 
   /**
    * Get all favorite character IDs
-   * 
+   *
    * @returns List of favorite character IDs
    * @throws {StorageError} When storage operation fails
    */
@@ -40,7 +40,7 @@ export interface FavoritesRepository {
 
   /**
    * Check if a character is in favorites
-   * 
+   *
    * @param id - Character identifier
    * @returns true if character is favorited, false otherwise
    * @throws {StorageError} When storage operation fails
@@ -49,14 +49,14 @@ export interface FavoritesRepository {
 
   /**
    * Get the count of favorited characters
-   * 
+   *
    * @returns Number of favorites
    */
   count(): Promise<number>;
 
   /**
    * Clear all favorites
-   * 
+   *
    * @throws {StorageError} When storage operation fails
    */
   clear(): Promise<void>;

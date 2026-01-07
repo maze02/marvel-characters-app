@@ -2,6 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Navbar/Navbar";
 import { ApiKeyBanner } from "../ApiKeyBanner/ApiKeyBanner";
+import { LoadingBar } from "@ui/designSystem/atoms/LoadingBar/LoadingBar";
+import { useLoading } from "@ui/state/LoadingContext";
 import { routes } from "@ui/routes/routes";
 import styles from "./Layout.module.scss";
 
@@ -14,11 +16,12 @@ export interface LayoutProps {
 /**
  * Layout Component
  *
- * Provides consistent page structure with persistent navbar and API banner.
- * Ensures navbar remains visible during page transitions.
+ * Provides consistent page structure with persistent navbar, loading bar, and API banner.
+ * Ensures navbar and loading feedback remain visible during page transitions.
  */
 export const Layout: React.FC<LayoutProps> = ({ children, onLogoClick }) => {
   const navigate = useNavigate();
+  const { isLoading } = useLoading();
 
   const handleLogoClick = () => {
     if (onLogoClick) {
@@ -34,6 +37,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogoClick }) => {
 
   return (
     <div className={styles.layout}>
+      <LoadingBar isLoading={isLoading} />
       <ApiKeyBanner />
       <Navbar
         onLogoClick={handleLogoClick}

@@ -1,0 +1,97 @@
+// NotFoundPage uses shared page layout mixins for consistency
+
+.notFoundPage {
+  @include page-main;
+  min-height: 60vh;
+  @include flex-center;
+  padding: $spacing-8 $spacing-4;
+
+  // Element: content container
+  &__content {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  // Element: error code (404)
+  &__code {
+    font-size: clamp(48px, 15vw, 98px);
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-bold;
+    color: $color-primary;
+    line-height: 1;
+    margin: 0 0 $spacing-4 0;
+    letter-spacing: -0.02em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+
+    @media (prefers-reduced-motion: no-preference) {
+      animation: fadeInScale 0.6s $ease-out;
+    }
+  }
+
+  // Element: page title
+  &__title {
+    font-size: clamp($font-size-xl, 4vw, $font-size-2xl);
+    font-family: $font-family-condensed;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+    text-transform: uppercase;
+    margin: 0 0 $spacing-4 0;
+    letter-spacing: 0.05em;
+  }
+
+  // Element: description message
+  &__message {
+    font-size: $font-size-lg;
+    color: $color-text-secondary;
+    margin: 0 0 $spacing-8 0;
+    line-height: 1.6;
+  }
+
+  // Element: action buttons container
+  &__actions {
+    display: flex;
+    gap: $spacing-4;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-8;
+    margin-top: $spacing-6;
+  }
+
+  // Element: helpful links section
+  &__links {
+    margin-top: $spacing-8;
+    padding-top: $spacing-6;
+    border-top: 1px solid $color-border;
+  }
+
+  // Element: links section title
+  &__linksTitle {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    margin: 0 0 $spacing-3 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: $font-weight-semibold;
+  }
+
+  // Element: navigation links container
+  &__nav {
+    display: flex;
+    gap: $spacing-6;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+// Animation keyframes
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

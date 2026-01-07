@@ -1,14 +1,14 @@
-import { CharacterId } from '../valueObjects/CharacterId';
-import { CharacterName } from '../valueObjects/CharacterName';
-import { ImageUrl } from '../valueObjects/ImageUrl';
+import { CharacterId } from "../valueObjects/CharacterId";
+import { CharacterName } from "../valueObjects/CharacterName";
+import { ImageUrl } from "../valueObjects/ImageUrl";
 
 /**
  * Character Entity
- * 
+ *
  * Core domain entity representing a Marvel character.
  * Contains business logic and validation rules.
  * Immutable - all updates return new instances.
- * 
+ *
  * @example
  * ```typescript
  * const character = new Character({
@@ -16,7 +16,6 @@ import { ImageUrl } from '../valueObjects/ImageUrl';
  *   name: new CharacterName('Spider-Man'),
  *   description: 'Friendly neighborhood Spider-Man',
  *   thumbnail: new ImageUrl('path/to/image', 'jpg'),
- *   modifiedDate: new Date(),
  * });
  * ```
  */
@@ -25,7 +24,6 @@ export class Character {
   private readonly _name: CharacterName;
   private readonly _description: string;
   private readonly _thumbnail: ImageUrl;
-  private readonly _modifiedDate: Date;
   private readonly _issueIds: readonly number[]; // IDs of issues this character appears in
 
   constructor(props: {
@@ -33,14 +31,12 @@ export class Character {
     name: CharacterName;
     description: string;
     thumbnail: ImageUrl;
-    modifiedDate: Date;
     issueIds?: number[]; // Optional - not all contexts need issue data
   }) {
     this._id = props.id;
     this._name = props.name;
     this._description = props.description.trim();
     this._thumbnail = props.thumbnail;
-    this._modifiedDate = props.modifiedDate;
     this._issueIds = Object.freeze(props.issueIds || []); // Immutable array
   }
 
@@ -58,10 +54,6 @@ export class Character {
 
   get thumbnail(): ImageUrl {
     return this._thumbnail;
-  }
-
-  get modifiedDate(): Date {
-    return new Date(this._modifiedDate);
   }
 
   /**
@@ -94,17 +86,16 @@ export class Character {
   }
 
   /**
-   * Check if character has a valid thumbnail (not placeholder)
-   */
-  hasValidThumbnail(): boolean {
-    return !this._thumbnail.isPlaceholder();
-  }
-
-  /**
    * Get thumbnail URL with specific variant
    * Note: Variant is ignored for Comic Vine URLs (they already include size)
    */
-  getThumbnailUrl(variant?: 'portrait_xlarge' | 'landscape_large' | 'standard_large' | 'portrait_uncanny'): string {
+  getThumbnailUrl(
+    variant?:
+      | "portrait_xlarge"
+      | "landscape_large"
+      | "standard_large"
+      | "portrait_uncanny",
+  ): string {
     return this._thumbnail.getUrl(variant);
   }
 
@@ -113,27 +104,5 @@ export class Character {
    */
   matchesSearch(searchTerm: string): boolean {
     return this._name.contains(searchTerm);
-  }
-
-  /**
-   * Compare characters by name (for sorting)
-   */
-  compareByName(other: Character): number {
-    return this._name.value.localeCompare(other._name.value);
-  }
-
-  /**
-   * Compare characters by modification date (for sorting)
-   */
-  compareByDate(other: Character): number {
-    return this._modifiedDate.getTime() - other._modifiedDate.getTime();
-  }
-
-  equals(other: Character): boolean {
-    return this._id.equals(other._id);
-  }
-
-  toString(): string {
-    return `Character(${this._id.value}, ${this._name.value})`;
   }
 }

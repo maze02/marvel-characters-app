@@ -6,6 +6,7 @@
 @use "./colors" as *;
 @use "./spacing" as *;
 @use "./animations" as *;
+@use "./typography" as *;
 
 // =============================================================================
 // Layout Utilities
@@ -142,4 +143,118 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: $lines;
+}
+
+// =============================================================================
+// Input Field Utilities
+// =============================================================================
+
+// Base typography for input-related text (Marvel design - condensed, uppercase)
+@mixin input-text-base {
+  font-family: $font-family-condensed;
+  font-weight: $font-weight-regular;
+  letter-spacing: $letter-spacing-normal;
+  text-transform: uppercase;
+}
+
+// Base input field styling (Marvel design - minimal, clean)
+@mixin input-field-base {
+  flex: 1;
+  background: none;
+  border: none;
+  color: $color-text-primary;
+  font-size: $font-size-base;
+  @include input-text-base;
+  outline: none;
+  padding: 0;
+
+  &::placeholder {
+    color: $color-text-secondary;
+    font-size: $font-size-base;
+    @include input-text-base;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  // Remove default search input styling
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  &::-webkit-search-decoration {
+    display: none;
+  }
+}
+
+// Input field container with bottom border
+@mixin input-field-container {
+  position: relative;
+  width: 100%;
+  @include flex-center-vertical;
+  border-bottom: 1px solid $color-text-primary;
+  padding: 12px 0;
+  gap: 12px;
+}
+
+// =============================================================================
+// Link Utilities
+// =============================================================================
+
+// Base link styling with underline animation
+@mixin link-base {
+  text-decoration: none;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  position: relative;
+  display: inline-block;
+  @include safe-animation(color $duration-base $ease-out);
+  @include focus-outline($color-primary, 2px);
+
+  // Underline animation effect
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    transform: scaleX(0);
+    transform-origin: right;
+    @include safe-animation(transform $duration-base $ease-out);
+  }
+
+  &:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+// Primary link variant (red Marvel theme)
+@mixin link-primary {
+  @include link-base;
+  color: $color-primary;
+
+  &::after {
+    background-color: $color-primary;
+  }
+
+  &:hover {
+    color: $color-primary-dark;
+  }
+}
+
+// Secondary link variant (subtle gray)
+@mixin link-secondary {
+  @include link-base;
+  color: $color-text-secondary;
+
+  &::after {
+    background-color: $color-text-secondary;
+  }
+
+  &:hover {
+    color: $color-text-primary;
+  }
 }

@@ -10,7 +10,6 @@ interface CharacterDescriptionProps {
  * CharacterDescription Component
  *
  * Displays character description with text truncation and expand/collapse functionality.
- * Mobile-first responsive design matching mockup specifications.
  */
 export const CharacterDescription: React.FC<CharacterDescriptionProps> = ({
   description,

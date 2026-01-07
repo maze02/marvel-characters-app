@@ -1,7 +1,7 @@
 /**
  * useSEO Hook Unit Tests
  *
- * Production-grade tests for the SEO hook.
+ * Tests for the SEO hook.
  * Tests cover: title updates, meta tags, Open Graph, Twitter Cards, canonical URL, structured data.
  */
 

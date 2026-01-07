@@ -1,8 +1,8 @@
 /**
  * Browser SEO Service Implementation
  *
- * This is the concrete implementation that actually updates the browser's SEO tags.
- * It manipulates the DOM (Document Object Model) to change meta tags, titles, etc.
+ * Updates the browser's SEO tags.
+ * Manipulates the DOM (Document Object Model) to change meta tags, titles, etc.
  *
  * Why this is in the infrastructure layer:
  * - It depends on browser APIs (window, document)
@@ -19,12 +19,7 @@ import { SEOService, SEOMetadata } from "@application/seo/ports/SEOService";
  * Browser SEO Service
  *
  * Implements SEO operations by directly manipulating browser DOM.
- * This is the "real" implementation used in production.
  *
- * Clean Architecture Benefits:
- * - Application code doesn't know about DOM manipulation
- * - Easy to swap for testing (use a mock implementation)
- * - Easy to add new features (like analytics) without changing app code
  *
  * @example
  * ```typescript
@@ -148,7 +143,7 @@ export class BrowserSEOService implements SEOService {
   /**
    * Resets SEO metadata to default values
    *
-   * This is useful when navigating between pages or cleaning up.
+   * Useful when navigating between pages or cleaning up.
    * Currently, this is a no-op as each page should set its own metadata.
    */
   reset(): void {

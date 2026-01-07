@@ -58,6 +58,7 @@ storybook-static/
 *_METHOD_*.md
 *_PASSING*.md
 *_QUICK_*.md
+NOTES.md
 ALL_*.md
 BEFORE_AFTER_*.md
 CHARACTER_HERO_*.md
@@ -73,3 +74,4 @@ WHY_*.md
 QUICK_*.md
 .vercel
 .env.development
+

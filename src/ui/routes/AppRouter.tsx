@@ -1,18 +1,11 @@
 import React, { useEffect, useState, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { routes } from "./routes";
-import { LoadingBar } from "../designSystem/atoms/LoadingBar/LoadingBar";
-import { LoadingProvider, useLoading } from "../state/LoadingContext";
 import { Layout } from "../components/Layout/Layout";
 
 /**
  * Lazy-loaded Page Components
  *
- * What this does for users:
- * - Faster initial page load - only downloads the home page code at first
- * - When you click to other pages, they download on-demand
- * - Better performance, especially on slower connections
- * - Smaller initial download = faster time to interactive
  */
 const ListPage = lazy(() =>
   import("../pages/ListPage/ListPage").then((m) => ({ default: m.ListPage })),
@@ -27,11 +20,16 @@ const DetailPage = lazy(() =>
     default: m.DetailPage,
   })),
 );
+const NotFoundPage = lazy(() =>
+  import("../pages/NotFoundPage").then((m) => ({
+    default: m.NotFoundPage,
+  })),
+);
 
 /**
  * Navigation Tracker
  *
- * Monitors route changes and scrolls to top on navigation.
+ * Functional Component monitors route changes and scrolls to top on navigation, and not to where they scrolled on prev navigation.
  *
  * Note: Loading state is managed by individual pages, not here.
  * This ensures proper coordination between navigation and data loading.
@@ -43,8 +41,7 @@ const NavigationTracker: React.FC = () => {
   useEffect(() => {
     // If location changes, scroll to top
     if (location.pathname !== prevLocation) {
-      // Scroll to top of the page
-      window.scrollTo(0, 0);
+      window.scrollTo(0, 0); // Scrolls to top of the page
       setPrevLocation(location.pathname);
     }
   }, [location, prevLocation]);
@@ -56,24 +53,21 @@ const NavigationTracker: React.FC = () => {
  * Router Content
  *
  * Contains routes and navigation tracking.
- * Suspense wrapper shows a loading indicator while page code is downloading.
+ * Suspense wrapper handles lazy loading - loading feedback shown via LoadingBar in Layout.
  *
  * EXPORTED for testing purposes - tests can wrap this in MemoryRouter
  */
 export const RouterContent: React.FC = () => {
-  const { isLoading } = useLoading();
-
   return (
     <>
-      <LoadingBar isLoading={isLoading} />
       <NavigationTracker />
       {/* 
-        Layout loads immediately (Navbar appears instantly)
+        Layout loads immediately (Navbar and LoadingBar appear instantly)
         Only page content is lazy-loaded inside Suspense
-        User benefit: Navbar shows right away, page content loads on-demand
+        LoadingBar in Layout handles all loading feedback
       */}
       <Layout>
-        <Suspense fallback={<LoadingBar isLoading={true} />}>
+        <Suspense fallback={null}>
           <Routes>
             <Route path={routes.home} element={<ListPage />} />
             <Route path={routes.favorites} element={<FavoritesPage />} />
@@ -81,6 +75,8 @@ export const RouterContent: React.FC = () => {
               path={routes.characterDetailPattern}
               element={<DetailPage />}
             />
+            {/* Catch-all for unmatched routes */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </Layout>
@@ -91,8 +87,9 @@ export const RouterContent: React.FC = () => {
 /**
  * Application Router
  *
- * Defines all application routes and page components with loading state management.
- * Opts into React Router v7 future flags for forward compatibility.
+ * Defines all application routes and page components.
+ * Opts into React Router v7 (released Nov 2024) future flags for forward compatibility.
+ * Currently using React Router v6 Stable Version.
  */
 export const AppRouter: React.FC = () => {
   return (
@@ -102,9 +99,7 @@ export const AppRouter: React.FC = () => {
         v7_relativeSplatPath: true,
       }}
     >
-      <LoadingProvider>
-        <RouterContent />
-      </LoadingProvider>
+      <RouterContent />
     </BrowserRouter>
   );
 };

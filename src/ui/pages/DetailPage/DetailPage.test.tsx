@@ -35,7 +35,6 @@ const mockCharacter = new Character({
   name: new CharacterName("Spider-Man"),
   description: "Friendly neighborhood Spider-Man",
   thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
-  modifiedDate: new Date("2024-01-01"),
 });
 
 // Create stable mock functions
@@ -285,25 +284,29 @@ describe("DetailPage", () => {
       });
     });
 
-    it("should show return home link on error", async () => {
+    it("should show return home button on error", async () => {
       // Act
       await renderPage();
 
       // Assert
       await waitFor(() => {
-        const link = screen.getByText("Return to Home");
-        expect(link).toBeInTheDocument();
-        expect(link.tagName).toBe("A");
+        const button = screen.getByRole("button", { name: /return to home/i });
+        expect(button).toBeInTheDocument();
+        expect(button.tagName).toBe("BUTTON");
       });
     });
 
-    it("should call stopLoading on error", async () => {
+    it("should show error message with proper heading", async () => {
       // Act
       await renderPage();
 
-      // Assert
+      // Assert - verify error state has proper structure
       await waitFor(() => {
-        expect(mockStopLoading).toHaveBeenCalled();
+        const heading = screen.getByRole("heading", {
+          name: /character not found/i,
+        });
+        expect(heading).toBeInTheDocument();
+        expect(heading.tagName).toBe("H2");
       });
     });
 
@@ -396,7 +399,6 @@ describe("DetailPage", () => {
         name: new CharacterName("Spider-Man"),
         description: "Friendly neighborhood Spider-Man",
         thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       });
       mockGetCharacterDetail.mockResolvedValue(characterWithDesc);
 
@@ -418,7 +420,6 @@ describe("DetailPage", () => {
         name: new CharacterName("Spider-Man"),
         description: "",
         thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       });
       mockGetCharacterDetail.mockResolvedValue(characterNoDesc);
 

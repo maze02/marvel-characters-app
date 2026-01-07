@@ -1,16 +1,12 @@
 /**
  * SEO Service Port
  *
- * This is like a contract that defines what SEO operations are available.
- * Think of it as a "promise" that any SEO system must fulfill.
+ * This is a contract that defines what SEO operations are available.
+ * i..e. like a "promise" that any SEO system must fulfill.
  *
  * Why this exists:
  * - Separates "what we need" from "how we do it"
  * - Makes testing easy (we can create fake SEO services for tests)
- * - Follows clean architecture principles
- *
- * Domain-Driven Design (DDD) Pattern: Port
- * Hexagonal Architecture: Application Port
  */
 
 /**
@@ -49,7 +45,7 @@ export interface SEOMetadata {
  * Defines what any SEO service must be able to do.
  * The actual implementation is in the infrastructure layer.
  *
- * This follows the Dependency Inversion Principle:
+ * Follows the Dependency Inversion Principle:
  * - High-level code (application layer) depends on this abstraction
  * - Low-level code (infrastructure layer) implements this abstraction
  *

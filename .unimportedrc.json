@@ -1,0 +1,45 @@
+{
+  "entry": [
+    "src/main.tsx",
+    "src/tests/setup.ts"
+  ],
+  "extensions": [
+    ".ts",
+    ".tsx"
+  ],
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.stories.tsx",
+    "**/dist/**",
+    "**/coverage/**"
+  ],
+  "ignoreUnresolved": [
+    "*.png",
+    "*.scss",
+    "*.svg"
+  ],
+  "ignoreUnused": [
+    "md5"
+  ],
+  "ignoreUnimported": [
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/domain/character/ports/AuthorizationService.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/infrastructure/dependencies/index.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/infrastructure/http/__mocks__/ComicVineApiClient.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/infrastructure/security/AuthorizationServiceImpl.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/tests/mocks/envMock.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/tests/mocks/fileMock.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/components/ConfigWarning/ConfigWarning.tsx",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/designSystem/atoms/Input/Input.tsx",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/designSystem/atoms/LoadingBar/index.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/designSystem/molecules/CharacterDescription/CharacterDescription.tsx",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/designSystem/molecules/CharacterDescription/index.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/designSystem/molecules/CharacterHero/index.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/designSystem/molecules/ComicsHorizontalScroll/index.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/hooks/index.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/hooks/useSEO.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/ui/state/index.ts",
+    "/Users/mariasb/Documents/4.INTERVIEW_PRACTICE/marvel-characters-app/src/vite-env.d.ts"
+  ]
+}

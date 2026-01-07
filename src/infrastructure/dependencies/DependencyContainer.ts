@@ -15,12 +15,14 @@ import { BrowserSEOService } from "@infrastructure/seo/BrowserSEOService";
 /**
  * Dependency Container
  *
- * Centralized factory for creating and managing application dependencies.
- * Implements the Dependency Injection pattern to decouple components from concrete implementations.
+ *  The dependency container imports the repositories i.e. that contain connections to database or apis or
+ *  local storage so that access to the repositories in
+ *  the infrastructure is decoupled from the ui part of the app, i.e. the state management in the context
+ *  in the ui part of the app.
  *
  * Benefits:
  * - Single source of truth for dependency configuration
- * - Easy to swap implementations (e.g., for testing or different APIs)
+ * - Allows for swappable  implementations (e.g. switching from Marvel API to ComicVine API)
  * - Follows Dependency Inversion Principle
  * - Simplifies testing by allowing mock injection
  *
@@ -69,7 +71,7 @@ export class DependencyContainer {
     // Create use cases with injected repositories
     this._useCases = {
       listCharacters: new ListCharacters(characterRepository),
-      searchCharacters: new SearchCharacters(characterRepository),
+      searchCharacters: new SearchCharacters(characterRepository), //Calls api to search for characters
       getCharacterDetail: new GetCharacterDetail(characterRepository),
       listCharacterComics: new ListCharacterComics(characterRepository),
       toggleFavorite: new ToggleFavorite(favoritesRepository),
@@ -77,7 +79,7 @@ export class DependencyContainer {
         characterRepository,
         favoritesRepository,
       ),
-      filterCharacters: new FilterCharacters(),
+      filterCharacters: new FilterCharacters(), //Filters characters on the page
     };
   }
 

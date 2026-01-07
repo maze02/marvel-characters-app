@@ -1,9 +1,9 @@
 /**
  * CharacterName Value Object
- * 
+ *
  * Represents a character's name with validation rules.
  * Ensures the name is not empty and within reasonable length limits.
- * 
+ *
  * @example
  * ```typescript
  * const name = new CharacterName('Spider-Man');
@@ -17,15 +17,17 @@ export class CharacterName {
 
   constructor(value: string) {
     const trimmed = value.trim();
-    
+
     if (trimmed.length < CharacterName.MIN_LENGTH) {
-      throw new Error('Character name cannot be empty');
+      throw new Error("Character name cannot be empty");
     }
-    
+
     if (trimmed.length > CharacterName.MAX_LENGTH) {
-      throw new Error(`Character name cannot exceed ${CharacterName.MAX_LENGTH} characters`);
+      throw new Error(
+        `Character name cannot exceed ${CharacterName.MAX_LENGTH} characters`,
+      );
     }
-    
+
     this._value = trimmed;
   }
 

@@ -12,7 +12,7 @@ export interface FavoriteButtonProps {
 /**
  * FavoriteButton Component
  *
- * Heart button for favoriting characters matching Figma mockup.
+ * Heart button for favoriting characters.
  *
  * @example
  * ```tsx

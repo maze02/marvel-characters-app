@@ -28,7 +28,6 @@ describe("ListCharacterComics", () => {
       name: new CharacterName("Spider-Man"),
       description: "Friendly neighborhood Spider-Man",
       thumbnail: new ImageUrl("http://example.com/character", "jpg"),
-      modifiedDate: new Date(),
       issueIds: [1, 2, 3], // Character appears in 3 issues
     });
 
@@ -121,7 +120,6 @@ describe("ListCharacterComics", () => {
           name: new CharacterName("Obscure Character"),
           description: "No comics",
           thumbnail: new ImageUrl("http://example.com/character", "jpg"),
-          modifiedDate: new Date(),
           issueIds: [], // No issues
         });
 
@@ -140,7 +138,6 @@ describe("ListCharacterComics", () => {
           name: new CharacterName("Test"),
           description: "Test",
           thumbnail: new ImageUrl("http://example.com/character", "jpg"),
-          modifiedDate: new Date(),
           // issueIds not provided (defaults to empty array)
         });
 
@@ -183,7 +180,6 @@ describe("ListCharacterComics", () => {
           name: new CharacterName("Spider-Man"),
           description: "Many comics",
           thumbnail: new ImageUrl("http://example.com/character", "jpg"),
-          modifiedDate: new Date(),
           issueIds,
         });
 

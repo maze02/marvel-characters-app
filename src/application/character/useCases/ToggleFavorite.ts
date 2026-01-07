@@ -1,18 +1,18 @@
-import { FavoritesRepository } from '@domain/character/ports/FavoritesRepository';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
+import { FavoritesRepository } from "@domain/character/ports/FavoritesRepository";
+import { CharacterId } from "@domain/character/valueObjects/CharacterId";
 
 /**
  * Toggle Favorite Use Case
- * 
+ *
  * Adds or removes a character from favorites.
  * Persists to localStorage for cross-session persistence.
- * 
+ *
  * Business rules:
  * - If character is favorited → remove from favorites
  * - If character is not favorited → add to favorites
  * - Updates are persisted immediately
  * - Operation is idempotent
- * 
+ *
  * @example
  * ```typescript
  * const useCase = new ToggleFavorite(favoritesRepository);
@@ -25,7 +25,7 @@ export class ToggleFavorite {
 
   /**
    * Execute the use case
-   * 
+   *
    * @param characterId - Character ID (number)
    * @returns New favorite state (true if favorited, false if not)
    * @throws {StorageError} When localStorage operation fails

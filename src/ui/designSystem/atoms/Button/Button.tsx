@@ -1,9 +1,9 @@
-import React from 'react';
-import styles from './Button.module.scss';
+import React from "react";
+import styles from "./Button.module.scss";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "ghost";
+  size?: "sm" | "md" | "lg";
   loading?: boolean;
   fullWidth?: boolean;
   children: React.ReactNode;
@@ -11,10 +11,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 /**
  * Button Component
- * 
+ *
  * Accessible button following WCAG 2.1 AA guidelines.
  * Supports multiple variants, sizes, and loading states.
- * 
+ *
  * @example
  * ```tsx
  * <Button variant="primary" onClick={handleClick}>
@@ -23,8 +23,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
  * ```
  */
 export const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   loading = false,
   fullWidth = false,
   disabled,
@@ -36,12 +36,12 @@ export const Button: React.FC<ButtonProps> = ({
     styles.button,
     styles[`button--${variant}`],
     styles[`button--${size}`],
-    fullWidth && styles['button--full-width'],
-    loading && styles['button--loading'],
+    fullWidth && styles["button--full-width"],
+    loading && styles["button--loading"],
     className,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   return (
     <button
@@ -65,7 +65,7 @@ export const Button: React.FC<ButtonProps> = ({
           </svg>
         </span>
       )}
-      <span className={loading ? styles['button__text--hidden'] : undefined}>
+      <span className={loading ? styles["button__text--hidden"] : undefined}>
         {children}
       </span>
     </button>

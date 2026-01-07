@@ -4,9 +4,9 @@ import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/Characte
 import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { useLoading } from "@ui/state/LoadingContext";
-import { useUseCases } from "@ui/state/DependenciesContext";
-import { useDebouncedValue } from "@ui/hooks/useDebouncedValue";
-import { useInfiniteScroll } from "@ui/hooks/useInfiniteScroll";
+import { useUseCases } from "@ui/state";
+import { useDebouncedValue } from "@ui/hooks";
+import { useInfiniteScroll } from "@ui/hooks";
 import { Character } from "@domain/character/entities/Character";
 import { PAGINATION, UI } from "@config/constants";
 import { config } from "@infrastructure/config/env";
@@ -58,16 +58,35 @@ export const ListPage: React.FC = () => {
   );
 
   // Sync infinite scroll loading state with global loading bar
-  // Sync loading state from infinite scroll
+  // Show loading during initial page load and subsequent pagination
   useEffect(() => {
-    if (isInfiniteScrollLoading && !searchQuery) {
+    const isInitialLoad =
+      infiniteScrollCharacters.length === 0 && !infiniteScrollError;
+    const shouldShowLoading =
+      (isInfiniteScrollLoading || isInitialLoad) && !searchQuery;
+
+    if (shouldShowLoading) {
       startLoading();
     } else if (!searchQuery) {
       stopLoading();
     }
-    // startLoading/stopLoading are stable context functions
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInfiniteScrollLoading, searchQuery]);
+  }, [
+    isInfiniteScrollLoading,
+    infiniteScrollCharacters.length,
+    infiniteScrollError,
+    searchQuery,
+    startLoading,
+    stopLoading,
+  ]);
+
+  // Sync search loading state with global loading bar
+  useEffect(() => {
+    if (isSearchLoading && searchQuery) {
+      startLoading();
+    } else if (searchQuery) {
+      stopLoading();
+    }
+  }, [isSearchLoading, searchQuery, startLoading, stopLoading]);
 
   // Handle search - only runs when debouncedQuery changes (not on every keystroke!)
   // Uses AbortController to cancel outdated requests and prevent race conditions

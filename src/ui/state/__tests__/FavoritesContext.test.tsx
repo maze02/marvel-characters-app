@@ -59,7 +59,6 @@ describe("FavoritesContext", () => {
       name: new CharacterName(name),
       description: `Test description for ${name}`,
       thumbnail: new ImageUrl("https://example.com/image", "jpg"),
-      modifiedDate: new Date(),
     });
   };
 

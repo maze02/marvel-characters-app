@@ -1,13 +1,13 @@
-import { CharacterId } from '../valueObjects/CharacterId';
-import { ImageUrl } from '../valueObjects/ImageUrl';
-import { ReleaseDate } from '../valueObjects/ReleaseDate';
+import { CharacterId } from "../valueObjects/CharacterId";
+import { ImageUrl } from "../valueObjects/ImageUrl";
+import { ReleaseDate } from "../valueObjects/ReleaseDate";
 
 /**
  * Comic Entity
- * 
+ *
  * Represents a comic book featuring a Marvel character.
  * Contains comic metadata and release information.
- * 
+ *
  * @example
  * ```typescript
  * const comic = new Comic({
@@ -39,9 +39,9 @@ export class Comic {
     if (!Number.isInteger(props.id) || props.id <= 0) {
       throw new Error(`Invalid comic ID: ${props.id}`);
     }
-    
-    if (!props.title || props.title.trim() === '') {
-      throw new Error('Comic title cannot be empty');
+
+    if (!props.title || props.title.trim() === "") {
+      throw new Error("Comic title cannot be empty");
     }
 
     this._id = props.id;
@@ -93,33 +93,9 @@ export class Comic {
   /**
    * Get thumbnail URL with specific variant
    */
-  getThumbnailUrl(variant: 'portrait_xlarge' | 'landscape_large' = 'portrait_xlarge'): string {
+  getThumbnailUrl(
+    variant: "portrait_xlarge" | "landscape_large" = "portrait_xlarge",
+  ): string {
     return this._thumbnail.getUrl(variant);
-  }
-
-  /**
-   * Compare comics by release date (for sorting)
-   * Comics without dates are sorted last
-   */
-  compareByReleaseDate(other: Comic): number {
-    if (!this._onSaleDate && !other._onSaleDate) return 0;
-    if (!this._onSaleDate) return 1;
-    if (!other._onSaleDate) return -1;
-    return this._onSaleDate.compareTo(other._onSaleDate);
-  }
-
-  /**
-   * Compare comics by title (for sorting)
-   */
-  compareByTitle(other: Comic): number {
-    return this._title.localeCompare(other._title);
-  }
-
-  equals(other: Comic): boolean {
-    return this._id === other._id;
-  }
-
-  toString(): string {
-    return `Comic(${this._id}, ${this._title})`;
   }
 }
