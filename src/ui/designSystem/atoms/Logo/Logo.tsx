@@ -10,8 +10,7 @@ export interface LogoProps {
 /**
  * Marvel Logo Component
  *
- * Displays the official Marvel logo SVG from mockup.
- * Exact dimensions: 130x52 from Figma.
+ * Displays the official Marvel logo SVG
  * Clickable to return home.
  */
 export const Logo: React.FC<LogoProps> = ({ onClick }) => {

@@ -1,7 +1,7 @@
 /**
  * ComicVineCharacterRepository Unit Tests
  *
- * Production-grade tests for the Character Repository.
+ * Tests for the Character Repository.
  * Tests cover: findById, findMany, searchByName, findComicsByCharacterId
  */
 

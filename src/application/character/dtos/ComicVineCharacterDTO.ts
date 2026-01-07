@@ -12,7 +12,7 @@
 export interface ComicVineIssueCredit {
   id: number;
   api_detail_url: string;
-  name?: string; // Optional, not always included
+  name?: string;
 }
 
 /**

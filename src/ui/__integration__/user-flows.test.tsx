@@ -2,7 +2,7 @@
  * Cross-Page User Flow Integration Tests
  *
  * Tests complete user journeys that span multiple pages and components.
- * These are the most comprehensive integration tests, simulating real user behavior.
+ * Contains the most comprehensive integration tests, simulating real user behavior.
  *
  * Only external boundaries (APIs, Web APIs, Logger) are mocked.
  * All components, contexts, and providers are real.

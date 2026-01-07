@@ -16,13 +16,12 @@ import styles from "./FavoritesPage.module.scss";
 /**
  * Favorites Page
  *
- * Dedicated page for viewing favorited characters with search functionality.
+ * Page for viewing favorited characters with search functionality.
  *
  * Features:
  * - Loads favorite characters from localStorage
  * - Real-time search filtering with debouncing
  * - Proper loading states with global loading bar visibility
- * - React 18 compatible loading state management using setTimeout(0)
  * - Synchronized with favorites context for real-time updates
  * - Shared API cache for fast subsequent loads
  *
@@ -31,7 +30,6 @@ import styles from "./FavoritesPage.module.scss";
  * - Uses shared repository instances for consistent caching
  * - setTimeout(0) ensures loading bar renders before data fetch
  * - Separates concerns: UI state, loading state, and business logic
- * - Clean code: No flushSync in lifecycle methods (React best practice)
  */
 export const FavoritesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,9 +62,6 @@ export const FavoritesPage: React.FC = () => {
      * Sets loading state immediately, then defers the async operation using
      * setTimeout(0), which schedules it as a macrotask. This ensures React
      * commits and renders the loading bar before the data fetch begins.
-     *
-     * This avoids React 18 batching issues while staying compliant with
-     * React's rendering lifecycle (no flushSync in lifecycle methods).
      */
 
     // Early return if no favorites - no need for loading state

@@ -1,7 +1,7 @@
 /**
  * Comic Entity Unit Tests
  *
- * Production-grade tests for the Comic domain entity.
+ * Tests for the Comic domain entity.
  * Tests cover: construction, validation, methods, and comparisons.
  */
 

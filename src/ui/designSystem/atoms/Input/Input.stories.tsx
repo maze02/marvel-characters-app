@@ -3,8 +3,7 @@ import { Input } from "./Input";
 import { Icon } from "../Icon/Icon";
 
 /**
- * Input component with Marvel design system styling.
- * Shares the same clean, minimalist style as SearchBar (uppercase, condensed font, bottom border).
+ * Input component
  */
 const meta: Meta<typeof Input> = {
   title: "Design System/Atoms/Input",

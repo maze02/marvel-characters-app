@@ -9,22 +9,15 @@ import { Navbar } from "./Navbar";
  * Displays favorites count badge and highlights active navigation state.
  *
  * ## Features
- * - Fixed positioning at top of viewport
  * - Marvel logo with click handler
  * - Favorites button with count badge
  * - Active state indication
- * - Responsive design
  *
  * ## Dependencies
  * - React Router (for navigation and location)
  * - FavoritesContext (for favorites count)
  * - Logo component
  * - Icon component
- *
- * ## Note for Storybook
- * This component requires FavoritesContext. In the actual app, this is provided by
- * the App component. For Storybook, you may need to add a decorator in .storybook/preview.tsx
- * to mock the context.
  */
 
 const meta: Meta<typeof Navbar> = {

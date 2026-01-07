@@ -13,7 +13,6 @@ import styles from "./NotFoundPage.module.scss";
  * Displays a user-friendly 404 error page when users navigate to non-existent routes.
  *
  * Features:
- * - Clear messaging about the error
  * - Navigation options back to main pages
  * - Proper SEO metadata (noindex to prevent indexing 404 pages)
  * - Accessible with keyboard navigation

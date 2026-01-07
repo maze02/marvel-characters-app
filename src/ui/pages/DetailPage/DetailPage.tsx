@@ -76,7 +76,7 @@ export const DetailPage: React.FC = () => {
     setHasMoreComics(false);
 
     // Defer async operation to next event loop iteration
-    // This ensures React renders the loading bar before fetching data
+    // Ensures React renders the loading bar before fetching data
     const timeoutId = setTimeout(() => {
       const loadData = async () => {
         try {
