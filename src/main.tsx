@@ -9,8 +9,15 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
+const isDev = import.meta.env.DEV;
+
+// Only use StrictMode in development to avoid double renders in production
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
+  isDev ? (
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  ) : (
     <App />
-  </React.StrictMode>,
+  ),
 );

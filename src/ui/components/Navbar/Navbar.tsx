@@ -1,9 +1,10 @@
-import React from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Logo } from "@ui/designSystem/atoms/Logo/Logo";
 import { Icon } from "@ui/designSystem/atoms/Icon/Icon";
 import { useFavorites } from "@ui/state/FavoritesContext";
 import { routes } from "@ui/routes/routes";
+import { preloadFavoritesPage } from "@ui/routes/AppRouter";
 import styles from "./Navbar.module.scss";
 
 export interface NavbarProps {
@@ -20,7 +21,7 @@ export interface NavbarProps {
  * Displays favorites count badge when user has favorites.
  * Consistent across all pages.
  */
-export const Navbar: React.FC<NavbarProps> = ({
+const NavbarComponent: React.FC<NavbarProps> = ({
   onLogoClick,
   onFavoritesClick,
 }) => {
@@ -28,16 +29,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   const location = useLocation();
   const { favoritesCount } = useFavorites();
 
-  const isFavoritesActive = location.pathname === routes.favorites;
+  const isFavoritesActive = useMemo(
+    () => location.pathname === routes.favorites,
+    [location.pathname],
+  );
 
-  const handleFavoritesClick = () => {
+  const handleFavoritesClick = useCallback(() => {
     if (onFavoritesClick) {
       onFavoritesClick();
     } else {
       // Default behavior: navigate to favorites
       navigate(routes.favorites);
     }
-  };
+  }, [onFavoritesClick, navigate]);
+
+  // Prefetch favorites page on hover for instant navigation
+  const handleFavoritesHover = useCallback(() => {
+    void preloadFavoritesPage();
+  }, []);
 
   return (
     <header className={styles.navbar}>
@@ -46,6 +55,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={handleFavoritesClick}
+          onMouseEnter={handleFavoritesHover}
+          onFocus={handleFavoritesHover}
           className={styles.navbar__favoritesButton}
           aria-label={
             isFavoritesActive ? "Viewing favorites" : "View favorites"
@@ -66,3 +77,5 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+
+export const Navbar = memo(NavbarComponent);
