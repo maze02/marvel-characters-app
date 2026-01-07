@@ -34,15 +34,15 @@ jest.mock("@ui/designSystem/atoms/LoadingBar/LoadingBar", () => ({
 }));
 
 const mockNavigate = jest.fn();
-const mockUseLoading = jest.fn();
+const mockUseIsFetching = jest.fn();
 
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
 }));
 
-jest.mock("@ui/state/LoadingContext", () => ({
-  useLoading: () => mockUseLoading(),
+jest.mock("@tanstack/react-query", () => ({
+  useIsFetching: () => mockUseIsFetching(),
 }));
 
 describe("Layout", () => {
@@ -63,11 +63,8 @@ describe("Layout", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseLoading.mockReturnValue({
-      isLoading: false,
-      startLoading: jest.fn(),
-      stopLoading: jest.fn(),
-    });
+    // Default: no queries are fetching
+    mockUseIsFetching.mockReturnValue(0);
   });
 
   describe("Rendering", () => {
@@ -106,24 +103,18 @@ describe("Layout", () => {
   });
 
   describe("Loading state", () => {
-    it("should show loading bar when loading", () => {
-      mockUseLoading.mockReturnValue({
-        isLoading: true,
-        startLoading: jest.fn(),
-        stopLoading: jest.fn(),
-      });
+    it("should show loading bar when queries are fetching", () => {
+      // When 1 or more queries are fetching
+      mockUseIsFetching.mockReturnValue(1);
 
       renderLayout();
 
       expect(screen.getByTestId("loading-bar")).toBeInTheDocument();
     });
 
-    it("should hide loading bar when not loading", () => {
-      mockUseLoading.mockReturnValue({
-        isLoading: false,
-        startLoading: jest.fn(),
-        stopLoading: jest.fn(),
-      });
+    it("should hide loading bar when no queries are fetching", () => {
+      // When 0 queries are fetching
+      mockUseIsFetching.mockReturnValue(0);
 
       renderLayout();
 
@@ -172,11 +163,8 @@ describe("Layout", () => {
     });
 
     it("should render components in correct order", () => {
-      mockUseLoading.mockReturnValue({
-        isLoading: true,
-        startLoading: jest.fn(),
-        stopLoading: jest.fn(),
-      });
+      // Set fetching to show loading bar
+      mockUseIsFetching.mockReturnValue(1);
 
       const { container } = renderLayout();
 

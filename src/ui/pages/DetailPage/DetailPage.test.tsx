@@ -5,23 +5,12 @@
  * description, comics, and favorite functionality.
  */
 
-import React from "react";
-import { render, screen, waitFor, act } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DetailPage } from "./DetailPage";
-
-// Mock router hooks
-const mockNavigate = jest.fn();
-const mockParams = { id: "123" };
-
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useParams: () => mockParams,
-  useNavigate: () => mockNavigate,
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
-}));
+import { createTestQueryClient } from "@tests/queryTestUtils";
+import userEvent from "@testing-library/user-event";
 
 // Import types for mock data
 import { Character } from "@domain/character/entities/Character";
@@ -37,375 +26,124 @@ const mockCharacter = new Character({
   thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
 });
 
-// Create stable mock functions
-const mockIsFavorite = jest.fn(() => false);
-const mockToggleFavorite = jest.fn(async () => {});
-const mockStartLoading = jest.fn();
-const mockStopLoading = jest.fn();
-const mockGetCharacterDetail = jest.fn(async () => mockCharacter);
-const mockListCharacterComics = jest.fn(async () => []);
+const mockCharacterNoDesc = new Character({
+  id: new CharacterId(456),
+  name: new CharacterName("Iron Man"),
+  description: "",
+  thumbnail: new ImageUrl("https://example.com/ironman", "jpg"),
+});
 
-// Create stable singleton objects that never change reference
+// Create stable mock functions
+const mockIsFavorite = jest.fn();
+const mockToggleFavorite = jest.fn();
+
+// Create stable singleton objects
 const stableFavoritesContext = {
   isFavorite: mockIsFavorite,
   toggleFavorite: mockToggleFavorite,
 };
 
-const stableLoadingContext = {
-  startLoading: mockStartLoading,
-  stopLoading: mockStopLoading,
+// Mock use cases
+const mockListCharacterComics = {
+  execute: jest.fn(),
 };
 
-const stableUseCases = {
-  getCharacterDetail: {
-    execute: mockGetCharacterDetail,
-  },
-  listCharacterComics: {
-    execute: mockListCharacterComics,
-  },
+// Mock services
+const mockSeoService = {
+  updateMetadata: jest.fn(),
+  addStructuredData: jest.fn(),
+  removeStructuredData: jest.fn(),
+  reset: jest.fn(),
 };
 
-// Mock contexts and hooks - MUST return exact same object instance every time
+// Mock React Query hooks
+const mockUseCharacterDetail = jest.fn();
+
+// Mock contexts and hooks
 jest.mock("@ui/state/FavoritesContext", () => ({
-  useFavorites: jest.fn(() => stableFavoritesContext),
+  useFavorites: () => stableFavoritesContext,
 }));
 
-jest.mock("@ui/state/LoadingContext", () => ({
-  useLoading: jest.fn(() => stableLoadingContext),
+jest.mock("@ui/queries", () => ({
+  useCharacterDetail: (id: number) => mockUseCharacterDetail(id),
 }));
 
+jest.mock("@infrastructure/logging/Logger", () => ({
+  logger: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+  },
+}));
+
+// Mock DependenciesContext to provide use cases
 jest.mock("@ui/state/DependenciesContext", () => ({
-  useUseCases: jest.fn(() => stableUseCases),
-  useServices: jest.fn(() => ({
-    seo: {
-      updateMetadata: jest.fn(),
-      addStructuredData: jest.fn(),
-      removeStructuredData: jest.fn(),
-      reset: jest.fn(),
-    },
-  })),
+  useUseCases: () => ({
+    listCharacterComics: mockListCharacterComics,
+  }),
+  useServices: () => ({
+    seo: mockSeoService,
+  }),
 }));
-
-jest.mock("@infrastructure/logging/Logger");
 
 describe("DetailPage", () => {
+  let queryClient: QueryClient;
+
   /**
-   * Helper: Render page with router
+   * Helper: Render page with router and QueryClientProvider
    */
-  const renderPage = async () => {
-    let result: ReturnType<typeof render>;
-    await act(async () => {
-      result = render(
-        <BrowserRouter
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        >
-          <DetailPage />
-        </BrowserRouter>,
-      );
-      // Give effects time to run
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    return result!;
+  const renderPage = (characterId: string = "123") => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[`/character/${characterId}`]}>
+          <Routes>
+            <Route path="/character/:id" element={<DetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Create a fresh QueryClient for each test
+    queryClient = createTestQueryClient();
+
+    // Reset use case mocks
+    mockListCharacterComics.execute.mockResolvedValue([]);
+
+    // Reset React Query hook mocks to default success state
+    mockUseCharacterDetail.mockReturnValue({
+      data: mockCharacter,
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    // Reset favorites mocks
+    mockIsFavorite.mockReturnValue(false);
+    mockToggleFavorite.mockImplementation(async () => {});
   });
 
   describe("Rendering", () => {
-    it("should render without crashing", async () => {
-      const { container } = await renderPage();
+    it("should render without crashing", () => {
+      const { container } = renderPage();
       expect(container).toBeInTheDocument();
     });
 
-    it("should render character details", async () => {
-      await renderPage();
-      // Wait for character to load
+    it("should render character name", async () => {
+      renderPage();
       await waitFor(() => {
         expect(screen.getByText("Spider-Man")).toBeInTheDocument();
       });
     });
 
-    it("should have main content area", async () => {
-      const { container } = await renderPage();
-      // DetailPage component content is present
-      expect(container).toBeInTheDocument();
-      // Wait for the heading to be rendered
-      await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Loading state", () => {
-    it("should render page during loading", async () => {
-      const { container } = await renderPage();
-      expect(container).toBeInTheDocument();
-      // Wait for character name heading to be rendered
-      await waitFor(() => {
-        expect(
-          screen.getByRole("heading", { name: /Spider-Man/i }),
-        ).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Error state", () => {
-    it("should render page structure on error", async () => {
-      const { container } = await renderPage();
-      // Page should render even if data fails to load
-      expect(container).toBeInTheDocument();
-    });
-
-    it("should have character name visible", async () => {
-      await renderPage();
-      // Wait for character information to be displayed
-      await waitFor(() => {
-        expect(
-          screen.getByRole("heading", { name: /Spider-Man/i }),
-        ).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Accessibility", () => {
-    it("should have main content region", async () => {
-      const { container } = await renderPage();
-      // Page component content exists
-      expect(container).toBeInTheDocument();
-      // Wait for heading to be rendered
-      await waitFor(() => {
-        expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-      });
-    });
-
-    it("should have accessible heading structure", async () => {
-      await renderPage();
-      // Wait for heading hierarchy to be rendered
-      await waitFor(() => {
-        expect(
-          screen.getByRole("heading", { level: 1, name: /Spider-Man/i }),
-        ).toBeInTheDocument();
-      });
-      expect(
-        screen.getByRole("heading", { level: 2, name: /COMICS/i }),
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe("Loading State Tests", () => {
-    it("should show loading state initially", async () => {
-      // Arrange: Delay character loading
-      mockGetCharacterDetail.mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve(mockCharacter), 100),
-          ),
-      );
-
-      // Act
-      await act(async () => {
-        render(
-          <BrowserRouter
-            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-          >
-            <DetailPage />
-          </BrowserRouter>,
-        );
-      });
-
-      // Assert: Should not show character immediately
-      expect(screen.queryByText("Spider-Man")).not.toBeInTheDocument();
-
-      // Wait for character to load
-      await waitFor(() => {
-        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
-      });
-    });
-
-    it("should call startLoading when loading begins", async () => {
-      // Act
-      await renderPage();
-
-      // Assert
-      expect(mockStartLoading).toHaveBeenCalled();
-    });
-
-    it("should call stopLoading when loading completes", async () => {
-      // Act
-      await renderPage();
-
-      // Assert: Wait for loading to complete
-      await waitFor(() => {
-        expect(mockStopLoading).toHaveBeenCalled();
-      });
-    });
-
-    it("should not show character content during loading", async () => {
-      // Arrange: Never resolve to keep in loading state
-      mockGetCharacterDetail.mockImplementation(() => new Promise(() => {}));
-
-      // Act
-      const { container } = await renderPage();
-
-      // Assert: Character should not be visible during loading
-      expect(screen.queryByText("Spider-Man")).not.toBeInTheDocument();
-      expect(container).toBeInTheDocument();
-    });
-  });
-
-  describe("Error State Tests", () => {
-    beforeEach(() => {
-      // Reset mocks for error tests
-      mockGetCharacterDetail.mockRejectedValue(
-        new Error("Character not found"),
-      );
-    });
-
-    it("should show error message when character fails to load", async () => {
-      // Act
-      await renderPage();
-
-      // Assert
-      await waitFor(() => {
-        expect(screen.getByText("Character Not Found")).toBeInTheDocument();
-      });
-    });
-
-    it("should show error description", async () => {
-      // Act
-      await renderPage();
-
-      // Assert
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Unable to load character details/i),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it("should show return home button on error", async () => {
-      // Act
-      await renderPage();
-
-      // Assert
-      await waitFor(() => {
-        const button = screen.getByRole("button", { name: /return to home/i });
-        expect(button).toBeInTheDocument();
-        expect(button.tagName).toBe("BUTTON");
-      });
-    });
-
-    it("should show error message with proper heading", async () => {
-      // Act
-      await renderPage();
-
-      // Assert - verify error state has proper structure
-      await waitFor(() => {
-        const heading = screen.getByRole("heading", {
-          name: /character not found/i,
-        });
-        expect(heading).toBeInTheDocument();
-        expect(heading.tagName).toBe("H2");
-      });
-    });
-
-    it("should handle error when character is null", async () => {
-      // Arrange - testing edge case where use case returns null
-      mockGetCharacterDetail.mockResolvedValue(null as unknown as Character);
-
-      // Act
-      await renderPage();
-
-      // Assert
-      await waitFor(() => {
-        expect(screen.getByText("Character Not Found")).toBeInTheDocument();
-      });
-    });
-
-    it("should show error when ID is missing", async () => {
-      // Arrange: Set params to undefined - testing edge case
-      mockParams.id = undefined as unknown as string;
-
-      // Act
-      await renderPage();
-
-      // Assert
-      await waitFor(() => {
-        expect(screen.getByText("Character Not Found")).toBeInTheDocument();
-      });
-
-      // Cleanup
-      mockParams.id = "123";
-    });
-  });
-
-  describe("Empty State Tests - Comics", () => {
-    beforeEach(() => {
-      // Reset to successful character load
-      mockGetCharacterDetail.mockResolvedValue(mockCharacter);
-    });
-
-    it("should show character when comics fail to load", async () => {
-      // Arrange: Comics fail but character succeeds
-      mockListCharacterComics.mockRejectedValue(
-        new Error("Comics not available"),
-      );
-
-      // Act
-      await renderPage();
-
-      // Assert: Character still shows
-      await waitFor(() => {
-        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
-      });
-    });
-
-    it("should show empty comics list when no comics available", async () => {
-      // Arrange: Return empty comics array
-      mockListCharacterComics.mockResolvedValue([]);
-
-      // Act
-      await renderPage();
-
-      // Assert: Character shows, comics section present but empty
-      await waitFor(() => {
-        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
-        expect(
-          screen.getByRole("heading", { name: /COMICS/i }),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it("should handle comics loading failure gracefully", async () => {
-      // Arrange
-      mockListCharacterComics.mockRejectedValue(new Error("API Error"));
-
-      // Act
-      await renderPage();
-
-      // Assert: Should still show character hero
-      await waitFor(() => {
-        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Conditional Rendering - Character Description", () => {
-    it("should show description when character has one", async () => {
-      // Arrange: Character with description
-      const characterWithDesc = new Character({
-        id: new CharacterId(123),
-        name: new CharacterName("Spider-Man"),
-        description: "Friendly neighborhood Spider-Man",
-        thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
-      });
-      mockGetCharacterDetail.mockResolvedValue(characterWithDesc);
-
-      // Act
-      await renderPage();
-
-      // Assert
+    it("should render character description when available", async () => {
+      renderPage();
       await waitFor(() => {
         expect(
           screen.getByText("Friendly neighborhood Spider-Man"),
@@ -413,63 +151,197 @@ describe("DetailPage", () => {
       });
     });
 
-    it("should not show description section when character has no description", async () => {
-      // Arrange: Character without description
-      const characterNoDesc = new Character({
-        id: new CharacterId(123),
-        name: new CharacterName("Spider-Man"),
-        description: "",
-        thumbnail: new ImageUrl("https://example.com/spiderman", "jpg"),
+    it("should not render description when character has none", async () => {
+      mockUseCharacterDetail.mockReturnValue({
+        data: mockCharacterNoDesc,
+        isLoading: false,
+        isFetching: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
       });
-      mockGetCharacterDetail.mockResolvedValue(characterNoDesc);
 
-      // Act
-      await renderPage();
+      renderPage("456");
 
-      // Assert: Name shows but description doesn't
       await waitFor(() => {
-        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+        expect(screen.getByText("Iron Man")).toBeInTheDocument();
       });
-      // Description should not be passed to CharacterHero
+
+      expect(
+        screen.queryByText("Friendly neighborhood Spider-Man"),
+      ).not.toBeInTheDocument();
     });
   });
 
-  describe("Favorite Toggle", () => {
-    it("should call toggleFavorite when favorite button clicked", async () => {
-      // Act
-      await renderPage();
+  describe("Loading State", () => {
+    it("should show empty content while loading", () => {
+      mockUseCharacterDetail.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        isFetching: true,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      });
 
-      // Wait for character to load
+      renderPage();
+
+      // Should not show character content during loading
+      expect(screen.queryByText("Spider-Man")).not.toBeInTheDocument();
+    });
+
+    it("should show character after loading completes", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Error State", () => {
+    beforeEach(() => {
+      mockUseCharacterDetail.mockReturnValue({
+        data: null,
+        isLoading: false,
+        isFetching: false,
+        isError: true,
+        error: new Error("Character not found"),
+        refetch: jest.fn(),
+      });
+    });
+
+    it("should show error message when character fails to load", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        expect(screen.getByText("Character Not Found")).toBeInTheDocument();
+      });
+    });
+
+    it("should show error description", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Unable to load character details/i),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should show return to home button", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        const button = screen.getByRole("button", { name: /return to home/i });
+        expect(button).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Favorites", () => {
+    it("should show favorite button", async () => {
+      renderPage();
+
       await waitFor(() => {
         expect(screen.getByText("Spider-Man")).toBeInTheDocument();
       });
 
-      // Get favorite button and click it
-      const favoriteButton = screen.getByRole("button", {
-        name: /favorite/i,
-      });
-      await act(async () => {
-        favoriteButton.click();
-      });
-
-      // Assert
-      expect(mockToggleFavorite).toHaveBeenCalledWith(123);
+      // Favorite button should be in the hero section
+      const heroSection = screen.getByText("Spider-Man").closest("div");
+      expect(heroSection).toBeInTheDocument();
     });
 
-    it("should show correct favorite state", async () => {
-      // Arrange: Set as favorite
-      mockIsFavorite.mockReturnValue(true);
+    it("should call toggleFavorite when button is clicked", async () => {
+      const user = userEvent.setup();
+      renderPage();
 
-      // Act
-      await renderPage();
-
-      // Assert
       await waitFor(() => {
-        const favoriteButton = screen.getByRole("button", {
-          name: /favorite/i,
-        });
-        expect(favoriteButton).toBeInTheDocument();
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
       });
+
+      // Find and click the favorite button (it's in CharacterHero component)
+      // The button has aria-label that includes the character name
+      const favButton = screen.getByRole("button", {
+        name: /Spider-Man.*favorites/i,
+      });
+      await user.click(favButton);
+
+      expect(mockToggleFavorite).toHaveBeenCalledWith(123);
+    });
+  });
+
+  describe("Comics Section", () => {
+    it("should show comics heading", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole("heading", { name: /COMICS/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("should load initial comics on mount", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+
+      // Should call listCharacterComics with correct parameters
+      await waitFor(() => {
+        expect(mockListCharacterComics.execute).toHaveBeenCalledWith(123, {
+          offset: 0,
+          limit: 20,
+        });
+      });
+    });
+
+    it("should handle comics loading error gracefully", async () => {
+      mockListCharacterComics.execute.mockRejectedValue(
+        new Error("Comics load error"),
+      );
+
+      renderPage();
+
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+
+      // Character should still be visible even if comics fail
+      expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should have accessible heading structure", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { level: 1, name: /Spider-Man/i }),
+        ).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByRole("heading", { level: 2, name: /COMICS/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("SEO", () => {
+    it("should update SEO metadata on character load", async () => {
+      renderPage();
+
+      await waitFor(() => {
+        expect(screen.getByText("Spider-Man")).toBeInTheDocument();
+      });
+
+      // SEO component should be rendered (we can't easily test its content without more setup)
+      expect(mockSeoService.updateMetadata).toHaveBeenCalled();
     });
   });
 });

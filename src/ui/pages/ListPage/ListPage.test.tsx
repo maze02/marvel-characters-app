@@ -30,8 +30,6 @@ const mockCharacter = new Character({
 // Create stable mock functions
 const mockIsFavorite = jest.fn(() => false);
 const mockToggleFavorite = jest.fn(async () => {});
-const mockStartLoading = jest.fn();
-const mockStopLoading = jest.fn();
 const mockListCharacters = jest.fn(async () => ({
   items: [mockCharacter],
   total: 150,
@@ -47,11 +45,6 @@ const mockRetry = jest.fn();
 const stableFavoritesContext = {
   isFavorite: mockIsFavorite,
   toggleFavorite: mockToggleFavorite,
-};
-
-const stableLoadingContext = {
-  startLoading: mockStartLoading,
-  stopLoading: mockStopLoading,
 };
 
 const stableUseCases = {
@@ -77,10 +70,6 @@ jest.mock("@ui/state/FavoritesContext", () => ({
   useFavorites: jest.fn(() => stableFavoritesContext),
 }));
 
-jest.mock("@ui/state/LoadingContext", () => ({
-  useLoading: jest.fn(() => stableLoadingContext),
-}));
-
 jest.mock("@ui/state/DependenciesContext", () => ({
   useUseCases: jest.fn(() => stableUseCases),
   useServices: jest.fn(() => ({
@@ -93,8 +82,12 @@ jest.mock("@ui/state/DependenciesContext", () => ({
   })),
 }));
 
-jest.mock("@ui/hooks/useInfiniteScroll", () => ({
-  useInfiniteScroll: jest.fn(() => stableInfiniteScrollResult),
+const mockUseCharactersList = jest.fn();
+const mockUseCharactersSearch = jest.fn();
+
+jest.mock("@ui/queries", () => ({
+  useCharactersList: (...args: any[]) => mockUseCharactersList(...args),
+  useCharactersSearch: (...args: any[]) => mockUseCharactersSearch(...args),
 }));
 
 jest.mock("@ui/hooks/useDebouncedValue", () => ({
@@ -125,6 +118,41 @@ describe("ListPage", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Set up default React Query mock implementations
+    // Note: useCharactersList uses a select function that transforms the data
+    // to include a 'characters' property for easier access
+    mockUseCharactersList.mockReturnValue({
+      data: {
+        pages: [
+          {
+            items: [mockCharacter],
+            total: 150,
+            offset: 0,
+            limit: 50,
+          },
+        ],
+        pageParams: [0],
+        // The hook's select function adds this flattened array
+        characters: [mockCharacter],
+        total: 150,
+      },
+      fetchNextPage: jest.fn(),
+      hasNextPage: true,
+      isFetching: false,
+      isFetchingNextPage: false,
+      isLoading: false,
+      isError: false,
+      error: null,
+    });
+
+    mockUseCharactersSearch.mockReturnValue({
+      data: { characters: [mockCharacter] },
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      error: null,
+    });
   });
 
   describe("Rendering", () => {

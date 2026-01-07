@@ -6,6 +6,7 @@
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FavoritesPage } from "./FavoritesPage";
 import { Character } from "@domain/character/entities/Character";
 import { CharacterId } from "@domain/character/valueObjects/CharacterId";
@@ -15,8 +16,6 @@ import { ImageUrl } from "@domain/character/valueObjects/ImageUrl";
 // Create stable mock functions
 const mockToggleFavorite = jest.fn();
 const mockIsFavorite = jest.fn(() => true);
-const mockStartLoading = jest.fn();
-const mockStopLoading = jest.fn();
 const mockListFavorites = jest.fn();
 const mockFilterCharacters = jest.fn((chars, query) => {
   if (!query) return chars;
@@ -30,11 +29,7 @@ const stableFavoritesContext = {
   isFavorite: mockIsFavorite,
   toggleFavorite: mockToggleFavorite,
   favoritesCount: 3,
-};
-
-const stableLoadingContext = {
-  startLoading: mockStartLoading,
-  stopLoading: mockStopLoading,
+  favoriteIds: new Set([1, 2, 3]),
 };
 
 const stableUseCases = {
@@ -49,10 +44,6 @@ const stableUseCases = {
 // Mock dependencies with stable objects
 jest.mock("@ui/state/FavoritesContext", () => ({
   useFavorites: jest.fn(() => stableFavoritesContext),
-}));
-
-jest.mock("@ui/state/LoadingContext", () => ({
-  useLoading: jest.fn(() => stableLoadingContext),
 }));
 
 /**
@@ -98,6 +89,12 @@ jest.mock("@ui/state/DependenciesContext", () => ({
 
 jest.mock("@infrastructure/logging/Logger");
 
+// Mock React Query hook for favorites list
+const mockUseFavoritesList = jest.fn();
+jest.mock("@ui/queries", () => ({
+  useFavoritesList: (...args: any[]) => mockUseFavoritesList(...args),
+}));
+
 // Mock CharacterCard to render character names and favorite button
 jest.mock("@ui/designSystem/molecules/CharacterCard/CharacterCard", () => ({
   CharacterCard: ({
@@ -122,23 +119,46 @@ jest.mock("@ui/designSystem/molecules/CharacterCard/CharacterCard", () => ({
 }));
 
 describe("FavoritesPage", () => {
+  let queryClient: QueryClient;
+
   /**
-   * Helper: Render page with router
+   * Helper: Render page with router and React Query
    */
   const renderPage = () => {
     return render(
-      <BrowserRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <FavoritesPage />
-      </BrowserRouter>,
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
+          <FavoritesPage />
+        </BrowserRouter>
+      </QueryClientProvider>,
     );
   };
 
   beforeEach(() => {
+    // Create a new QueryClient for each test to ensure isolation
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false, // Disable retries in tests
+        },
+      },
+    });
+
     jest.clearAllMocks();
+
     // Set up default mock behavior
     mockListFavorites.mockResolvedValue(mockFavorites);
+
+    // Mock the useFavoritesList hook to return success state
+    mockUseFavoritesList.mockReturnValue({
+      data: mockFavorites,
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      error: null,
+    });
   });
 
   describe("Rendering", () => {

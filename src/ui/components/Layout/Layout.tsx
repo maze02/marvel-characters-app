@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useIsFetching } from "@tanstack/react-query";
 import { Navbar } from "../Navbar/Navbar";
 import { ApiKeyBanner } from "../ApiKeyBanner/ApiKeyBanner";
 import { LoadingBar } from "@ui/designSystem/atoms/LoadingBar/LoadingBar";
-import { useLoading } from "@ui/state/LoadingContext";
 import { routes } from "@ui/routes/routes";
 import styles from "./Layout.module.scss";
 
@@ -18,10 +18,14 @@ export interface LayoutProps {
  *
  * Provides consistent page structure with persistent navbar, loading bar, and API banner.
  * Ensures navbar and loading feedback remain visible during page transitions.
+ * Uses React Query's useIsFetching to automatically show loading bar when any query is active.
  */
 export const Layout: React.FC<LayoutProps> = ({ children, onLogoClick }) => {
   const navigate = useNavigate();
-  const { isLoading } = useLoading();
+
+  // Automatically show loading bar when any React Query request is in progress
+  const isFetching = useIsFetching();
+  const isLoading = isFetching > 0;
 
   const handleLogoClick = () => {
     if (onLogoClick) {
