@@ -7,7 +7,7 @@
     "**/tests/**",
     "**/e2e/**"
   ],
-  "ignoreDependencies": [],
+  "ignoreDependencies": ["@jest/test-sequencer"],
   "ignoreExportsUsedInFile": true,
   "includeEntryExports": true
 }
