@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SearchBar } from "@ui/designSystem/molecules/SearchBar/SearchBar";
 import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/CharacterCard";
 import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
-import { useLoading } from "@ui/state/LoadingContext";
-import { useUseCases } from "@ui/state";
 import { useDebouncedValue } from "@ui/hooks";
-import { useInfiniteScroll } from "@ui/hooks";
-import { Character } from "@domain/character/entities/Character";
-import { PAGINATION, UI } from "@config/constants";
+import { UI } from "@config/constants";
 import { config } from "@infrastructure/config/env";
-import { logger } from "@infrastructure/logging/Logger";
-import {
-  isCancellationError,
-  getErrorMessage,
-} from "@infrastructure/http/types";
 import { routes } from "@ui/routes/routes";
+import { useCharactersList, useCharactersSearch } from "@ui/queries";
 import styles from "./ListPage.module.scss";
 
 /**
@@ -25,180 +17,97 @@ import styles from "./ListPage.module.scss";
  * You can search for characters and mark favorites.
  *
  * How it works:
- * - Loads 50 characters at a time as you scroll
+ * - Uses React Query for data fetching and caching
+ * - Loads 50 characters at a time as you scroll (infinite scroll)
  * - Search waits 400ms after you stop typing before making API call
- * - Favorites are saved in your browser
- * - Cancels old search requests when you type new text
+ * - Favorites are saved in your browser (localStorage)
+ * - React Query automatically cancels old search requests
  */
 export const ListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Character[]>([]);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
   const debouncedQuery = useDebouncedValue(searchQuery, UI.SEARCH_DEBOUNCE_MS);
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { startLoading, stopLoading } = useLoading();
-
-  // Inject use cases via DI container
-  const { listCharacters, searchCharacters } = useUseCases();
 
   // Infinite scroll for main character list (no search query)
   const {
-    items: infiniteScrollCharacters,
-    loading: isInfiniteScrollLoading,
-    hasMore,
-    sentinelRef,
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetching: isInfiniteScrollFetching,
+    isLoading: isInfiniteScrollLoading,
     error: infiniteScrollError,
-    retry,
-  } = useInfiniteScroll(
-    (offset) =>
-      listCharacters.execute({ limit: PAGINATION.DEFAULT_LIMIT, offset }),
-    PAGINATION.DEFAULT_LIMIT,
-    (character) => character.id.value, // Extract unique ID for deduplication
-  );
+    refetch: retryInfiniteScroll,
+  } = useCharactersList();
 
-  // Sync infinite scroll loading state with global loading bar
-  // Show loading during initial page load and subsequent pagination
+  // Search results (only when query exists)
+  const {
+    data: searchData,
+    isLoading: isSearchLoading,
+    error: searchError,
+    refetch: retrySearch,
+  } = useCharactersSearch(debouncedQuery);
+
+  // Intersection Observer for infinite scroll
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Get characters from infinite scroll query
+  const infiniteScrollCharacters = infiniteData?.characters ?? [];
+
+  // Get characters from search query
+  const searchResults = searchData?.characters ?? [];
+
+  // Set up Intersection Observer for infinite scroll
   useEffect(() => {
-    const isInitialLoad =
-      infiniteScrollCharacters.length === 0 && !infiniteScrollError;
-    const shouldShowLoading =
-      (isInfiniteScrollLoading || isInitialLoad) && !searchQuery;
-
-    if (shouldShowLoading) {
-      startLoading();
-    } else if (!searchQuery) {
-      stopLoading();
+    // Don't set up observer if searching or no more data
+    if (searchQuery || !hasNextPage || isInfiniteScrollFetching) {
+      return;
     }
-  }, [
-    isInfiniteScrollLoading,
-    infiniteScrollCharacters.length,
-    infiniteScrollError,
-    searchQuery,
-    startLoading,
-    stopLoading,
-  ]);
 
-  // Sync search loading state with global loading bar
-  useEffect(() => {
-    if (isSearchLoading && searchQuery) {
-      startLoading();
-    } else if (searchQuery) {
-      stopLoading();
+    // Create observer
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+
+        // Trigger load when sentinel is visible
+        if (
+          firstEntry &&
+          firstEntry.isIntersecting &&
+          hasNextPage &&
+          !isInfiniteScrollFetching
+        ) {
+          void fetchNextPage();
+        }
+      },
+      {
+        root: null, // Use viewport
+        rootMargin: UI.INFINITE_SCROLL_ROOT_MARGIN,
+        threshold: 0.1, // Trigger when 10% visible
+      },
+    );
+
+    // Observe the sentinel element
+    const currentSentinel = sentinelRef.current;
+    if (currentSentinel) {
+      observerRef.current.observe(currentSentinel);
     }
-  }, [isSearchLoading, searchQuery, startLoading, stopLoading]);
 
-  // Handle search - only runs when debouncedQuery changes (not on every keystroke!)
-  // Uses AbortController to cancel outdated requests and prevent race conditions
-  useEffect(() => {
-    // Create abort controller for this search request
-    const abortController = new AbortController();
-    // Track if this is still the latest request
-    const requestId = Date.now();
-    let isLatestRequest = true;
-
-    const performSearch = async () => {
-      if (!debouncedQuery) {
-        setSearchResults([]);
-        setIsSearchLoading(false);
-        setSearchError(null);
-        stopLoading();
-        return;
-      }
-
-      logger.info("Performing search", { debouncedQuery, requestId });
-      setIsSearchLoading(true);
-      setSearchError(null);
-      startLoading();
-
-      try {
-        // Pass abort signal to allow cancellation
-        const result = await searchCharacters.execute(debouncedQuery, {
-          signal: abortController.signal,
-        });
-
-        // Only update state if this is still the latest request and not aborted
-        if (isLatestRequest && !abortController.signal.aborted) {
-          logger.info("Search results received", {
-            query: debouncedQuery,
-            requestId,
-            count: result.count,
-            charactersLength: result.characters.length,
-          });
-          setSearchResults(result.characters);
-          setSearchError(null);
-        } else {
-          logger.debug("Search result ignored (newer request exists)", {
-            query: debouncedQuery,
-            requestId,
-          });
-        }
-      } catch (error: unknown) {
-        // Ignore errors from aborted requests (expected behavior)
-        if (abortController.signal.aborted || isCancellationError(error)) {
-          logger.debug("Search aborted (expected)", {
-            query: debouncedQuery,
-            requestId,
-          });
-          return;
-        }
-
-        // Don't log cancelled requests as errors (expected behavior from debouncing)
-        if (isCancellationError(error)) {
-          logger.debug("Search request cancelled (debouncing)", {
-            query: debouncedQuery,
-            requestId,
-          });
-          return;
-        }
-
-        // Only update error state if this is still the latest request
-        if (isLatestRequest) {
-          logger.error("Search failed", error, {
-            query: debouncedQuery,
-            requestId,
-          });
-
-          // Set user-friendly error message
-          const errorMessage = getErrorMessage(error);
-          if (errorMessage.includes("timeout")) {
-            setSearchError(
-              "The search is taking too long. The Comic Vine API might be slow right now. Please try again.",
-            );
-          } else if (errorMessage.includes("rate limit")) {
-            setSearchError(
-              "Too many requests. Please wait a moment and try again.",
-            );
-          } else {
-            setSearchError(
-              "Search failed. Please check your connection and try again.",
-            );
-          }
-          setSearchResults([]);
-        }
-      } finally {
-        // Only update loading state if this is still the latest request and not aborted
-        if (isLatestRequest && !abortController.signal.aborted) {
-          setIsSearchLoading(false);
-          stopLoading();
-        }
-      }
-    };
-
-    void performSearch();
-
-    // Cleanup: abort request when component unmounts or debouncedQuery changes
+    // Cleanup
     return () => {
-      isLatestRequest = false;
-      abortController.abort();
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
-  }, [debouncedQuery, searchCharacters, startLoading, stopLoading]);
+  }, [searchQuery, hasNextPage, isInfiniteScrollFetching, fetchNextPage]);
 
   // Retry search handler
-  const retrySearch = () => {
-    setSearchError(null);
-    setSearchQuery(""); // Clear search
-    setTimeout(() => setSearchQuery(debouncedQuery), 0); // Retrigger with same query
+  const handleRetrySearch = () => {
+    void retrySearch();
+  };
+
+  // Retry infinite scroll handler
+  const handleRetryInfiniteScroll = () => {
+    void retryInfiniteScroll();
   };
 
   // Determine which characters to display
@@ -210,6 +119,9 @@ export const ListPage: React.FC = () => {
   const isLoading = searchQuery
     ? isSearchLoading && searchResults.length === 0 // Show loading for search
     : isInfiniteScrollLoading && infiniteScrollCharacters.length === 0; // Show loading for initial list
+
+  // Determine which error to show
+  const currentError = searchQuery ? searchError : infiniteScrollError;
 
   return (
     <>
@@ -273,7 +185,7 @@ export const ListPage: React.FC = () => {
         )}
 
         {/* Infinite scroll sentinel (only when not searching) */}
-        {!searchQuery && hasMore && (
+        {!searchQuery && hasNextPage && (
           <div
             ref={sentinelRef}
             className={styles.listPage__sentinel}
@@ -285,8 +197,15 @@ export const ListPage: React.FC = () => {
         {!isLoading && searchError && searchQuery && (
           <div className={styles.listPage__errorState}>
             <h2 className={styles.listPage__heading}>Search Failed</h2>
-            <p className={styles.listPage__message}>{searchError}</p>
-            <button onClick={retrySearch} className={styles.listPage__action}>
+            <p className={styles.listPage__message}>
+              {searchError instanceof Error
+                ? searchError.message
+                : "Search failed. Please check your connection and try again."}
+            </p>
+            <button
+              onClick={handleRetrySearch}
+              className={styles.listPage__action}
+            >
               Retry Search
             </button>
           </div>
@@ -299,7 +218,10 @@ export const ListPage: React.FC = () => {
           infiniteScrollCharacters.length === 0 && (
             <div className={styles.listPage__errorState}>
               <p>Failed to load characters. Please try again.</p>
-              <button onClick={retry} className={styles.listPage__action}>
+              <button
+                onClick={handleRetryInfiniteScroll}
+                className={styles.listPage__action}
+              >
                 Retry
               </button>
             </div>
@@ -307,7 +229,7 @@ export const ListPage: React.FC = () => {
 
         {/* Empty state - only show after loading completes and search has actually executed */}
         {!isLoading &&
-          !searchError &&
+          !currentError &&
           displayedCharacters.length === 0 &&
           // If user is typing but debounce hasn't triggered yet, don't show empty state
           (searchQuery && !debouncedQuery ? null : (

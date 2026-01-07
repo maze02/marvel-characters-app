@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { SearchBar } from "@ui/designSystem/molecules/SearchBar/SearchBar";
 import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/CharacterCard";
 import { SEO } from "@ui/components/SEO";
 import { useFavorites } from "@ui/state/FavoritesContext";
-import { useLoading } from "@ui/state/LoadingContext";
 import { useUseCases } from "@ui/state/DependenciesContext";
 import { useDebouncedValue } from "@ui/hooks/useDebouncedValue";
-import { Character } from "@domain/character/entities/Character";
+import { useFavoritesList } from "@ui/queries";
 import { UI } from "@config/constants";
 import { config } from "@infrastructure/config/env";
-import { logger } from "@infrastructure/logging/Logger";
 import { routes } from "@ui/routes/routes";
 import styles from "./FavoritesPage.module.scss";
 
@@ -21,87 +19,28 @@ import styles from "./FavoritesPage.module.scss";
  * Features:
  * - Loads favorite characters from localStorage
  * - Real-time search filtering with debouncing
- * - Proper loading states with global loading bar visibility
+ * - Automatic loading states with global loading bar (via React Query)
  * - Synchronized with favorites context for real-time updates
- * - Shared API cache for fast subsequent loads
- *
- * Technical Implementation:
- * - Dependencies injected via DependencyContainer (DI pattern)
- * - Uses shared repository instances for consistent caching
- * - setTimeout(0) ensures loading bar renders before data fetch
- * - Separates concerns: UI state, loading state, and business logic
- */
+ * - Automatic caching and refetching
+ **/
 export const FavoritesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [favoriteCharacters, setFavoriteCharacters] = useState<Character[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const debouncedQuery = useDebouncedValue(searchQuery, UI.SEARCH_DEBOUNCE_MS);
   const { isFavorite, toggleFavorite, favoritesCount } = useFavorites();
-  const { startLoading, stopLoading } = useLoading();
 
   // Inject use cases via DI container
-  const { listFavorites, filterCharacters } = useUseCases();
+  const { filterCharacters } = useUseCases();
+
+  // Fetch favorite characters with React Query (automatic loading bar)
+  const { data: favoriteCharacters = [], isLoading } = useFavoritesList();
 
   // Derived state: Check if there are any favorites
   const hasFavorites = favoritesCount > 0;
 
-  // Sync local loading state with global loading bar
-  useEffect(() => {
-    if (isLoading) {
-      startLoading();
-    } else {
-      stopLoading();
-    }
-  }, [isLoading, startLoading, stopLoading]);
-
-  // Load favorite characters on mount and when favorites change
-  useEffect(() => {
-    /**
-     * Load favorites with proper loading state management
-     *
-     * Sets loading state immediately, then defers the async operation using
-     * setTimeout(0), which schedules it as a macrotask. This ensures React
-     * commits and renders the loading bar before the data fetch begins.
-     */
-
-    // Early return if no favorites - no need for loading state
-    if (!hasFavorites) {
-      setFavoriteCharacters([]);
-      setIsLoading(false);
-      return;
-    }
-
-    // Set loading state immediately (synchronous)
-    setIsLoading(true);
-
-    // Defer async operation to next event loop iteration (macrotask)
-    // This guarantees React renders the loading bar before fetching data
-    const timeoutId = setTimeout(() => {
-      const loadFavorites = async () => {
-        try {
-          // API call - will use shared cache from DependencyContainer
-          const characters = await listFavorites.execute();
-          setFavoriteCharacters(characters);
-        } catch (error) {
-          logger.error("Failed to load favorites", error);
-          setFavoriteCharacters([]);
-        } finally {
-          // Always stop loading, even on error
-          setIsLoading(false);
-        }
-      };
-
-      void loadFavorites();
-    }, 0);
-
-    // Cleanup: cancel timeout if component unmounts
-    return () => clearTimeout(timeoutId);
-  }, [favoritesCount, listFavorites, hasFavorites]);
-
   // Filter characters based on search query using use case (business logic)
-  const displayedCharacters = filterCharacters.execute(
-    favoriteCharacters,
-    debouncedQuery,
+  const displayedCharacters = useMemo(
+    () => filterCharacters.execute(favoriteCharacters, debouncedQuery),
+    [favoriteCharacters, debouncedQuery, filterCharacters],
   );
 
   return (

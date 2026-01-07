@@ -2,6 +2,7 @@
  * Test Setup
  *
  * Configures Jest and Testing Library for all tests.
+ * Includes React Query test utilities for component tests.
  */
 
 import "@testing-library/jest-dom";
@@ -43,3 +44,11 @@ global.console = {
   error: jest.fn(),
   warn: jest.fn(),
 };
+
+// Mock IntersectionObserver (needed for infinite scroll)
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as unknown as typeof IntersectionObserver;

@@ -5,7 +5,6 @@
  */
 
 export { FavoritesProvider, useFavorites } from "./FavoritesContext";
-export { LoadingProvider, useLoading } from "./LoadingContext";
 export {
   DependenciesProvider,
   useDependencyContainer,

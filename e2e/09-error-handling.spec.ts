@@ -65,15 +65,20 @@ test.describe("Error Handling", () => {
      *
      * WHY IT MATTERS: Transient errors (temporary network issues) should
      * be recoverable. Users need a way to retry without refreshing.
+     *
+     * NOTE: React Query automatically retries up to 3 times, so need
+     * to fail enough requests to exhaust all retries and show the error state.
      */
     let requestCount = 0;
 
-    // First request fails, second succeeds
+    // Fail first 4 requests (initial + 3 retries), then succeed
     await page.route("**/characters/?**", (route) => {
       requestCount++;
-      if (requestCount === 1) {
+      if (requestCount <= 4) {
+        // Fail initial request and all automatic retries
         route.abort("failed");
       } else {
+        // Succeed on manual retry (user clicking retry button)
         route.continue();
       }
     });
@@ -82,10 +87,11 @@ test.describe("Error Handling", () => {
     await waitForAppLoad(page);
 
     // Wait for error state to render - retry button should appear
+    // React Query will try 3 times automatically before showing error
     const retryButton = page.getByRole("button", { name: /retry/i });
 
     // Assert that retry button appears after error
-    await expect(retryButton).toBeVisible({ timeout: 10000 });
+    await expect(retryButton).toBeVisible({ timeout: 15000 });
 
     // Click retry button
     await retryButton.click();
