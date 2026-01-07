@@ -1,25 +1,27 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Input } from './Input';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Input } from "./Input";
+import { Icon } from "../Icon/Icon";
 
 /**
- * Input component with various states and validation.
+ * Input component with Marvel design system styling.
+ * Shares the same clean, minimalist style as SearchBar (uppercase, condensed font, bottom border).
  */
 const meta: Meta<typeof Input> = {
-  title: 'Design System/Atoms/Input',
+  title: "Design System/Atoms/Input",
   component: Input,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     error: {
-      control: 'boolean',
-      description: 'Shows error state',
+      control: "text",
+      description: "Shows error state with message",
     },
     disabled: {
-      control: 'boolean',
-      description: 'Disables the input',
+      control: "boolean",
+      description: "Disables the input",
     },
     fullWidth: {
-      control: 'boolean',
-      description: 'Makes input full width',
+      control: "boolean",
+      description: "Makes input full width",
     },
   },
 };
@@ -28,11 +30,12 @@ export default meta;
 type Story = StoryObj<typeof Input>;
 
 /**
- * Default input
+ * Default input with Marvel styling
  */
 export const Default: Story = {
   args: {
-    placeholder: 'Enter text...',
+    placeholder: "ENTER TEXT...",
+    fullWidth: true,
   },
 };
 
@@ -41,8 +44,43 @@ export const Default: Story = {
  */
 export const WithValue: Story = {
   args: {
-    value: 'Spider-Man',
-    placeholder: 'Search characters...',
+    value: "Spider-Man",
+    placeholder: "SEARCH CHARACTERS...",
+    fullWidth: true,
+  },
+};
+
+/**
+ * Input with icon (similar to SearchBar but without search icon being mandatory)
+ */
+export const WithIcon: Story = {
+  args: {
+    placeholder: "SEARCH CHARACTERS...",
+    icon: <Icon name="search" size={16} />,
+    fullWidth: true,
+  },
+};
+
+/**
+ * Input with label
+ */
+export const WithLabel: Story = {
+  args: {
+    label: "Character Name",
+    placeholder: "ENTER CHARACTER NAME...",
+    fullWidth: true,
+  },
+};
+
+/**
+ * Input with helper text
+ */
+export const WithHelperText: Story = {
+  args: {
+    label: "Search",
+    placeholder: "SEARCH CHARACTERS...",
+    helperText: "Enter at least 3 characters to search",
+    fullWidth: true,
   },
 };
 
@@ -51,9 +89,11 @@ export const WithValue: Story = {
  */
 export const WithError: Story = {
   args: {
-    error: 'This field is required',
-    value: 'Invalid input',
-    placeholder: 'Search characters...',
+    label: "Character Name",
+    error: "This field is required",
+    value: "",
+    placeholder: "SEARCH CHARACTERS...",
+    fullWidth: true,
   },
 };
 
@@ -63,17 +103,8 @@ export const WithError: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
-    value: 'Disabled input',
-  },
-};
-
-/**
- * Full width input
- */
-export const FullWidth: Story = {
-  args: {
+    value: "Disabled input",
     fullWidth: true,
-    placeholder: 'Full width input...',
   },
 };
 
@@ -82,14 +113,18 @@ export const FullWidth: Story = {
  */
 export const TypeEmail: Story = {
   args: {
-    type: 'email',
-    placeholder: 'email@example.com',
+    type: "email",
+    placeholder: "EMAIL@EXAMPLE.COM",
+    label: "Email",
+    fullWidth: true,
   },
 };
 
 export const TypePassword: Story = {
   args: {
-    type: 'password',
-    placeholder: 'Enter password...',
+    type: "password",
+    placeholder: "ENTER PASSWORD...",
+    label: "Password",
+    fullWidth: true,
   },
 };

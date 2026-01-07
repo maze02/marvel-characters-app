@@ -11,5 +11,4 @@ export {
   useDependencyContainer,
   useUseCases,
   useServices,
-  useRepositories,
 } from "./DependenciesContext";

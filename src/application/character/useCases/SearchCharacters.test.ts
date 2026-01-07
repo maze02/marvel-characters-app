@@ -25,21 +25,18 @@ describe("SearchCharacters", () => {
         name: new CharacterName("Spider-Man"),
         description: "Friendly neighborhood Spider-Man",
         thumbnail: new ImageUrl("http://example.com/spiderman", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       }),
       new Character({
         id: new CharacterId(1009608),
         name: new CharacterName("Spider-Woman"),
         description: "Jessica Drew",
         thumbnail: new ImageUrl("http://example.com/spiderwoman", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       }),
       new Character({
         id: new CharacterId(1011347),
         name: new CharacterName("Spider-Girl"),
         description: "May Parker",
         thumbnail: new ImageUrl("http://example.com/spidergirl", "jpg"),
-        modifiedDate: new Date("2024-01-01"),
       }),
     ];
 
@@ -191,14 +188,12 @@ describe("SearchCharacters", () => {
           name: new CharacterName("Spider-Man"),
           description: "Test description",
           thumbnail: new ImageUrl("http://example.com/1", "jpg"),
-          modifiedDate: new Date(),
         });
         const character2 = new Character({
           id: new CharacterId(2),
           name: new CharacterName("Iron Man"),
           description: "Test description",
           thumbnail: new ImageUrl("http://example.com/2", "jpg"),
-          modifiedDate: new Date(),
         });
 
         // Mock matchesSearch to filter out Iron Man
@@ -242,14 +237,12 @@ describe("SearchCharacters", () => {
           name: new CharacterName("Spider-Man"),
           description: "Test description",
           thumbnail: new ImageUrl("http://example.com/1", "jpg"),
-          modifiedDate: new Date(),
         });
         const character2 = new Character({
           id: new CharacterId(2),
           name: new CharacterName("Iron Man"),
           description: "Test description",
           thumbnail: new ImageUrl("http://example.com/2", "jpg"),
-          modifiedDate: new Date(),
         });
 
         jest.spyOn(character1, "matchesSearch").mockReturnValue(true);
@@ -282,7 +275,6 @@ describe("SearchCharacters", () => {
           name: new CharacterName("Iron Man"),
           description: "Test description",
           thumbnail: new ImageUrl("http://example.com/1", "jpg"),
-          modifiedDate: new Date(),
         });
 
         jest.spyOn(character, "matchesSearch").mockReturnValue(false);

@@ -1,0 +1,16 @@
+// Link Component Styles
+// Uses shared link mixins for consistency across the application
+
+.link {
+  // Base link styling is applied via variants
+
+  // Variant: Primary (default Marvel red theme)
+  &--primary {
+    @include link-primary;
+  }
+
+  // Variant: Secondary (subtle gray theme)
+  &--secondary {
+    @include link-secondary;
+  }
+}

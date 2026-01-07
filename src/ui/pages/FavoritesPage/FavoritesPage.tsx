@@ -47,6 +47,15 @@ export const FavoritesPage: React.FC = () => {
   // Derived state: Check if there are any favorites
   const hasFavorites = favoritesCount > 0;
 
+  // Sync local loading state with global loading bar
+  useEffect(() => {
+    if (isLoading) {
+      startLoading();
+    } else {
+      stopLoading();
+    }
+  }, [isLoading, startLoading, stopLoading]);
+
   // Load favorite characters on mount and when favorites change
   useEffect(() => {
     /**
@@ -69,7 +78,6 @@ export const FavoritesPage: React.FC = () => {
 
     // Set loading state immediately (synchronous)
     setIsLoading(true);
-    startLoading();
 
     // Defer async operation to next event loop iteration (macrotask)
     // This guarantees React renders the loading bar before fetching data
@@ -85,7 +93,6 @@ export const FavoritesPage: React.FC = () => {
         } finally {
           // Always stop loading, even on error
           setIsLoading(false);
-          stopLoading();
         }
       };
 
@@ -94,8 +101,7 @@ export const FavoritesPage: React.FC = () => {
 
     // Cleanup: cancel timeout if component unmounts
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favoritesCount]); // Only reload when favorites count changes
+  }, [favoritesCount, listFavorites, hasFavorites]);
 
   // Filter characters based on search query using use case (business logic)
   const displayedCharacters = filterCharacters.execute(

@@ -27,7 +27,6 @@ describe("GetCharacterDetail", () => {
       name: new CharacterName("Spider-Man"),
       description: "Friendly neighborhood Spider-Man",
       thumbnail: new ImageUrl("http://example.com/spiderman", "jpg"),
-      modifiedDate: new Date("2024-01-01"),
     });
 
     // Create mock repository
@@ -70,7 +69,6 @@ describe("GetCharacterDetail", () => {
           name: new CharacterName("Iron Man"),
           description: "Genius billionaire",
           thumbnail: new ImageUrl("http://example.com/ironman", "jpg"),
-          modifiedDate: new Date("2024-01-01"),
         });
 
         mockRepository.findById.mockResolvedValue(differentCharacter);
@@ -195,7 +193,6 @@ describe("GetCharacterDetail", () => {
           name: new CharacterName("Test"),
           description: "Test",
           thumbnail: new ImageUrl("http://example.com/test", "jpg"),
-          modifiedDate: new Date(),
         });
 
         mockRepository.findById.mockResolvedValue(character);
@@ -248,7 +245,6 @@ describe("GetCharacterDetail", () => {
           name: new CharacterName("A"),
           description: "",
           thumbnail: new ImageUrl("http://example.com/a", "jpg"),
-          modifiedDate: new Date(),
         });
 
         mockRepository.findById.mockResolvedValue(minimalCharacter);
@@ -265,7 +261,6 @@ describe("GetCharacterDetail", () => {
           name: new CharacterName("Spider-Man (Peter Parker)"),
           description: "Test",
           thumbnail: new ImageUrl("http://example.com/test", "jpg"),
-          modifiedDate: new Date(),
         });
 
         mockRepository.findById.mockResolvedValue(character);

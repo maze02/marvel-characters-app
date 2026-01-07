@@ -1,20 +1,18 @@
-import { CharacterRepository } from '@domain/character/ports/CharacterRepository';
-import { FavoritesRepository } from '@domain/character/ports/FavoritesRepository';
-import { Character } from '@domain/character/entities/Character';
-import { CharacterId } from '@domain/character/valueObjects/CharacterId';
-
+import { CharacterRepository } from "@domain/character/ports/CharacterRepository";
+import { FavoritesRepository } from "@domain/character/ports/FavoritesRepository";
+import { Character } from "@domain/character/entities/Character";
 /**
  * List Favorites Use Case
- * 
+ *
  * Retrieves full character data for all favorited characters.
  * Combines favorites IDs from localStorage with character data from API.
- * 
+ *
  * Business rules:
  * - Returns only characters that are currently favorited
  * - Fetches full character details from API
  * - Handles characters that may no longer exist in API
  * - Results can be empty if no favorites
- * 
+ *
  * @example
  * ```typescript
  * const useCase = new ListFavorites(characterRepository, favoritesRepository);
@@ -25,12 +23,12 @@ import { CharacterId } from '@domain/character/valueObjects/CharacterId';
 export class ListFavorites {
   constructor(
     private readonly characterRepository: CharacterRepository,
-    private readonly favoritesRepository: FavoritesRepository
+    private readonly favoritesRepository: FavoritesRepository,
   ) {}
 
   /**
    * Execute the use case
-   * 
+   *
    * @returns Array of favorited characters
    * @throws {ApiError} When the Marvel API request fails
    */
@@ -43,7 +41,7 @@ export class ListFavorites {
 
     // Fetch character details for each favorite
     const characterPromises = favoriteIds.map((id) =>
-      this.characterRepository.findById(id).catch(() => null)
+      this.characterRepository.findById(id).catch(() => null),
     );
 
     const characters = await Promise.all(characterPromises);
@@ -54,21 +52,10 @@ export class ListFavorites {
 
   /**
    * Get count of favorites without fetching full data
-   * 
+   *
    * @returns Number of favorited characters
    */
   async getCount(): Promise<number> {
     return await this.favoritesRepository.count();
-  }
-
-  /**
-   * Check if a specific character is favorited
-   * 
-   * @param characterId - Character ID (number)
-   * @returns true if favorited, false otherwise
-   */
-  async isFavorite(characterId: number): Promise<boolean> {
-    const id = new CharacterId(characterId);
-    return await this.favoritesRepository.contains(id);
   }
 }

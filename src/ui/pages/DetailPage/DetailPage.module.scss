@@ -38,33 +38,6 @@
     margin: 0 0 $spacing-6;
     max-width: 400px;
   }
-
-  // Element: action link/button
-  &__action {
-    display: inline-flex;
-    align-items: center;
-    padding: $spacing-3 $spacing-5;
-    background-color: $color-primary;
-    color: $color-white;
-    text-decoration: none;
-    font-family: $font-family-condensed;
-    font-weight: $font-weight-bold;
-    font-size: 14px;
-    letter-spacing: $letter-spacing-normal;
-    text-transform: uppercase;
-    border-radius: 2px;
-    @include safe-animation(all $duration-fast $ease-out);
-    @include focus-outline($color-primary, 4px);
-
-    &:hover {
-      background-color: $color-primary-dark;
-      transform: translateY(-1px);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
 }
 
 @keyframes slideDown {

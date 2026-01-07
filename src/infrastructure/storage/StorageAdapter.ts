@@ -2,18 +2,21 @@
  * Storage Error for storage operation failures
  */
 export class StorageError extends Error {
-  constructor(message: string, public readonly originalError?: unknown) {
+  constructor(
+    message: string,
+    public readonly originalError?: unknown,
+  ) {
     super(message);
-    this.name = 'StorageError';
+    this.name = "StorageError";
   }
 }
 
 /**
  * Storage Adapter
- * 
+ *
  * Safe wrapper around localStorage with error handling.
  * Provides type-safe get/set operations with JSON serialization.
- * 
+ *
  * @example
  * ```typescript
  * const storage = new StorageAdapter();
@@ -30,7 +33,7 @@ export class StorageAdapter {
 
   /**
    * Get item from storage
-   * 
+   *
    * @param key - Storage key
    * @returns Parsed data or null if not found
    * @throws {StorageError} if storage access fails
@@ -38,7 +41,7 @@ export class StorageAdapter {
   get<T>(key: string): T | null {
     try {
       const item = this.storage.getItem(key);
-      
+
       if (item === null) {
         return null;
       }
@@ -47,14 +50,14 @@ export class StorageAdapter {
     } catch (error) {
       throw new StorageError(
         `Failed to read from storage (key: ${key})`,
-        error
+        error,
       );
     }
   }
 
   /**
    * Set item in storage
-   * 
+   *
    * @param key - Storage key
    * @param value - Data to store (will be JSON stringified)
    * @throws {StorageError} if storage access fails or quota exceeded
@@ -67,25 +70,22 @@ export class StorageAdapter {
       // Check for quota exceeded error
       if (
         error instanceof DOMException &&
-        (error.name === 'QuotaExceededError' ||
-          error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+        (error.name === "QuotaExceededError" ||
+          error.name === "NS_ERROR_DOM_QUOTA_REACHED")
       ) {
         throw new StorageError(
-          'Storage quota exceeded. Please clear some favorites.',
-          error
+          "Storage quota exceeded. Please clear some favorites.",
+          error,
         );
       }
-      
-      throw new StorageError(
-        `Failed to write to storage (key: ${key})`,
-        error
-      );
+
+      throw new StorageError(`Failed to write to storage (key: ${key})`, error);
     }
   }
 
   /**
    * Remove item from storage
-   * 
+   *
    * @param key - Storage key
    * @throws {StorageError} if storage access fails
    */
@@ -95,27 +95,27 @@ export class StorageAdapter {
     } catch (error) {
       throw new StorageError(
         `Failed to remove from storage (key: ${key})`,
-        error
+        error,
       );
     }
   }
 
   /**
    * Clear all items from storage
-   * 
+   *
    * @throws {StorageError} if storage access fails
    */
   clear(): void {
     try {
       this.storage.clear();
     } catch (error) {
-      throw new StorageError('Failed to clear storage', error);
+      throw new StorageError("Failed to clear storage", error);
     }
   }
 
   /**
    * Check if key exists in storage
-   * 
+   *
    * @param key - Storage key
    * @returns true if key exists, false otherwise
    */
@@ -129,7 +129,7 @@ export class StorageAdapter {
 
   /**
    * Get all keys in storage
-   * 
+   *
    * @returns Array of storage keys
    */
   keys(): string[] {

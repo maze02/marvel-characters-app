@@ -21,17 +21,8 @@ jest.mock("../pages/DetailPage/DetailPage", () => ({
   DetailPage: () => <div data-testid="detail-page">Detail Page</div>,
 }));
 
-// Mock LoadingBar
-jest.mock("../designSystem/atoms/LoadingBar/LoadingBar", () => ({
-  LoadingBar: ({ isLoading }: { isLoading: boolean }) =>
-    isLoading ? <div data-testid="loading-bar">Loading</div> : null,
-}));
-
 // Mock LoadingContext
 jest.mock("../state/LoadingContext", () => ({
-  LoadingProvider: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
   useLoading: () => ({
     isLoading: false,
     startLoading: jest.fn(),

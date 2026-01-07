@@ -176,10 +176,3 @@ export function useInfiniteScroll<T>(
     retry,
   };
 }
-
-/**
- * Type for the hook return value
- */
-export type UseInfiniteScrollReturn<T> = ReturnType<
-  typeof useInfiniteScroll<T>
->;

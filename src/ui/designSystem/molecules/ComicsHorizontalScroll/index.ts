@@ -1,1 +1,0 @@
-export { ComicsHorizontalScroll } from './ComicsHorizontalScroll';
