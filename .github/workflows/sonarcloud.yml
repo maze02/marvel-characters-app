@@ -47,7 +47,8 @@ jobs:
         with:
           # Additional arguments can be passed here if needed
           args: >
-            -Dsonar.verbose=false
+            -Dsonar.projectKey=maze02_marvel-characters-app
+            -Dsonar.organization=maze02
 
       #- name: Check Quality Gate Status
        # id: quality-gate
