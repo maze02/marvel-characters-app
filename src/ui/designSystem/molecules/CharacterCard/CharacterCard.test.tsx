@@ -75,11 +75,28 @@ describe("CharacterCard", () => {
       expect(image).toHaveAttribute("src", "https://example.com/spiderman.jpg");
     });
 
-    it("should render image with lazy loading", () => {
+    it("should render image with lazy loading by default", () => {
       renderCard();
 
       const image = screen.getByRole("img");
       expect(image).toHaveAttribute("loading", "lazy");
+      expect(image).toHaveAttribute("decoding", "async");
+    });
+
+    it("should render image with eager loading when priority is true", () => {
+      renderCard({ priority: true });
+
+      const image = screen.getByRole("img");
+      expect(image).toHaveAttribute("loading", "eager");
+      expect(image).toHaveAttribute("fetchpriority", "high");
+    });
+
+    it("should render image with lazy loading when priority is false", () => {
+      renderCard({ priority: false });
+
+      const image = screen.getByRole("img");
+      expect(image).toHaveAttribute("loading", "lazy");
+      expect(image).toHaveAttribute("decoding", "async");
     });
 
     it("should render as article element", () => {

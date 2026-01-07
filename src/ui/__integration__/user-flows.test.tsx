@@ -388,10 +388,12 @@ describe("Cross-Page User Flow Integration Tests", () => {
       // Should show 2 results (text may have whitespace between number and word)
       expect(screen.getByText(/2\s+RESULTS/i)).toBeInTheDocument();
 
-      // Remove one favorite
-      const removeButton = screen.getByRole("button", {
-        name: /remove spider-man from favorites/i,
-      });
+      // Remove one favorite - wait for button to be available
+      const removeButton = await waitFor(() =>
+        screen.getByRole("button", {
+          name: /remove spider-man from favorites/i,
+        }),
+      );
       await user.click(removeButton);
 
       // Spider-Man should disappear
