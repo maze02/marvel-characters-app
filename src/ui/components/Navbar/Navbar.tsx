@@ -20,8 +20,6 @@ export interface NavbarProps {
  * Reusable navigation bar with Marvel logo and favorites button.
  * Displays favorites count badge when user has favorites.
  * Consistent across all pages.
- *
- * Performance: Memoized to prevent unnecessary re-renders
  */
 const NavbarComponent: React.FC<NavbarProps> = ({
   onLogoClick,
@@ -80,5 +78,4 @@ const NavbarComponent: React.FC<NavbarProps> = ({
   );
 };
 
-// Memoize to prevent re-renders when parent re-renders
 export const Navbar = memo(NavbarComponent);
