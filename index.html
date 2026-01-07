@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/marvel_icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     
     <!-- Primary Meta Tags: These tell search engines what your page is about -->
     <title>Marvel Characters - Browse All Superheroes | Character Database</title>
@@ -33,10 +34,16 @@
     <!-- Theme Color: Sets the browser header color on mobile devices -->
     <meta name="theme-color" content="#000000" />
     
-    <!-- Google Fonts - Roboto Condensed -->
+    <!-- Resource Hints for Performance -->
+    <link rel="dns-prefetch" href="https://comicvine.gamespot.com">
+    <link rel="preconnect" href="https://comicvine.gamespot.com">
+    <link rel="dns-prefetch" href="https://comicvine.gamespot.com">
+    
+    <!-- Google Fonts - Roboto Condensed with optimized loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet"></noscript>
     
     <!-- Structured Data: Helps Google understand your website better -->
     <script type="application/ld+json">

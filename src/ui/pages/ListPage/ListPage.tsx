@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { SearchBar } from "@ui/designSystem/molecules/SearchBar/SearchBar";
 import { CharacterCard } from "@ui/designSystem/molecules/CharacterCard/CharacterCard";
 import { SEO } from "@ui/components/SEO";
@@ -100,28 +106,38 @@ export const ListPage: React.FC = () => {
     };
   }, [searchQuery, hasNextPage, isInfiniteScrollFetching, fetchNextPage]);
 
-  // Retry search handler
-  const handleRetrySearch = () => {
+  // Retry search handler - memoized to prevent re-creating on every render
+  const handleRetrySearch = useCallback(() => {
     void retrySearch();
-  };
+  }, [retrySearch]);
 
-  // Retry infinite scroll handler
-  const handleRetryInfiniteScroll = () => {
+  // Retry infinite scroll handler - memoized to prevent re-creating on every render
+  const handleRetryInfiniteScroll = useCallback(() => {
     void retryInfiniteScroll();
-  };
+  }, [retryInfiniteScroll]);
 
-  // Determine which characters to display
-  const displayedCharacters = searchQuery
-    ? searchResults
-    : infiniteScrollCharacters;
+  // Determine which characters to display - memoized to prevent recalculation
+  const displayedCharacters = useMemo(() => {
+    return searchQuery ? searchResults : infiniteScrollCharacters;
+  }, [searchQuery, searchResults, infiniteScrollCharacters]);
 
-  // Determine if we're currently loading
-  const isLoading = searchQuery
-    ? isSearchLoading && searchResults.length === 0 // Show loading for search
-    : isInfiniteScrollLoading && infiniteScrollCharacters.length === 0; // Show loading for initial list
+  // Determine if we're currently loading - memoized to prevent recalculation
+  const isLoading = useMemo(() => {
+    return searchQuery
+      ? isSearchLoading && searchResults.length === 0 // Show loading for search
+      : isInfiniteScrollLoading && infiniteScrollCharacters.length === 0; // Show loading for initial list
+  }, [
+    searchQuery,
+    isSearchLoading,
+    searchResults.length,
+    isInfiniteScrollLoading,
+    infiniteScrollCharacters.length,
+  ]);
 
-  // Determine which error to show
-  const currentError = searchQuery ? searchError : infiniteScrollError;
+  // Determine which error to show - memoized to prevent recalculation
+  const currentError = useMemo(() => {
+    return searchQuery ? searchError : infiniteScrollError;
+  }, [searchQuery, searchError, infiniteScrollError]);
 
   return (
     <>
@@ -171,16 +187,26 @@ export const ListPage: React.FC = () => {
 
         {!isLoading && (
           <div className={styles.listPage__grid}>
-            {displayedCharacters.map((character) => (
-              <CharacterCard
-                key={character.id.value}
-                id={character.id.value}
-                name={character.name.value}
-                imageUrl={character.getThumbnailUrl("portrait_uncanny")}
-                isFavorite={isFavorite(character.id.value)}
-                onToggleFavorite={() => void toggleFavorite(character.id.value)}
-              />
-            ))}
+            {displayedCharacters.map((character, index) => {
+              const characterId = character.id.value;
+              const characterName = character.name.value;
+              const imageUrl = character.getThumbnailUrl("portrait_uncanny");
+              const favorite = isFavorite(characterId);
+              // First 6 cards are priority (above the fold) for LCP optimization
+              const isPriority = index < 6;
+
+              return (
+                <CharacterCard
+                  key={characterId}
+                  id={characterId}
+                  name={characterName}
+                  imageUrl={imageUrl}
+                  isFavorite={favorite}
+                  onToggleFavorite={() => void toggleFavorite(characterId)}
+                  priority={isPriority}
+                />
+              );
+            })}
           </div>
         )}
 

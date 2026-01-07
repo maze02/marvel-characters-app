@@ -4,8 +4,10 @@ import { routes } from "./routes";
 import { Layout } from "../components/Layout/Layout";
 
 /**
- * Lazy-loaded Page Components
+ * Lazy-loaded Page Components with Preloading
  *
+ * Preload functions allow eager loading of route components
+ * to improve perceived performance
  */
 const ListPage = lazy(() =>
   import("../pages/ListPage/ListPage").then((m) => ({ default: m.ListPage })),
@@ -25,6 +27,11 @@ const NotFoundPage = lazy(() =>
     default: m.NotFoundPage,
   })),
 );
+
+// Preload functions for eager loading
+export const preloadFavoritesPage = () =>
+  import("../pages/FavoritesPage/FavoritesPage");
+export const preloadDetailPage = () => import("../pages/DetailPage/DetailPage");
 
 /**
  * Navigation Tracker
