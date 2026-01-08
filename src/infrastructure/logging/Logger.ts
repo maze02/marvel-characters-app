@@ -75,12 +75,12 @@ class Logger {
       typeof process !== "undefined" ? process.env?.NODE_ENV : undefined;
     const isDev = nodeEnv === "development" || nodeEnv === "test";
 
-    // In production, only show warnings and errors
+    // In production, silent
     // In development/test, show debug and above
     if (isDev) {
       return "debug";
     }
-    return "warn";
+    return "silent";
   }
 
   /**

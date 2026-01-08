@@ -11,7 +11,8 @@ import { MemoryRouter } from "react-router-dom";
 import { RouterContent } from "./AppRouter";
 import { DependenciesProvider } from "@ui/state/DependenciesContext";
 import { FavoritesProvider } from "@ui/state/FavoritesContext";
-import { LoadingProvider } from "@ui/state/LoadingContext";
+import { QueryProvider } from "@ui/providers/QueryProvider";
+import { createTestQueryClient } from "@tests/queryTestUtils";
 import { Character } from "@domain/character/entities/Character";
 import { CharacterId } from "@domain/character/valueObjects/CharacterId";
 import { CharacterName } from "@domain/character/valueObjects/CharacterName";
@@ -72,18 +73,21 @@ describe("AppRouter Integration Tests", () => {
    * Helper: Render router with all real providers
    */
   const renderRouter = (initialRoute = "/") => {
+    // Create fresh QueryClient for each test (no cache pollution)
+    const queryClient = createTestQueryClient();
+
     return render(
       <DependenciesProvider>
-        <FavoritesProvider>
-          <MemoryRouter
-            initialEntries={[initialRoute]}
-            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-          >
-            <LoadingProvider>
+        <QueryProvider client={queryClient}>
+          <FavoritesProvider>
+            <MemoryRouter
+              initialEntries={[initialRoute]}
+              future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+            >
               <RouterContent />
-            </LoadingProvider>
-          </MemoryRouter>
-        </FavoritesProvider>
+            </MemoryRouter>
+          </FavoritesProvider>
+        </QueryProvider>
       </DependenciesProvider>,
     );
   };

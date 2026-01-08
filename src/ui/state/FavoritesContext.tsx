@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Character } from "@domain/character/entities/Character";
 import { logger } from "@infrastructure/logging/Logger";
 import { useDependencyContainer } from "./DependenciesContext";
@@ -33,6 +34,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+  const queryClient = useQueryClient();
 
   // Inject dependencies from shared container (Dependency Injection)
   // This ensures we use the SAME repository instances with SHARED cache
@@ -85,12 +87,17 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
         });
 
         setFavoritesCount((prev) => (newState ? prev + 1 : prev - 1));
+
+        // Invalidate favorites list query to trigger refetch, marks the query as stale, so it will refetch when the component mounts
+        void queryClient.invalidateQueries({
+          queryKey: ["favorites", "list"],
+        });
       } catch (error) {
         logger.error("Failed to toggle favorite", error, { characterId });
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [queryClient],
   );
 
   /**

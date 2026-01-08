@@ -98,8 +98,9 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { DependenciesProvider } from "@ui/state/DependenciesContext";
 import { FavoritesProvider } from "@ui/state/FavoritesContext";
-import { LoadingProvider } from "@ui/state/LoadingContext";
+import { QueryProvider } from "@ui/providers/QueryProvider";
 import { RouterContent } from "@ui/routes/AppRouter";
+import { createTestQueryClient } from "@tests/queryTestUtils";
 
 // Mock window.scrollTo (not implemented in JSDOM)
 global.scrollTo = jest.fn();
@@ -123,20 +124,24 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
 describe("Cross-Page User Flow Integration Tests", () => {
   /**
    * Helper: Render app with all real providers
+   * Note: Each test gets a fresh QueryClient to avoid cache pollution between tests
    */
   const renderApp = (initialRoute = "/") => {
+    // Create fresh QueryClient for each test (no cache pollution)
+    const queryClient = createTestQueryClient();
+
     return render(
       <DependenciesProvider>
-        <FavoritesProvider>
-          <MemoryRouter
-            initialEntries={[initialRoute]}
-            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-          >
-            <LoadingProvider>
+        <QueryProvider client={queryClient}>
+          <FavoritesProvider>
+            <MemoryRouter
+              initialEntries={[initialRoute]}
+              future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+            >
               <RouterContent />
-            </LoadingProvider>
-          </MemoryRouter>
-        </FavoritesProvider>
+            </MemoryRouter>
+          </FavoritesProvider>
+        </QueryProvider>
       </DependenciesProvider>,
     );
   };
@@ -383,10 +388,12 @@ describe("Cross-Page User Flow Integration Tests", () => {
       // Should show 2 results (text may have whitespace between number and word)
       expect(screen.getByText(/2\s+RESULTS/i)).toBeInTheDocument();
 
-      // Remove one favorite
-      const removeButton = screen.getByRole("button", {
-        name: /remove spider-man from favorites/i,
-      });
+      // Remove one favorite - wait for button to be available
+      const removeButton = await waitFor(() =>
+        screen.getByRole("button", {
+          name: /remove spider-man from favorites/i,
+        }),
+      );
       await user.click(removeButton);
 
       // Spider-Man should disappear

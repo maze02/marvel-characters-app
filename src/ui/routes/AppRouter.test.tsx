@@ -21,13 +21,9 @@ jest.mock("../pages/DetailPage/DetailPage", () => ({
   DetailPage: () => <div data-testid="detail-page">Detail Page</div>,
 }));
 
-// Mock LoadingContext
-jest.mock("../state/LoadingContext", () => ({
-  useLoading: () => ({
-    isLoading: false,
-    startLoading: jest.fn(),
-    stopLoading: jest.fn(),
-  }),
+// Mock React Query's useIsFetching
+jest.mock("@tanstack/react-query", () => ({
+  useIsFetching: () => 0, // No queries fetching by default
 }));
 
 // Mock Layout (which includes Navbar that requires FavoritesContext)

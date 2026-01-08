@@ -12,6 +12,7 @@ import { Character } from "@domain/character/entities/Character";
 import { CharacterId } from "@domain/character/valueObjects/CharacterId";
 import { CharacterName } from "@domain/character/valueObjects/CharacterName";
 import { ImageUrl } from "@domain/character/valueObjects/ImageUrl";
+import { QueryWrapper } from "@tests/queryTestUtils";
 
 // Mock repository to return proper values
 jest.mock(
@@ -38,14 +39,16 @@ describe("FavoritesContext", () => {
 
   /**
    * Helper: Render hook with provider wrapper
-   * Includes DependenciesProvider for proper context hierarchy
+   * Includes QueryWrapper for QueryClient and DependenciesProvider for proper context hierarchy
    */
   const renderWithProvider = () => {
     return renderHook(() => useFavorites(), {
       wrapper: ({ children }) => (
-        <DependenciesProvider>
-          <FavoritesProvider>{children}</FavoritesProvider>
-        </DependenciesProvider>
+        <QueryWrapper>
+          <DependenciesProvider>
+            <FavoritesProvider>{children}</FavoritesProvider>
+          </DependenciesProvider>
+        </QueryWrapper>
       ),
     });
   };
